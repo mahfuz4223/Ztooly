@@ -56,7 +56,7 @@ const Index = () => {
       description: "Resize images for social media, websites, or email without losing quality.",
       icon: ImageIcon,
       category: "image",
-      link: "#",
+      link: "/image-resizer",
       gradient: "from-green-500 to-green-600"
     },
     {
@@ -377,7 +377,7 @@ const Index = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/qr-generator" className="hover:text-foreground transition-colors">QR Generator</a></li>
                 <li><a href="/background-remover" className="hover:text-foreground transition-colors">Background Remover</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Image Resizer</a></li>
+                <li><a href="/image-resizer" className="hover:text-foreground transition-colors">Image Resizer</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">PDF Tools</a></li>
               </ul>
             </div>

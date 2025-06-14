@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import QRGenerator from "./pages/QRGenerator";
 import BackgroundRemover from "./pages/BackgroundRemover";
+import ImageResizer from "./pages/ImageResizer";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/background-remover" element={<BackgroundRemover />} />
+          <Route path="/image-resizer" element={<ImageResizer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
