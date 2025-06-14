@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import QRGenerator from "./pages/QRGenerator";
 import BackgroundRemover from "./pages/BackgroundRemover";
 import ImageResizer from "./pages/ImageResizer";
+import PDFTools from "./pages/PDFTools";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/qr-generator" element={<QRGenerator />} />
           <Route path="/background-remover" element={<BackgroundRemover />} />
           <Route path="/image-resizer" element={<ImageResizer />} />
+          <Route path="/pdf-tools" element={<PDFTools />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

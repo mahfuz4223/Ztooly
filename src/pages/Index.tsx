@@ -62,10 +62,10 @@ const Index = () => {
     {
       id: "pdf-tools",
       title: "PDF Tools",
-      description: "Merge, split, or compress PDFs. All the PDF utilities you need in one place.",
+      description: "Convert, merge, compress, and edit PDFs. All the PDF utilities you need in one place.",
       icon: FileText,
       category: "document",
-      link: "#",
+      link: "/pdf-tools",
       gradient: "from-red-500 to-red-600"
     },
     {
@@ -378,7 +378,7 @@ const Index = () => {
                 <li><a href="/qr-generator" className="hover:text-foreground transition-colors">QR Generator</a></li>
                 <li><a href="/background-remover" className="hover:text-foreground transition-colors">Background Remover</a></li>
                 <li><a href="/image-resizer" className="hover:text-foreground transition-colors">Image Resizer</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">PDF Tools</a></li>
+                <li><a href="/pdf-tools" className="hover:text-foreground transition-colors">PDF Tools</a></li>
               </ul>
             </div>
 
