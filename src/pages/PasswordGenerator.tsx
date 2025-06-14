@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -189,7 +188,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="uppercase"
                         checked={includeUppercase}
-                        onCheckedChange={setIncludeUppercase}
+                        onCheckedChange={(checked) => setIncludeUppercase(checked === true)}
                       />
                       <Label htmlFor="uppercase">Uppercase (A-Z)</Label>
                     </div>
@@ -197,7 +196,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="lowercase"
                         checked={includeLowercase}
-                        onCheckedChange={setIncludeLowercase}
+                        onCheckedChange={(checked) => setIncludeLowercase(checked === true)}
                       />
                       <Label htmlFor="lowercase">Lowercase (a-z)</Label>
                     </div>
@@ -205,7 +204,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="numbers"
                         checked={includeNumbers}
-                        onCheckedChange={setIncludeNumbers}
+                        onCheckedChange={(checked) => setIncludeNumbers(checked === true)}
                       />
                       <Label htmlFor="numbers">Numbers (0-9)</Label>
                     </div>
@@ -213,7 +212,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="symbols"
                         checked={includeSymbols}
-                        onCheckedChange={setIncludeSymbols}
+                        onCheckedChange={(checked) => setIncludeSymbols(checked === true)}
                       />
                       <Label htmlFor="symbols">Symbols (!@#$...)</Label>
                     </div>
@@ -221,7 +220,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="exclude-similar"
                         checked={excludeSimilar}
-                        onCheckedChange={setExcludeSimilar}
+                        onCheckedChange={(checked) => setExcludeSimilar(checked === true)}
                       />
                       <Label htmlFor="exclude-similar">Exclude Similar (il1Lo0O)</Label>
                     </div>
@@ -229,7 +228,7 @@ const PasswordGenerator = () => {
                       <Checkbox
                         id="exclude-ambiguous"
                         checked={excludeAmbiguous}
-                        onCheckedChange={setExcludeAmbiguous}
+                        onCheckedChange={(checked) => setExcludeAmbiguous(checked === true)}
                       />
                       <Label htmlFor="exclude-ambiguous">Exclude Ambiguous</Label>
                     </div>
