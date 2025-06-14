@@ -1,8 +1,16 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker using unpkg CDN which is more reliable
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Configure PDF.js worker - use a more reliable worker setup for Vite
+const setupWorker = () => {
+  if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    // Use jsdelivr CDN which is more reliable than unpkg
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+  }
+};
+
+// Initialize worker on module load
+setupWorker();
 
 export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high' = 'medium'): Promise<Blob> => {
   try {
@@ -55,13 +63,19 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
     console.log('Starting PDF to images conversion with PDF.js...');
+    
+    // Ensure worker is set up
+    setupWorker();
+    
     const arrayBuffer = await file.arrayBuffer();
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       verbosity: 0,
       disableAutoFetch: true,
-      disableStream: true
+      disableStream: true,
+      useSystemFonts: true,
+      standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
     });
     
     const pdf = await loadingTask.promise;
@@ -148,13 +162,19 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
 export const generatePDFPreview = async (file: File): Promise<string> => {
   try {
     console.log('Generating PDF preview...');
+    
+    // Ensure worker is set up
+    setupWorker();
+    
     const arrayBuffer = await file.arrayBuffer();
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       verbosity: 0,
       disableAutoFetch: true,
-      disableStream: true
+      disableStream: true,
+      useSystemFonts: true,
+      standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
     });
     
     const pdf = await loadingTask.promise;
