@@ -1,9 +1,8 @@
-
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Use a CDN-based worker for better compatibility with Vite
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+// Configure PDF.js worker using unpkg CDN which is more reliable
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high' = 'medium'): Promise<Blob> => {
   try {
@@ -61,7 +60,9 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
     console.log('Loading PDF document with pdf.js...');
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0
+      verbosity: 0,
+      disableAutoFetch: true,
+      disableStream: true
     });
     
     const pdf = await loadingTask.promise;
@@ -113,7 +114,9 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0
+      verbosity: 0,
+      disableAutoFetch: true,
+      disableStream: true
     });
     
     const pdf = await loadingTask.promise;
@@ -146,7 +149,9 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0
+      verbosity: 0,
+      disableAutoFetch: true,
+      disableStream: true
     });
     
     const pdf = await loadingTask.promise;
