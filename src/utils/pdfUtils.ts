@@ -2,11 +2,8 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with a local approach that works with Vite
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url
-).toString();
+// Use a CDN-based worker for better compatibility with Vite
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
 
 export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high' = 'medium'): Promise<Blob> => {
   try {
@@ -61,13 +58,10 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
     console.log('Starting PDF to images conversion...');
     const arrayBuffer = await file.arrayBuffer();
     
-    console.log('Loading PDF document...');
+    console.log('Loading PDF document with pdf.js...');
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0,
-      cMapUrl: undefined,
-      cMapPacked: undefined,
-      standardFontDataUrl: undefined
+      verbosity: 0
     });
     
     const pdf = await loadingTask.promise;
@@ -82,30 +76,33 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
       const viewport = page.getViewport({ scale });
       
       const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d', { willReadFrequently: false });
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        throw new Error('Failed to get canvas 2D context');
+      }
+      
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       
-      if (context) {
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-        
-        await page.render(renderContext).promise;
-        console.log(`Page ${pageNum} rendered successfully`);
-        
-        const quality = format === 'jpg' ? 0.8 : 1.0;
-        const dataUrl = canvas.toDataURL(`image/${format}`, quality);
-        images.push(dataUrl);
-      }
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise;
+      console.log(`Page ${pageNum} rendered successfully`);
+      
+      const quality = format === 'jpg' ? 0.8 : 1.0;
+      const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+      images.push(dataUrl);
     }
     
     console.log(`PDF to images conversion completed. ${images.length} images generated.`);
     return images;
   } catch (error) {
     console.error('Error converting PDF to images:', error);
-    throw new Error('Failed to convert PDF to images. Please ensure the file is a valid PDF.');
+    throw new Error(`Failed to convert PDF to images: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
@@ -116,10 +113,7 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0,
-      cMapUrl: undefined,
-      cMapPacked: undefined,
-      standardFontDataUrl: undefined
+      verbosity: 0
     });
     
     const pdf = await loadingTask.promise;
@@ -152,10 +146,7 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      verbosity: 0,
-      cMapUrl: undefined,
-      cMapPacked: undefined,
-      standardFontDataUrl: undefined
+      verbosity: 0
     });
     
     const pdf = await loadingTask.promise;
@@ -165,22 +156,23 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     const viewport = page.getViewport({ scale });
     
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d', { willReadFrequently: false });
+    const context = canvas.getContext('2d');
+    
+    if (!context) {
+      throw new Error('Failed to get canvas 2D context');
+    }
+    
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     
-    if (context) {
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport
-      };
-      
-      await page.render(renderContext).promise;
-      console.log('PDF preview generated successfully');
-      return canvas.toDataURL();
-    }
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport
+    };
     
-    throw new Error('Failed to get canvas context');
+    await page.render(renderContext).promise;
+    console.log('PDF preview generated successfully');
+    return canvas.toDataURL();
   } catch (error) {
     console.error('Error generating PDF preview:', error);
     
