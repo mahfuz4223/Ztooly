@@ -36,7 +36,7 @@ import {
   PenTool,
   FileCode,
   Repeat,
-  Link,
+  Link as LinkIcon,
   Activity,
   FileX,
   Shuffle
@@ -172,7 +172,7 @@ const Index = () => {
       id: "url-scanner",
       title: "URL Scanner (Link Checker)",
       description: "Check if URLs are safe, working, and accessible. Verify links before sharing or visiting.",
-      icon: Link,
+      icon: LinkIcon,
       category: "security",
       link: "#",
       gradient: "from-amber-500 to-amber-600"
