@@ -47,7 +47,7 @@ const Index = () => {
       description: "Remove backgrounds from images instantly. Perfect for logos, products, and profile pictures.",
       icon: Scissors,
       category: "image",
-      link: "#",
+      link: "/background-remover",
       gradient: "from-purple-500 to-purple-600"
     },
     {
@@ -376,7 +376,7 @@ const Index = () => {
               <h3 className="font-semibold mb-4">Tools</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/qr-generator" className="hover:text-foreground transition-colors">QR Generator</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Background Remover</a></li>
+                <li><a href="/background-remover" className="hover:text-foreground transition-colors">Background Remover</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">Image Resizer</a></li>
                 <li><a href="#" className="hover:text-foreground transition-colors">PDF Tools</a></li>
               </ul>
