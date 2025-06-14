@@ -12,6 +12,7 @@ import ImageResizer from "./pages/ImageResizer";
 import PDFTools from "./pages/PDFTools";
 import PDFToImage from "./pages/PDFToImage";
 import JSONTools from "./pages/JSONTools";
+import PasswordGenerator from "./pages/PasswordGenerator";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/pdf-tools" element={<PDFTools />} />
           <Route path="/pdf-to-image" element={<PDFToImage />} />
           <Route path="/json-tools" element={<JSONTools />} />
+          <Route path="/password-generator" element={<PasswordGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
