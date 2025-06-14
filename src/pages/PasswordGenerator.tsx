@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +7,9 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, RefreshCw, Shield, AlertTriangle, CheckCircle, Eye, EyeOff, Lock, Timer, Zap } from 'lucide-react';
+import { Copy, RefreshCw, Shield, AlertTriangle, CheckCircle, Eye, EyeOff, Lock, Timer, Zap, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const PasswordGenerator = () => {
   const [password, setPassword] = useState('');
@@ -26,6 +26,7 @@ const PasswordGenerator = () => {
   const [breachStatus, setBreachStatus] = useState<'safe' | 'compromised' | 'unknown'>('unknown');
   
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const generatePassword = useCallback(() => {
     let charset = '';
@@ -93,7 +94,7 @@ const PasswordGenerator = () => {
   };
 
   const calculateCrackTime = (pwd: string) => {
-    if (!pwd) return 'N/A';
+    if (!pwd) return { time: 'N/A', difficulty: 'unknown', color: 'bg-gray-400' };
     
     let charset = 0;
     if (/[a-z]/.test(pwd)) charset += 26;
@@ -105,12 +106,45 @@ const PasswordGenerator = () => {
     const guessesPerSecond = 1000000000; // 1 billion guesses per second
     const secondsToCrack = combinations / (2 * guessesPerSecond);
     
-    if (secondsToCrack < 60) return `${Math.round(secondsToCrack)} seconds`;
-    if (secondsToCrack < 3600) return `${Math.round(secondsToCrack / 60)} minutes`;
-    if (secondsToCrack < 86400) return `${Math.round(secondsToCrack / 3600)} hours`;
-    if (secondsToCrack < 31536000) return `${Math.round(secondsToCrack / 86400)} days`;
-    if (secondsToCrack < 31536000000) return `${Math.round(secondsToCrack / 31536000)} years`;
-    return `${(secondsToCrack / 31536000000).toExponential(2)} years`;
+    let timeString = '';
+    let difficulty = '';
+    let color = '';
+    
+    if (secondsToCrack < 1) {
+      timeString = 'Instant';
+      difficulty = 'Extremely Weak';
+      color = 'bg-red-600';
+    } else if (secondsToCrack < 60) {
+      timeString = `${Math.round(secondsToCrack)} seconds`;
+      difficulty = 'Very Weak';
+      color = 'bg-red-500';
+    } else if (secondsToCrack < 3600) {
+      timeString = `${Math.round(secondsToCrack / 60)} minutes`;
+      difficulty = 'Weak';
+      color = 'bg-orange-500';
+    } else if (secondsToCrack < 86400) {
+      timeString = `${Math.round(secondsToCrack / 3600)} hours`;
+      difficulty = 'Fair';
+      color = 'bg-yellow-500';
+    } else if (secondsToCrack < 2592000) { // 30 days
+      timeString = `${Math.round(secondsToCrack / 86400)} days`;
+      difficulty = 'Good';
+      color = 'bg-blue-500';
+    } else if (secondsToCrack < 31536000) { // 1 year
+      timeString = `${Math.round(secondsToCrack / 2592000)} months`;
+      difficulty = 'Strong';
+      color = 'bg-green-500';
+    } else if (secondsToCrack < 31536000000) { // 1000 years
+      timeString = `${Math.round(secondsToCrack / 31536000)} years`;
+      difficulty = 'Very Strong';
+      color = 'bg-green-600';
+    } else {
+      timeString = `${(secondsToCrack / 31536000000).toExponential(2)} years`;
+      difficulty = 'Practically Uncrackable';
+      color = 'bg-purple-600';
+    }
+    
+    return { time: timeString, difficulty, color };
   };
 
   const checkPasswordBreach = async (pwd: string) => {
@@ -161,14 +195,27 @@ const PasswordGenerator = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="h-10 w-10 text-blue-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Secure Password Generator
-            </h1>
+        {/* Header with Back Button */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex-1 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Shield className="h-10 w-10 text-blue-600" />
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Secure Password Generator
+              </h1>
+            </div>
+            <p className="text-gray-600 text-lg">Generate ultra-secure passwords and analyze their strength in real-time</p>
           </div>
-          <p className="text-gray-600 text-lg">Generate ultra-secure passwords and analyze their strength in real-time</p>
+          <div className="w-20"></div> {/* Spacer for centering */}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -363,22 +410,33 @@ const PasswordGenerator = () => {
                   </CardContent>
                 </Card>
 
-                {/* Crack Time */}
+                {/* Enhanced Crack Time */}
                 <Card className="border-2 border-red-100 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50">
                     <CardTitle className="flex items-center gap-2 text-red-800">
                       <Timer className="h-5 w-5" />
-                      Time to Crack
+                      Crack Time Analysis
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-red-600 mb-2">
-                        {crackTime}
+                    <div className="text-center space-y-4">
+                      <div className="space-y-2">
+                        <div className="text-2xl font-bold text-red-600">
+                          {crackTime.time}
+                        </div>
+                        <Badge className={`${crackTime.color} text-white px-3 py-1`}>
+                          {crackTime.difficulty}
+                        </Badge>
                       </div>
-                      <p className="text-sm text-gray-500">
-                        At 1 billion guesses/second
-                      </p>
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <p className="text-xs text-gray-600 mb-1">Attack Speed</p>
+                        <p className="text-sm font-semibold">1 Billion guesses/sec</p>
+                      </div>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>• Based on brute force attack</p>
+                        <p>• Average time to crack</p>
+                        <p>• Using modern hardware</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
