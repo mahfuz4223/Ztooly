@@ -2,11 +2,15 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with matching version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
+// Configure PDF.js worker with a local approach that works with Vite
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url
+).toString();
 
 export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high' = 'medium'): Promise<Blob> => {
   try {
+    console.log('Starting PDF compression...');
     const arrayBuffer = await file.arrayBuffer();
     const pdfDoc = await PDFDocument.load(arrayBuffer);
     
@@ -23,6 +27,7 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
       addDefaultPage: false,
     });
     
+    console.log('PDF compression completed successfully');
     return new Blob([pdfBytes], { type: 'application/pdf' });
   } catch (error) {
     console.error('Error compressing PDF:', error);
@@ -32,6 +37,7 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
 
 export const mergePDFs = async (files: File[]): Promise<Blob> => {
   try {
+    console.log('Starting PDF merge...');
     const mergedPdf = await PDFDocument.create();
     
     for (const file of files) {
@@ -42,6 +48,7 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
     }
     
     const pdfBytes = await mergedPdf.save();
+    console.log('PDF merge completed successfully');
     return new Blob([pdfBytes], { type: 'application/pdf' });
   } catch (error) {
     console.error('Error merging PDFs:', error);
@@ -51,37 +58,42 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
+    console.log('Starting PDF to images conversion...');
     const arrayBuffer = await file.arrayBuffer();
     
-    // Use a more compatible PDF.js configuration
+    console.log('Loading PDF document...');
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      useSystemFonts: true,
-      disableFontFace: false,
-      verbosity: 0
+      verbosity: 0,
+      cMapUrl: undefined,
+      cMapPacked: undefined,
+      standardFontDataUrl: undefined
     });
     
     const pdf = await loadingTask.promise;
+    console.log(`PDF loaded successfully. Pages: ${pdf.numPages}`);
+    
     const images: string[] = [];
     
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      console.log(`Processing page ${pageNum}...`);
       const page = await pdf.getPage(pageNum);
       const scale = dpi / 72; // Convert DPI to scale factor
       const viewport = page.getViewport({ scale });
       
       const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
+      const context = canvas.getContext('2d', { willReadFrequently: false });
       canvas.height = viewport.height;
       canvas.width = viewport.width;
       
       if (context) {
         const renderContext = {
           canvasContext: context,
-          viewport: viewport,
-          enableWebGL: false
+          viewport: viewport
         };
         
         await page.render(renderContext).promise;
+        console.log(`Page ${pageNum} rendered successfully`);
         
         const quality = format === 'jpg' ? 0.8 : 1.0;
         const dataUrl = canvas.toDataURL(`image/${format}`, quality);
@@ -89,6 +101,7 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
       }
     }
     
+    console.log(`PDF to images conversion completed. ${images.length} images generated.`);
     return images;
   } catch (error) {
     console.error('Error converting PDF to images:', error);
@@ -98,13 +111,15 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
 
 export const pdfToWord = async (file: File): Promise<Blob> => {
   try {
+    console.log('Starting PDF to Word conversion...');
     const arrayBuffer = await file.arrayBuffer();
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      useSystemFonts: true,
-      disableFontFace: false,
-      verbosity: 0
+      verbosity: 0,
+      cMapUrl: undefined,
+      cMapPacked: undefined,
+      standardFontDataUrl: undefined
     });
     
     const pdf = await loadingTask.promise;
@@ -122,6 +137,7 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
     // Create a simple text document (in a real app, you'd use a proper Word library)
     const content = `Document converted from PDF: ${file.name}\n\nExtracted Content:\n\n${extractedText}`;
     
+    console.log('PDF to Word conversion completed successfully');
     return new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
   } catch (error) {
     console.error('Error converting PDF to Word:', error);
@@ -131,13 +147,15 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
 
 export const generatePDFPreview = async (file: File): Promise<string> => {
   try {
+    console.log('Generating PDF preview...');
     const arrayBuffer = await file.arrayBuffer();
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
-      useSystemFonts: true,
-      disableFontFace: false,
-      verbosity: 0
+      verbosity: 0,
+      cMapUrl: undefined,
+      cMapPacked: undefined,
+      standardFontDataUrl: undefined
     });
     
     const pdf = await loadingTask.promise;
@@ -147,52 +165,54 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     const viewport = page.getViewport({ scale });
     
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: false });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     
     if (context) {
       const renderContext = {
         canvasContext: context,
-        viewport: viewport,
-        enableWebGL: false
+        viewport: viewport
       };
       
       await page.render(renderContext).promise;
+      console.log('PDF preview generated successfully');
       return canvas.toDataURL();
     }
+    
+    throw new Error('Failed to get canvas context');
   } catch (error) {
     console.error('Error generating PDF preview:', error);
+    
+    // Fallback to basic preview if PDF rendering fails
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = 300;
+      canvas.height = 400;
+      
+      if (ctx) {
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = '#dee2e6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#dc3545';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('PDF', canvas.width / 2, 50);
+        
+        ctx.fillStyle = '#6c757d';
+        ctx.font = '14px Arial';
+        ctx.fillText(file.name.substring(0, 30), canvas.width / 2, canvas.height - 60);
+        ctx.fillText(`Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`, canvas.width / 2, canvas.height - 40);
+        ctx.fillText('Preview unavailable', canvas.width / 2, canvas.height - 20);
+        
+        resolve(canvas.toDataURL());
+      }
+    });
   }
-  
-  // Fallback to basic preview if PDF rendering fails
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    canvas.width = 300;
-    canvas.height = 400;
-    
-    if (ctx) {
-      ctx.fillStyle = '#f8f9fa';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.strokeStyle = '#dee2e6';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.fillStyle = '#dc3545';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('PDF', canvas.width / 2, 50);
-      
-      ctx.fillStyle = '#6c757d';
-      ctx.font = '14px Arial';
-      ctx.fillText(file.name.substring(0, 30), canvas.width / 2, canvas.height - 60);
-      ctx.fillText(`Size: ${(file.size / 1024 / 1024).toFixed(2)} MB`, canvas.width / 2, canvas.height - 40);
-      ctx.fillText('Preview unavailable', canvas.width / 2, canvas.height - 20);
-      
-      resolve(canvas.toDataURL());
-    }
-  });
 };
