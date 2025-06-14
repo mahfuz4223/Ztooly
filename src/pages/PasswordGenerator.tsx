@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, RefreshCw, Shield, AlertTriangle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Copy, RefreshCw, Shield, AlertTriangle, CheckCircle, Eye, EyeOff, Lock, Timer, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const PasswordGenerator = () => {
@@ -67,7 +67,6 @@ const PasswordGenerator = () => {
     if (!pwd) return { score: 0, label: 'No Password', color: 'bg-gray-400' };
     
     let score = 0;
-    let feedback = [];
     
     // Length scoring
     if (pwd.length >= 8) score += 1;
@@ -142,38 +141,58 @@ const PasswordGenerator = () => {
     });
   };
 
+  // Auto-generate password on component mount
+  useEffect(() => {
+    generatePassword();
+  }, []);
+
+  // Auto-analyze password when it changes
+  useEffect(() => {
+    const currentPassword = password || customPassword;
+    if (currentPassword) {
+      checkPasswordBreach(currentPassword);
+    }
+  }, [password, customPassword]);
+
   const strength = calculatePasswordStrength(password || customPassword);
   const crackTime = calculateCrackTime(password || customPassword);
+  const currentPassword = password || customPassword;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Secure Password Generator</h1>
-          <p className="text-gray-600">Generate strong, secure passwords and analyze their strength</p>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Shield className="h-10 w-10 text-blue-600" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Secure Password Generator
+            </h1>
+          </div>
+          <p className="text-gray-600 text-lg">Generate ultra-secure passwords and analyze their strength in real-time</p>
         </div>
 
-        <Tabs defaultValue="generate" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="generate">Generate Password</TabsTrigger>
-            <TabsTrigger value="analyze">Analyze Password</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="generate" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Password Generator Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="border-2 border-blue-100 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Lock className="h-5 w-5" />
                   Password Generator
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-blue-600">
                   Customize your password requirements below
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 p-6">
                 <div className="space-y-4">
                   <div>
-                    <Label>Password Length: {length[0]}</Label>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="font-semibold">Password Length</Label>
+                      <Badge variant="outline" className="text-lg font-bold">
+                        {length[0]}
+                      </Badge>
+                    </div>
                     <Slider
                       value={length}
                       onValueChange={setLength}
@@ -182,80 +201,85 @@ const PasswordGenerator = () => {
                       step={1}
                       className="mt-2"
                     />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>4</span>
+                      <span>128</span>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="uppercase"
                         checked={includeUppercase}
-                        onCheckedChange={setIncludeUppercase}
+                        onCheckedChange={(checked) => setIncludeUppercase(checked === true)}
                       />
-                      <Label htmlFor="uppercase">Uppercase (A-Z)</Label>
+                      <Label htmlFor="uppercase" className="font-medium">Uppercase (A-Z)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="lowercase"
                         checked={includeLowercase}
-                        onCheckedChange={setIncludeLowercase}
+                        onCheckedChange={(checked) => setIncludeLowercase(checked === true)}
                       />
-                      <Label htmlFor="lowercase">Lowercase (a-z)</Label>
+                      <Label htmlFor="lowercase" className="font-medium">Lowercase (a-z)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="numbers"
                         checked={includeNumbers}
-                        onCheckedChange={setIncludeNumbers}
+                        onCheckedChange={(checked) => setIncludeNumbers(checked === true)}
                       />
-                      <Label htmlFor="numbers">Numbers (0-9)</Label>
+                      <Label htmlFor="numbers" className="font-medium">Numbers (0-9)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="symbols"
                         checked={includeSymbols}
-                        onCheckedChange={setIncludeSymbols}
+                        onCheckedChange={(checked) => setIncludeSymbols(checked === true)}
                       />
-                      <Label htmlFor="symbols">Symbols (!@#$...)</Label>
+                      <Label htmlFor="symbols" className="font-medium">Symbols (!@#$...)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="exclude-similar"
                         checked={excludeSimilar}
-                        onCheckedChange={setExcludeSimilar}
+                        onCheckedChange={(checked) => setExcludeSimilar(checked === true)}
                       />
-                      <Label htmlFor="exclude-similar">Exclude Similar (il1Lo0O)</Label>
+                      <Label htmlFor="exclude-similar" className="font-medium">Exclude Similar (il1Lo0O)</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
                       <Checkbox
                         id="exclude-ambiguous"
                         checked={excludeAmbiguous}
-                        onCheckedChange={setExcludeAmbiguous}
+                        onCheckedChange={(checked) => setExcludeAmbiguous(checked === true)}
                       />
-                      <Label htmlFor="exclude-ambiguous">Exclude Ambiguous</Label>
+                      <Label htmlFor="exclude-ambiguous" className="font-medium">Exclude Ambiguous</Label>
                     </div>
                   </div>
                 </div>
 
                 <Button onClick={generatePassword} className="w-full" size="lg">
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Generate Password
+                  Generate New Password
                 </Button>
               </CardContent>
             </Card>
 
+            {/* Generated Password Display */}
             {password && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Generated Password</CardTitle>
+              <Card className="border-2 border-green-100 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
+                  <CardTitle className="text-green-800">Generated Password</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-6">
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
                       <Input
                         value={password}
                         readOnly
                         type={showPassword ? 'text' : 'password'}
-                        className="font-mono text-lg pr-20"
+                        className="font-mono text-lg pr-20 bg-green-50 border-green-200"
                       />
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                         <Button
@@ -275,53 +299,26 @@ const PasswordGenerator = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="flex gap-4">
-                    <Button 
-                      onClick={() => checkPasswordBreach(password)}
-                      disabled={isChecking}
-                      variant="outline"
-                    >
-                      {isChecking ? 'Checking...' : 'Check Breach Status'}
-                    </Button>
-                    
-                    {breachStatus !== 'unknown' && (
-                      <Badge variant={breachStatus === 'safe' ? 'default' : 'destructive'} className="flex items-center gap-1">
-                        {breachStatus === 'safe' ? (
-                          <>
-                            <CheckCircle className="h-3 w-3" />
-                            Not Found in Breaches
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="h-3 w-3" />
-                            Found in Data Breaches
-                          </>
-                        )}
-                      </Badge>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
 
-          <TabsContent value="analyze" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Password Analysis</CardTitle>
-                <CardDescription>
-                  Enter a password to analyze its strength and security
+            {/* Password Analysis Input */}
+            <Card className="border-2 border-purple-100 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
+                <CardTitle className="text-purple-800">Password Analysis</CardTitle>
+                <CardDescription className="text-purple-600">
+                  Enter any password to analyze its security
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-6">
                 <div className="relative">
                   <Input
                     placeholder="Enter password to analyze..."
                     value={customPassword}
                     onChange={(e) => setCustomPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
-                    className="pr-10"
+                    className="pr-10 bg-purple-50 border-purple-200"
                   />
                   <Button
                     variant="ghost"
@@ -332,96 +329,132 @@ const PasswordGenerator = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
-                
-                <Button 
-                  onClick={() => checkPasswordBreach(customPassword)}
-                  disabled={!customPassword || isChecking}
-                  className="w-full"
-                >
-                  {isChecking ? 'Checking...' : 'Analyze Password'}
-                </Button>
-
-                {breachStatus !== 'unknown' && (
-                  <Badge variant={breachStatus === 'safe' ? 'default' : 'destructive'} className="flex items-center gap-1 w-fit">
-                    {breachStatus === 'safe' ? (
-                      <>
-                        <CheckCircle className="h-3 w-3" />
-                        Not Found in Breaches
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="h-3 w-3" />
-                        Found in Data Breaches
-                      </>
-                    )}
-                  </Badge>
-                )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
 
-        {(password || customPassword) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Analysis</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Password Strength</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">{strength.label}</span>
-                      <span className="text-sm">{strength.score}/10</span>
+          {/* Security Analysis Panel */}
+          <div className="space-y-6">
+            {currentPassword && (
+              <>
+                {/* Strength Meter */}
+                <Card className="border-2 border-orange-100 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50">
+                    <CardTitle className="flex items-center gap-2 text-orange-800">
+                      <Zap className="h-5 w-5" />
+                      Password Strength
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 p-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold mb-2">{strength.score}/10</div>
+                      <Badge 
+                        className={`${strength.color} text-white px-4 py-2 text-lg`}
+                      >
+                        {strength.label}
+                      </Badge>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
-                        className={`h-2 rounded-full ${strength.color} transition-all duration-300`}
+                        className={`h-3 rounded-full ${strength.color} transition-all duration-500`}
                         style={{ width: `${(strength.score / 10) * 100}%` }}
                       ></div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Time to Crack</Label>
-                  <div className="text-lg font-semibold text-blue-600">
-                    {crackTime}
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">
-                    At 1 billion guesses per second
-                  </p>
-                </div>
-              </div>
+                {/* Crack Time */}
+                <Card className="border-2 border-red-100 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50">
+                    <CardTitle className="flex items-center gap-2 text-red-800">
+                      <Timer className="h-5 w-5" />
+                      Time to Crack
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600 mb-2">
+                        {crackTime}
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        At 1 billion guesses/second
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <div className="grid md:grid-cols-4 gap-4 text-sm">
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <div className="font-semibold text-blue-700">Length</div>
-                  <div className="text-blue-600">{(password || customPassword).length} characters</div>
-                </div>
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <div className="font-semibold text-green-700">Uppercase</div>
-                  <div className="text-green-600">
-                    {/[A-Z]/.test(password || customPassword) ? 'Yes' : 'No'}
-                  </div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="font-semibold text-purple-700">Numbers</div>
-                  <div className="text-purple-600">
-                    {/[0-9]/.test(password || customPassword) ? 'Yes' : 'No'}
-                  </div>
-                </div>
-                <div className="bg-orange-50 p-3 rounded-lg">
-                  <div className="font-semibold text-orange-700">Symbols</div>
-                  <div className="text-orange-600">
-                    {/[^A-Za-z0-9]/.test(password || customPassword) ? 'Yes' : 'No'}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                {/* Breach Status */}
+                <Card className="border-2 border-gray-100 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-slate-50">
+                    <CardTitle className="flex items-center gap-2 text-gray-800">
+                      <Shield className="h-5 w-5" />
+                      Breach Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {isChecking ? (
+                      <div className="text-center text-gray-500">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        Checking...
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        {breachStatus === 'safe' ? (
+                          <Badge variant="default" className="bg-green-500 text-white px-4 py-2 text-lg">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Safe
+                          </Badge>
+                        ) : breachStatus === 'compromised' ? (
+                          <Badge variant="destructive" className="px-4 py-2 text-lg">
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Compromised
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="px-4 py-2 text-lg">
+                            Checking...
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Character Analysis */}
+                <Card className="border-2 border-indigo-100 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50">
+                    <CardTitle className="text-indigo-800">Character Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="bg-blue-50 p-3 rounded-lg text-center">
+                        <div className="font-semibold text-blue-700">Length</div>
+                        <div className="text-xl font-bold text-blue-600">{currentPassword.length}</div>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg text-center">
+                        <div className="font-semibold text-green-700">Uppercase</div>
+                        <div className="text-xl font-bold text-green-600">
+                          {/[A-Z]/.test(currentPassword) ? '✓' : '✗'}
+                        </div>
+                      </div>
+                      <div className="bg-purple-50 p-3 rounded-lg text-center">
+                        <div className="font-semibold text-purple-700">Numbers</div>
+                        <div className="text-xl font-bold text-purple-600">
+                          {/[0-9]/.test(currentPassword) ? '✓' : '✗'}
+                        </div>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-lg text-center">
+                        <div className="font-semibold text-orange-700">Symbols</div>
+                        <div className="text-xl font-bold text-orange-600">
+                          {/[^A-Za-z0-9]/.test(currentPassword) ? '✓' : '✗'}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
