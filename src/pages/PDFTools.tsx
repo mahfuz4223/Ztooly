@@ -41,7 +41,7 @@ const PDFTools = () => {
       id: "compress-pdf",
       title: "Compress PDF",
       description: "Reduce PDF file size while maintaining quality",
-      icon: Compress,
+      icon: Minimize2,
       gradient: "from-green-500 to-green-600",
       features: ["Smart compression", "Quality preservation", "Size optimization"]
     },
