@@ -1,12 +1,11 @@
-
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with a more reliable setup for Vite
+// Configure PDF.js worker with a working CDN URL
 const setupWorker = () => {
   if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    // Try multiple CDN sources for better reliability
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    // Use the working CDN URL
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
   }
 };
 
@@ -63,11 +62,11 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
-    console.log('Starting PDF to images conversion with enhanced PDF.js setup...');
+    console.log('Starting PDF to images conversion with working PDF.js setup...');
     
-    // Force worker setup with fallback options
+    // Force worker setup with working URL
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
     }
     
     const arrayBuffer = await file.arrayBuffer();
@@ -80,7 +79,7 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
       disableStream: true,
       disableRange: true,
       useSystemFonts: false,
-      cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+      cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/cmaps/',
       cMapPacked: true
     });
     
@@ -137,7 +136,7 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
     
     // Force worker setup
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
     }
     
     const arrayBuffer = await file.arrayBuffer();
@@ -179,7 +178,7 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     // Force worker setup
     if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
     }
     
     const arrayBuffer = await file.arrayBuffer();
