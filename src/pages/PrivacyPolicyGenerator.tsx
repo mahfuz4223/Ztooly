@@ -4,74 +4,193 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import AdvancedPolicyOptions from "@/components/privacy/AdvancedPolicyOptions";
+import { Switch } from "@/components/ui/switch";
 
-const DEFAULT_POLICY = (data: {
-  name: string;
-  email: string;
-  company: string;
-  website: string;
-}) => `
-Privacy Policy for ${data.company || "[Your Company]"}
+type AdvancedOptions = {
+  analytics: boolean;
+  tracking: boolean;
+  thirdParty: boolean;
+  retention: boolean;
+  cookies: boolean;
+  userRights: boolean;
+  dataTypes: {
+    name: boolean;
+    email: boolean;
+    phone: boolean;
+    address: boolean;
+    payment: boolean;
+  };
+  customSection: string;
+};
 
-At ${data.company || "[Your Company]"}, accessible from ${data.website || "[your-website.com]"}, one of our main priorities is the privacy of our visitors. This Privacy Policy describes the types of information that is collected and recorded by ${data.company || "[Your Company]"} and how we use it.
+const DEFAULT_ADVANCED: AdvancedOptions = {
+  analytics: false,
+  tracking: false,
+  thirdParty: false,
+  retention: false,
+  cookies: true,
+  userRights: false,
+  dataTypes: { name: true, email: true, phone: false, address: false, payment: false },
+  customSection: ""
+};
 
-**Contact Information**
-If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at ${data.email || "[your@email.com]"}.
+const getFormattedPolicy = (
+  data: { name: string; email: string; company: string; website: string },
+  options: AdvancedOptions,
+  mode: "text" | "html" = "text"
+) => {
+  // Helper for sections
+  function section(title: string, body: string) {
+    if (mode === "html") {
+      return `<h3 class='mt-6 mb-1 text-lg font-semibold'>${title}</h3><p>${body}</p>`;
+    }
+    return `**${title}**\n${body}\n`;
+  }
+  const collectedData = Object.entries(options.dataTypes)
+    .filter(([, v]) => v)
+    .map(([k]) => k[0].toUpperCase() + k.slice(1))
+    .join(", ") || "basic information (name, email, etc.)";
+  let policy = "";
+  if (mode === "html") {
+    policy += `<h2 class='text-2xl font-bold mb-2'>Privacy Policy for ${data.company || "[Your Company]"}</h2>`;
+    policy += `<p>At <b>${data.company || "[Your Company]"}</b>, accessible from <b>${data.website || "[your-website.com]"}</b>, one of our main priorities is the privacy of our visitors.</p>`;
+  } else {
+    policy += `Privacy Policy for ${data.company || "[Your Company]"}\n\nAt ${data.company || "[Your Company]"}, accessible from ${data.website || "[your-website.com]"}, one of our main priorities is the privacy of our visitors.\n\n`;
+  }
 
-**Information We Collect**
-We may collect personal identification information (name, email address, phone number, etc.), when you voluntarily submit such information through forms on our site.
+  // Contact section
+  policy += section(
+    "Contact Information",
+    `If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at ${data.email || "[your@email.com]"}.`
+  );
+  // Collected information
+  policy += section(
+    "Information We Collect",
+    `We may collect: ${collectedData}. This information is collected when you voluntarily submit it via forms on our site.`
+  );
+  // Use of information
+  let uses = [
+    "Provide, operate, and maintain our website",
+    "Improve, personalize, and expand our website",
+    "Communicate with you, including for customer service and support",
+    "Send emails"
+  ];
+  if (options.analytics)
+    uses.push("Analyze site usage (e.g., via analytics tools like Google Analytics)");
+  if (options.tracking)
+    uses.push("Deliver personalized ads or remarketing based on your behavior");
+  if (options.cookies)
+    uses.push("Maintain session state or remember preferences via cookies");
+  policy += section(
+    "How We Use Your Information",
+    `<ul>${uses.map(u => mode === "html" ? `<li>${u}</li>` : `- ${u}`).join(mode === "html" ? "" : "\n")}</ul>`
+  );
 
-**How We Use Your Information**
-We use the information we collect for various purposes, including to:
-- Provide, operate, and maintain our website
-- Improve, personalize, and expand our website
-- Communicate with you, including for customer service and support
-- Send emails
+  // Cookies section
+  if (options.cookies) {
+    policy += section(
+      "Cookies and Web Beacons",
+      `We use cookies to store information including visitors' preferences and the pages on the website that the visitor accessed or visited.`
+    );
+  }
+  // Analytics
+  if (options.analytics) {
+    policy += section(
+      "Analytics",
+      "We may use third-party analytics services (like Google Analytics) that collect, monitor, and analyze this type of information to increase our service's functionality."
+    );
+  }
+  // Third-party sharing
+  if (options.thirdParty) {
+    policy += section(
+      "Third-Party Privacy Policies",
+      "Our Privacy Policy does not apply to other advertisers, partners, or websites. We may share information with trusted third parties for business operations, subject to confidentiality obligations."
+    );
+  }
+  // Data retention
+  if (options.retention) {
+    policy += section(
+      "Data Retention",
+      "We retain your information only as long as necessary to fulfill the purposes described in this policy, unless a longer retention period is required or permitted by law."
+    );
+  }
+  // User rights
+  if (options.userRights) {
+    policy += section(
+      "Your Data Protection Rights",
+      "You have the right to access, correct, delete, or restrict the use of your personal data. To do so, contact us at the email above."
+    );
+  }
 
-**Cookies and Web Beacons**
-Like any other website, ${data.company || "[Your Company]"} uses cookies.
+  // Tracking/remarketing
+  if (options.tracking) {
+    policy += section(
+      "Tracking Technologies",
+      "We may use tracking scripts or remarketing tools to provide relevant advertising content."
+    );
+  }
 
-**Third-Party Privacy Policies**
-Our Privacy Policy does not apply to other advertisers or websites.
-
-**Children's Information**
-We do not knowingly collect Personal Identifiable Information from children under 13.
-
-**Consent**
-By using our website, you consent to our Privacy Policy and agree to its terms.
-`;
+  // Children's info
+  policy += section(
+    "Children's Information",
+    "We do not knowingly collect Personally Identifiable Information from children under 13. If you believe your child provided this kind of information, contact us and we will promptly remove it."
+  );
+  // Consent
+  policy += section(
+    "Consent",
+    "By using our website, you consent to our Privacy Policy and agree to its terms."
+  );
+  // Custom section
+  if (options.customSection && options.customSection.trim().length > 3) {
+    policy += section("Additional Clause", options.customSection);
+  }
+  return policy;
+};
 
 const PrivacyPolicyGenerator = () => {
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [options, setOptions] = useState<AdvancedOptions>({ ...DEFAULT_ADVANCED });
   const [customPolicy, setCustomPolicy] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [viewMode, setViewMode] = useState<"text" | "html">("text");
 
-  const handleGenerate = (e: React.FormEvent) => {
+  function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    const policy = DEFAULT_POLICY({ name, company, email, website });
+    const policy = getFormattedPolicy({ name, company, email, website }, options, viewMode);
     setCustomPolicy(policy);
     setShowPreview(true);
-  };
+  }
+
+  function handleViewSwitch(mode: "text" | "html") {
+    setViewMode(mode);
+    // Regenerate preview to reflect mode
+    if (showPreview) {
+      setCustomPolicy(
+        getFormattedPolicy({ name, company, email, website }, options, mode)
+      );
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 flex justify-center items-start">
       <Card className="w-full max-w-4xl mx-auto shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-bold mb-2 flex items-center gap-2">
-            Privacy Policy Generator
+            Advanced Privacy Policy Generator
             <span className="inline-flex h-6 w-6 rounded-full bg-blue-100 items-center justify-center">
               <span role="img" aria-label="lock" className="text-blue-500">🔒</span>
             </span>
           </CardTitle>
           <p className="text-muted-foreground">
-            Generate a privacy policy for your website/app in seconds. Complete the fields and customize as needed.
+            Generate a highly customizable, GDPR-friendly privacy policy. Toggle sections below and edit as needed.
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-5">
+          <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <Input
                 placeholder="Your Name (optional)"
@@ -97,20 +216,40 @@ const PrivacyPolicyGenerator = () => {
                 onChange={e => setEmail(e.target.value)}
                 required
               />
-              <Button type="submit" className="w-full md:w-auto mt-4">
+              <div className="mt-6">
+                <AdvancedPolicyOptions options={options} onChange={setOptions} />
+              </div>
+              <Button type="submit" className="w-full md:w-auto mt-6">
                 Generate Policy
               </Button>
             </div>
             <div className="flex flex-col h-full">
-              <label className="mb-2 font-medium text-muted-foreground">
-                Policy Preview (editable)
+              <label className="mb-2 font-medium text-muted-foreground flex items-center gap-3">
+                Policy Preview <span className="ml-auto">
+                  <Switch
+                    checked={viewMode === "html"}
+                    onCheckedChange={on => handleViewSwitch(on ? "html" : "text")}
+                  /> Rendered (HTML)
+                </span>
               </label>
-              <Textarea
-                className="flex-1 min-h-[300px] font-mono text-sm mb-2"
-                value={showPreview ? customPolicy : ""}
-                onChange={e => setCustomPolicy(e.target.value)}
-                disabled={!showPreview}
-              />
+              {/* Text or HTML policy rendering */}
+              {showPreview ? (
+                viewMode === "html" ? (
+                  <div
+                    className="flex-1 min-h-[300px] font-sans text-base mb-2 p-4 rounded border bg-background shadow-inner overflow-y-auto prose max-w-none"
+                    style={{ background: "#fcfcfc" }}
+                    dangerouslySetInnerHTML={{ __html: customPolicy }}
+                  />
+                ) : (
+                  <Textarea
+                    className="flex-1 min-h-[300px] font-mono text-sm mb-2"
+                    value={customPolicy}
+                    onChange={e => setCustomPolicy(e.target.value)}
+                  />
+                )
+              ) : (
+                <div className="p-8 text-muted-foreground text-center text-sm opacity-70">Your policy preview will appear here after generating.</div>
+              )}
               {showPreview && (
                 <Button
                   type="button"
@@ -132,3 +271,4 @@ const PrivacyPolicyGenerator = () => {
 };
 
 export default PrivacyPolicyGenerator;
+
