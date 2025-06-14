@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import PDFTools from "./pages/PDFTools";
 import PDFToImage from "./pages/PDFToImage";
 import JSONTools from "./pages/JSONTools";
 import PasswordGenerator from "./pages/PasswordGenerator";
+import PrivacyPolicyGenerator from "./pages/PrivacyPolicyGenerator";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/pdf-to-image" element={<PDFToImage />} />
           <Route path="/json-tools" element={<JSONTools />} />
           <Route path="/password-generator" element={<PasswordGenerator />} />
+          <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
