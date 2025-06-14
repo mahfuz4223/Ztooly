@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -22,6 +21,76 @@ import { useState } from "react";
 
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const categories = [
+    { id: "all", name: "All Tools", icon: Sparkles },
+    { id: "qr-codes", name: "QR & Codes", icon: QrCode },
+    { id: "image", name: "Image Tools", icon: ImageIcon },
+    { id: "document", name: "Documents", icon: FileText },
+    { id: "security", name: "Security & Dev", icon: Shield }
+  ];
+
+  const tools = [
+    {
+      id: "qr-generator",
+      title: "Instant QR Codes",
+      description: "Create QR codes for websites, Wi-Fi passwords, or contact info in seconds.",
+      icon: QrCode,
+      category: "qr-codes",
+      link: "/qr-generator",
+      gradient: "from-blue-500 to-blue-600"
+    },
+    {
+      id: "background-remover",
+      title: "Background Remover",
+      description: "Remove backgrounds from images instantly. Perfect for logos, products, and profile pictures.",
+      icon: Scissors,
+      category: "image",
+      link: "#",
+      gradient: "from-purple-500 to-purple-600"
+    },
+    {
+      id: "image-resizer",
+      title: "Smart Image Resizer",
+      description: "Resize images for social media, websites, or email without losing quality.",
+      icon: ImageIcon,
+      category: "image",
+      link: "#",
+      gradient: "from-green-500 to-green-600"
+    },
+    {
+      id: "pdf-tools",
+      title: "PDF Tools",
+      description: "Merge, split, or compress PDFs. All the PDF utilities you need in one place.",
+      icon: FileText,
+      category: "document",
+      link: "#",
+      gradient: "from-red-500 to-red-600"
+    },
+    {
+      id: "password-generator",
+      title: "Secure Password Generator",
+      description: "Generate strong, unique passwords. Created on your device—never stored or transmitted.",
+      icon: Shield,
+      category: "security",
+      link: "#",
+      gradient: "from-orange-500 to-orange-600"
+    },
+    {
+      id: "json-tools",
+      title: "JSON Tools",
+      description: "View, format, and validate JSON data. Essential tools for developers and students.",
+      icon: Code,
+      category: "security",
+      link: "#",
+      gradient: "from-indigo-500 to-indigo-600"
+    }
+  ];
+
+  const filteredTools = selectedCategory === "all" 
+    ? tools 
+    : tools.filter(tool => tool.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,7 +218,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Tools Categories */}
+      {/* Tools Section with Category Filter */}
       <section id="tools" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -159,184 +228,96 @@ const Index = () => {
             </p>
           </div>
 
-          {/* QR & Codes Category */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold mb-8 flex items-center">
-              <QrCode className="h-6 w-6 mr-3 text-primary" />
-              QR Codes & Generation
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Link to="/qr-generator">
-                <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
+          {/* Category Filter */}
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-full border transition-all duration-300 ${
+                    selectedCategory === category.id
+                      ? "bg-primary text-primary-foreground border-primary shadow-lg scale-105"
+                      : "bg-background text-muted-foreground border-muted hover:bg-muted/50 hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="font-medium">{category.name}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tools Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {filteredTools.map((tool) => {
+              const Icon = tool.icon;
+              const ToolCard = (
+                <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105 group">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                        <QrCode className="h-6 w-6 text-primary-foreground" />
+                      <div className={`w-12 h-12 bg-gradient-to-br ${tool.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <Icon className="h-6 w-6 text-white" />
                       </div>
-                      <CardTitle>Instant QR Codes</CardTitle>
+                      <CardTitle className="group-hover:text-primary transition-colors">{tool.title}</CardTitle>
                     </div>
-                    <CardDescription>
-                      Create QR codes for websites, Wi-Fi passwords, or contact info in seconds.
+                    <CardDescription className="text-sm">
+                      {tool.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button className="w-full group">
-                      Create Your QR Code 
-                      <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <Button className="w-full group/btn">
+                      Get Started
+                      <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                     </Button>
                   </CardContent>
                 </Card>
-              </Link>
-            </div>
+              );
+
+              return tool.link.startsWith("#") ? (
+                <div key={tool.id}>{ToolCard}</div>
+              ) : (
+                <Link key={tool.id} to={tool.link}>
+                  {ToolCard}
+                </Link>
+              );
+            })}
+
+            {/* Coming Soon Card */}
+            <Card className="hover:shadow-xl transition-all duration-300 border-dashed border-2 bg-gradient-to-br from-background to-muted/30">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                    <Plus className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <CardTitle className="text-muted-foreground">More Coming Soon!</CardTitle>
+                </div>
+                <CardDescription>
+                  We're constantly adding new AI-powered tools. Have a suggestion? Let us know!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full group">
+                  Stay Tuned 
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Image Tools Category */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold mb-8 flex items-center">
-              <ImageIcon className="h-6 w-6 mr-3 text-primary" />
-              Image Processing
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                      <Scissors className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <CardTitle>Background Remover</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Remove backgrounds from images instantly. Perfect for logos, products, and profile pictures.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full group">
-                    Remove Background 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                      <ImageIcon className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <CardTitle>Smart Image Resizer</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Resize images for social media, websites, or email without losing quality.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full group">
-                    Resize Your Image 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
+          {/* No Tools Found State */}
+          {filteredTools.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No tools found</h3>
+              <p className="text-muted-foreground">
+                We're working on adding tools to this category. Check back soon!
+              </p>
             </div>
-          </div>
-
-          {/* Document Tools Category */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold mb-8 flex items-center">
-              <FileText className="h-6 w-6 mr-3 text-primary" />
-              Document Processing
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                      <FileText className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <CardTitle>PDF Tools</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Merge, split, or compress PDFs. All the PDF utilities you need in one place.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full group">
-                    Edit PDFs Now 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Security & Development Category */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold mb-8 flex items-center">
-              <Shield className="h-6 w-6 mr-3 text-primary" />
-              Security & Development
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <CardTitle>Secure Password Generator</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Generate strong, unique passwords. Created on your device—never stored or transmitted.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full group">
-                    Generate Secure Password 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-background to-muted/30 hover:scale-105">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/60 rounded-xl flex items-center justify-center">
-                      <Code className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <CardTitle>JSON Tools</CardTitle>
-                  </div>
-                  <CardDescription>
-                    View, format, and validate JSON data. Essential tools for developers and students.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full group">
-                    Format Your JSON 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* More Tools Coming Soon */}
-              <Card className="hover:shadow-xl transition-all duration-300 border-dashed border-2 bg-gradient-to-br from-background to-muted/30">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                      <Plus className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <CardTitle className="text-muted-foreground">More Coming Soon!</CardTitle>
-                  </div>
-                  <CardDescription>
-                    We're constantly adding new AI-powered tools. Have a suggestion? Let us know!
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full group">
-                    Stay Tuned 
-                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
