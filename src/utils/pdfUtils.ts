@@ -1,6 +1,7 @@
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
-import { pdf2pic } from 'pdf2pic';
+import pdf2pic from 'pdf2pic';
 
 // Configure PDF.js worker using unpkg CDN which is more reliable
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
