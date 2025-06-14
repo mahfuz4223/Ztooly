@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, 
   Image, 
-  Compress, 
+  Minimize, 
   Merge, 
   FileImage,
   Upload,
@@ -41,7 +40,7 @@ const PDFTools = () => {
       id: "compress-pdf",
       title: "Compress PDF",
       description: "Reduce PDF file size while maintaining quality",
-      icon: Minimize2,
+      icon: Minimize,
       gradient: "from-green-500 to-green-600",
       features: ["Smart compression", "Quality preservation", "Size optimization"]
     },
