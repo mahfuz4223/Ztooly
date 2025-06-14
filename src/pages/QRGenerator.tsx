@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QrCode, ArrowLeft, Download, Upload, Palette, Frame, Settings } from "lucide-react";
+import { QrCode, ArrowLeft, Download, Upload, Palette, Frame, Settings, Facebook, Github, X, Linkedin, Instagram, Youtube, Globe, Mail, Phone, Wifi } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import QRCode from "qrcode";
@@ -14,21 +14,77 @@ const QRGenerator = () => {
   const [inputText, setInputText] = useState("https://example.com");
   const [qrColor, setQrColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
-  const [size, setSize] = useState([256]);
+  const [size, setSize] = useState([300]);
   const [errorLevel, setErrorLevel] = useState("M");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [logoType, setLogoType] = useState("none");
+  const [customLogoFile, setCustomLogoFile] = useState<File | null>(null);
+  const [customLogoPreview, setCustomLogoPreview] = useState<string>("");
   const [frameStyle, setFrameStyle] = useState("none");
+  const [frameColor, setFrameColor] = useState("#e2e8f0");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Prebuilt logos with SVG paths
+  const prebuiltLogos = {
+    facebook: {
+      name: "Facebook",
+      color: "#1877F2",
+      icon: Facebook
+    },
+    github: {
+      name: "GitHub", 
+      color: "#181717",
+      icon: Github
+    },
+    twitter: {
+      name: "X (Twitter)",
+      color: "#000000",
+      icon: X
+    },
+    linkedin: {
+      name: "LinkedIn",
+      color: "#0A66C2", 
+      icon: Linkedin
+    },
+    instagram: {
+      name: "Instagram",
+      color: "#E4405F",
+      icon: Instagram
+    },
+    youtube: {
+      name: "YouTube",
+      color: "#FF0000",
+      icon: Youtube
+    },
+    website: {
+      name: "Website",
+      color: "#6366F1",
+      icon: Globe
+    },
+    email: {
+      name: "Email",
+      color: "#059669",
+      icon: Mail
+    },
+    phone: {
+      name: "Phone",
+      color: "#7C3AED",
+      icon: Phone
+    },
+    wifi: {
+      name: "Wi-Fi",
+      color: "#0891B2",
+      icon: Wifi
+    }
+  };
 
   // Auto-generate QR code when inputs change
   useEffect(() => {
     if (inputText) {
       generateQRCode();
     }
-  }, [inputText, qrColor, bgColor, size, errorLevel, logoFile, frameStyle]);
+  }, [inputText, qrColor, bgColor, size, errorLevel, logoType, customLogoFile, frameStyle, frameColor]);
 
   const generateQRCode = async () => {
     try {
@@ -39,13 +95,13 @@ const QRGenerator = () => {
       if (!ctx) return;
 
       const qrSize = size[0];
-      const padding = frameStyle !== "none" ? 40 : 20;
+      const padding = frameStyle !== "none" ? 50 : 20;
       const totalSize = qrSize + padding * 2;
 
       canvas.width = totalSize;
       canvas.height = totalSize;
 
-      // Clear canvas
+      // Clear canvas with background
       ctx.fillStyle = frameStyle !== "none" ? "#f8f9fa" : bgColor;
       ctx.fillRect(0, 0, totalSize, totalSize);
 
@@ -69,9 +125,13 @@ const QRGenerator = () => {
       // Draw QR code on main canvas
       ctx.drawImage(qrCanvas, padding, padding, qrSize, qrSize);
 
-      // Add logo if uploaded
-      if (logoFile && logoPreview) {
-        await addLogo(ctx, padding, qrSize);
+      // Add logo if selected
+      if (logoType !== "none") {
+        if (logoType === "custom" && customLogoFile && customLogoPreview) {
+          await addCustomLogo(ctx, padding, qrSize);
+        } else if (prebuiltLogos[logoType as keyof typeof prebuiltLogos]) {
+          await addPrebuiltLogo(ctx, padding, qrSize, logoType);
+        }
       }
 
       // Convert to data URL
@@ -83,55 +143,146 @@ const QRGenerator = () => {
   };
 
   const drawFrame = (ctx: CanvasRenderingContext2D, size: number, style: string) => {
-    ctx.strokeStyle = "#e2e8f0";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = frameColor;
+    ctx.fillStyle = frameColor;
+    ctx.lineWidth = 3;
 
     switch (style) {
+      case "modern":
+        // Modern gradient frame
+        const gradient = ctx.createLinearGradient(0, 0, size, size);
+        gradient.addColorStop(0, frameColor);
+        gradient.addColorStop(1, frameColor + "80");
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(15, 15, size - 30, size - 30, 20);
+        ctx.stroke();
+        break;
       case "rounded":
         ctx.beginPath();
-        ctx.roundRect(10, 10, size - 20, size - 20, 15);
+        ctx.roundRect(12, 12, size - 24, size - 24, 15);
         ctx.stroke();
         break;
       case "square":
-        ctx.strokeRect(10, 10, size - 20, size - 20);
+        ctx.strokeRect(12, 12, size - 24, size - 24);
         break;
       case "circle":
         ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2 - 15, 0, 2 * Math.PI);
+        ctx.arc(size / 2, size / 2, size / 2 - 20, 0, 2 * Math.PI);
         ctx.stroke();
+        break;
+      case "elegant":
+        // Double border elegant frame
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, size - 20, size - 20);
+        ctx.strokeRect(15, 15, size - 30, size - 30);
+        break;
+      case "shadow":
+        // Shadow effect frame
+        ctx.fillStyle = frameColor + "40";
+        ctx.fillRect(18, 18, size - 26, size - 26);
+        ctx.strokeStyle = frameColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(12, 12, size - 24, size - 24);
         break;
     }
   };
 
-  const addLogo = async (ctx: CanvasRenderingContext2D, padding: number, qrSize: number) => {
+  const addPrebuiltLogo = async (ctx: CanvasRenderingContext2D, padding: number, qrSize: number, logoKey: string) => {
+    return new Promise<void>((resolve) => {
+      const logoSize = Math.min(qrSize * 0.2, 60);
+      const logoX = padding + (qrSize - logoSize) / 2;
+      const logoY = padding + (qrSize - logoSize) / 2;
+
+      // Draw white background circle for logo
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Add subtle shadow
+      ctx.fillStyle = "#00000020";
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2 + 2, logoY + logoSize / 2 + 2, logoSize / 2 + 8, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Draw white circle again on top
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Create SVG for the icon
+      const logo = prebuiltLogos[logoKey as keyof typeof prebuiltLogos];
+      const IconComponent = logo.icon;
+      
+      // Create a temporary div to render the icon
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = `<svg width="${logoSize * 0.6}" height="${logoSize * 0.6}" viewBox="0 0 24 24" fill="${logo.color}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        ${getIconPath(logoKey)}
+      </svg>`;
+      
+      const svgData = new XMLSerializer().serializeToString(tempDiv.firstChild as Node);
+      const img = new Image();
+      
+      img.onload = () => {
+        const iconSize = logoSize * 0.6;
+        const iconX = logoX + (logoSize - iconSize) / 2;
+        const iconY = logoY + (logoSize - iconSize) / 2;
+        ctx.drawImage(img, iconX, iconY, iconSize, iconSize);
+        resolve();
+      };
+      
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    });
+  };
+
+  const getIconPath = (logoKey: string) => {
+    const paths = {
+      facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
+      github: '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>',
+      twitter: '<path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>',
+      linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
+      instagram: '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
+      youtube: '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10,8 16,12 10,16"/>',
+      website: '<circle cx="12" cy="12" r="10"/><path d="m2 12 20 0"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+      email: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+      phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+      wifi: '<path d="m1 9 22 0"/><path d="M9 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M20 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M16 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M12 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M8 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M4 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/>'
+    };
+    return paths[logoKey as keyof typeof paths] || '';
+  };
+
+  const addCustomLogo = async (ctx: CanvasRenderingContext2D, padding: number, qrSize: number) => {
     return new Promise<void>((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const logoSize = Math.min(qrSize * 0.2, 50);
+        const logoSize = Math.min(qrSize * 0.2, 60);
         const logoX = padding + (qrSize - logoSize) / 2;
         const logoY = padding + (qrSize - logoSize) / 2;
 
         // Draw white background circle for logo
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 5, 0, 2 * Math.PI);
+        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
         ctx.fill();
 
         // Draw logo
         ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
         resolve();
       };
-      img.src = logoPreview;
+      img.src = customLogoPreview;
     });
   };
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCustomLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setLogoFile(file);
+      setCustomLogoFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
+        setCustomLogoPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -146,18 +297,33 @@ const QRGenerator = () => {
     }
   };
 
-  const clearLogo = () => {
-    setLogoFile(null);
-    setLogoPreview("");
+  const clearCustomLogo = () => {
+    setCustomLogoFile(null);
+    setCustomLogoPreview("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
+  // Quick templates
+  const quickTemplates = [
+    { name: "Website", value: "https://example.com", logo: "website" },
+    { name: "Facebook", value: "https://facebook.com/yourpage", logo: "facebook" },
+    { name: "GitHub", value: "https://github.com/yourusername", logo: "github" },
+    { name: "LinkedIn", value: "https://linkedin.com/in/yourprofile", logo: "linkedin" },
+    { name: "Email", value: "mailto:contact@example.com", logo: "email" },
+    { name: "Phone", value: "tel:+1234567890", logo: "phone" },
+  ];
+
+  const applyTemplate = (template: typeof quickTemplates[0]) => {
+    setInputText(template.value);
+    setLogoType(template.logo);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <Link to="/">
@@ -175,17 +341,45 @@ const QRGenerator = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Create Professional QR Codes with Custom Branding</h1>
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Create Professional QR Codes with Advanced Customization
+            </h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Generate high-quality, customizable QR codes with logos, custom colors, frames, and more. 
-              Perfect for business cards, marketing materials, or any professional application. 
-              Real-time preview and instant download.
+              Generate high-quality, customizable QR codes with prebuilt social media logos, custom branding, 
+              professional frames, and real-time preview. Perfect for business cards, marketing materials, or any professional application.
             </p>
           </div>
+
+          {/* Quick Templates */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Quick Templates</CardTitle>
+              <CardDescription>Start with a pre-configured template</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                {quickTemplates.map((template) => (
+                  <Button
+                    key={template.name}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate(template)}
+                    className="h-auto p-3 flex flex-col gap-2"
+                  >
+                    {React.createElement(prebuiltLogos[template.logo as keyof typeof prebuiltLogos]?.icon || Globe, { 
+                      className: "h-5 w-5",
+                      style: { color: prebuiltLogos[template.logo as keyof typeof prebuiltLogos]?.color }
+                    })}
+                    <span className="text-xs">{template.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Main Tool */}
           <div className="grid lg:grid-cols-2 gap-8">
@@ -209,19 +403,20 @@ const QRGenerator = () => {
                       placeholder="https://example.com or any text..."
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
+                      className="mt-1"
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Size</Label>
+                      <Label>Size (px)</Label>
                       <div className="mt-2">
                         <Slider
                           value={size}
                           onValueChange={setSize}
                           max={512}
-                          min={128}
-                          step={32}
+                          min={200}
+                          step={50}
                           className="w-full"
                         />
                         <p className="text-sm text-muted-foreground mt-1">{size[0]}px</p>
@@ -231,7 +426,7 @@ const QRGenerator = () => {
                     <div>
                       <Label>Error Correction</Label>
                       <Select value={errorLevel} onValueChange={setErrorLevel}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -246,7 +441,7 @@ const QRGenerator = () => {
                 </CardContent>
               </Card>
 
-              {/* Styling Options */}
+              {/* Colors */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -290,63 +485,106 @@ const QRGenerator = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  <div>
-                    <Label>Frame Style</Label>
-                    <Select value={frameStyle} onValueChange={setFrameStyle}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Frame</SelectItem>
-                        <SelectItem value="square">Square Frame</SelectItem>
-                        <SelectItem value="rounded">Rounded Frame</SelectItem>
-                        <SelectItem value="circle">Circle Frame</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </CardContent>
               </Card>
 
-              {/* Logo Upload */}
+              {/* Frame & Logo */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Frame className="h-5 w-5" />
-                    Logo & Branding
+                    Frame & Logo
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label>Upload Logo (Optional)</Label>
-                    <div className="flex gap-2 mt-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex-1"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Choose Logo
-                      </Button>
-                      {logoFile && (
-                        <Button variant="outline" onClick={clearLogo}>
-                          Clear
-                        </Button>
-                      )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Frame Style</Label>
+                      <Select value={frameStyle} onValueChange={setFrameStyle}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No Frame</SelectItem>
+                          <SelectItem value="modern">Modern</SelectItem>
+                          <SelectItem value="elegant">Elegant</SelectItem>
+                          <SelectItem value="rounded">Rounded</SelectItem>
+                          <SelectItem value="square">Square</SelectItem>
+                          <SelectItem value="circle">Circle</SelectItem>
+                          <SelectItem value="shadow">Shadow</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    {logoFile && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Logo: {logoFile.name}
-                      </p>
+                    
+                    {frameStyle !== "none" && (
+                      <div>
+                        <Label>Frame Color</Label>
+                        <div className="flex gap-2 mt-1">
+                          <input
+                            type="color"
+                            value={frameColor}
+                            onChange={(e) => setFrameColor(e.target.value)}
+                            className="w-12 h-10 rounded border cursor-pointer"
+                          />
+                          <Input
+                            value={frameColor}
+                            onChange={(e) => setFrameColor(e.target.value)}
+                            placeholder="#e2e8f0"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
+
+                  <div>
+                    <Label>Logo</Label>
+                    <Select value={logoType} onValueChange={setLogoType}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select a logo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Logo</SelectItem>
+                        <SelectItem value="custom">Custom Logo</SelectItem>
+                        {Object.entries(prebuiltLogos).map(([key, logo]) => (
+                          <SelectItem key={key} value={key}>
+                            {logo.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {logoType === "custom" && (
+                    <div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1"
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose Custom Logo
+                        </Button>
+                        {customLogoFile && (
+                          <Button variant="outline" onClick={clearCustomLogo}>
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCustomLogoUpload}
+                        className="hidden"
+                      />
+                      {customLogoFile && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Logo: {customLogoFile.name}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -361,23 +599,25 @@ const QRGenerator = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="bg-muted rounded-lg p-8 mb-4">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 mb-6 border-2 border-dashed border-gray-200">
                   <canvas
                     ref={canvasRef}
-                    className="max-w-full h-auto mx-auto rounded-lg border bg-white"
-                    style={{ maxWidth: "300px" }}
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg bg-white"
+                    style={{ maxWidth: "350px" }}
                   />
                 </div>
                 
-                <div className="space-y-3">
-                  <Button onClick={downloadQR} disabled={!qrDataUrl} className="w-full">
+                <div className="space-y-4">
+                  <Button onClick={downloadQR} disabled={!qrDataUrl} className="w-full" size="lg">
                     <Download className="h-4 w-4 mr-2" />
-                    Download PNG
+                    Download High Quality PNG
                   </Button>
                   
-                  <div className="text-sm text-muted-foreground">
-                    <p>High resolution • Transparent background support</p>
-                    <p>Perfect for print and digital use</p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>• High resolution PNG format</p>
+                    <p>• Perfect for print and digital use</p>
+                    <p>• Transparent background support</p>
+                    <p>• Professional quality output</p>
                   </div>
                 </div>
               </CardContent>
@@ -388,37 +628,52 @@ const QRGenerator = () => {
           {/* Use Cases */}
           <div className="mt-16">
             <h2 className="text-2xl font-bold text-center mb-8">Popular Use Cases</h2>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-4 gap-6">
               
-              <Card>
+              <Card className="text-center">
                 <CardHeader>
+                  <Globe className="h-8 w-8 mx-auto text-primary mb-2" />
                   <CardTitle className="text-lg">Website Links</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Perfect for marketing materials, business cards, or anywhere you want people to quickly visit your website.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="text-center">
                 <CardHeader>
+                  <Facebook className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+                  <CardTitle className="text-lg">Social Media</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm">
+                    Link to your social media profiles with branded QR codes featuring platform-specific logos.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center">
+                <CardHeader>
+                  <Wifi className="h-8 w-8 mx-auto text-green-600 mb-2" />
                   <CardTitle className="text-lg">Wi-Fi Sharing</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Create QR codes for Wi-Fi passwords so guests can connect instantly without typing complex passwords.
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="text-center">
                 <CardHeader>
-                  <CardTitle className="text-lg">Contact Information</CardTitle>
+                  <Mail className="h-8 w-8 mx-auto text-purple-600 mb-2" />
+                  <CardTitle className="text-lg">Contact Info</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Share your contact details as a vCard that people can scan and save directly to their phone contacts.
+                  <p className="text-muted-foreground text-sm">
+                    Share your contact details as vCard or direct email/phone links with professional branding.
                   </p>
                 </CardContent>
               </Card>
