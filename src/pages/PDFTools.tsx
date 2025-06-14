@@ -1,30 +1,36 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, 
   Image, 
   Minimize, 
   Merge, 
   FileImage,
-  Upload,
-  Download,
   ArrowLeft,
   Settings,
   Zap,
   Shield,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  Download
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import FileUpload from "@/components/FileUpload";
+import PDFPreview from "@/components/PDFPreview";
+import { compressPDF, mergePDFs, pdfToImages, pdfToWord } from "@/utils/pdfUtils";
 
 const PDFTools = () => {
   const [activeTab, setActiveTab] = useState("pdf-to-image");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [processedResult, setProcessedResult] = useState<any>(null);
+  const [compressionLevel, setCompressionLevel] = useState<'low' | 'medium' | 'high'>('medium');
+  const [imageFormat, setImageFormat] = useState<'png' | 'jpg'>('png');
+  const [imageDPI, setImageDPI] = useState(300);
   const { toast } = useToast();
 
   const pdfTools = [
@@ -34,7 +40,7 @@ const PDFTools = () => {
       description: "Convert PDF pages to high-quality images (PNG, JPG)",
       icon: FileImage,
       gradient: "from-blue-500 to-blue-600",
-      features: ["High-quality conversion", "Multiple formats", "Batch processing"]
+      features: ["High-quality conversion", "Multiple formats", "Batch processing", "Custom DPI settings"]
     },
     {
       id: "compress-pdf",
@@ -42,7 +48,7 @@ const PDFTools = () => {
       description: "Reduce PDF file size while maintaining quality",
       icon: Minimize,
       gradient: "from-green-500 to-green-600",
-      features: ["Smart compression", "Quality preservation", "Size optimization"]
+      features: ["Smart compression", "Quality preservation", "Size optimization", "Batch processing"]
     },
     {
       id: "merge-pdf",
@@ -50,7 +56,7 @@ const PDFTools = () => {
       description: "Combine multiple PDF files into one document",
       icon: Merge,
       gradient: "from-purple-500 to-purple-600",
-      features: ["Multiple files", "Custom order", "Page selection"]
+      features: ["Multiple files", "Custom order", "Page selection", "Fast processing"]
     },
     {
       id: "pdf-to-word",
@@ -58,34 +64,27 @@ const PDFTools = () => {
       description: "Convert PDF documents to editable Word files",
       icon: FileText,
       gradient: "from-orange-500 to-orange-600",
-      features: ["Editable output", "Layout preservation", "Text recognition"]
+      features: ["Editable output", "Layout preservation", "Text recognition", "Format retention"]
     }
   ];
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type === "application/pdf") {
-        setUploadedFile(file);
-        toast({
-          title: "File uploaded successfully",
-          description: `${file.name} is ready for processing`,
-        });
-      } else {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF file",
-          variant: "destructive",
-        });
-      }
+  const handleFileSelect = (files: File[]) => {
+    setUploadedFiles(files);
+    setProcessedResult(null);
+    
+    if (files.length > 0) {
+      toast({
+        title: "Files uploaded successfully",
+        description: `${files.length} file(s) ready for processing`,
+      });
     }
   };
 
   const handleProcess = async () => {
-    if (!uploadedFile) {
+    if (uploadedFiles.length === 0) {
       toast({
-        title: "No file selected",
-        description: "Please upload a PDF file first",
+        title: "No files selected",
+        description: "Please upload PDF files first",
         variant: "destructive",
       });
       return;
@@ -93,22 +92,89 @@ const PDFTools = () => {
 
     setIsProcessing(true);
     
-    // Simulate processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      let result;
+      
+      switch (activeTab) {
+        case "pdf-to-image":
+          result = await pdfToImages(uploadedFiles[0], imageFormat, imageDPI);
+          break;
+        case "compress-pdf":
+          result = await compressPDF(uploadedFiles[0], compressionLevel);
+          break;
+        case "merge-pdf":
+          if (uploadedFiles.length < 2) {
+            toast({
+              title: "Multiple files required",
+              description: "Please upload at least 2 PDF files to merge",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+            return;
+          }
+          result = await mergePDFs(uploadedFiles);
+          break;
+        case "pdf-to-word":
+          result = await pdfToWord(uploadedFiles[0]);
+          break;
+        default:
+          throw new Error("Unknown tool selected");
+      }
+      
+      setProcessedResult(result);
       toast({
         title: "Processing complete!",
-        description: "Your file has been processed successfully",
+        description: "Your files have been processed successfully",
       });
-    }, 3000);
+    } catch (error) {
+      console.error("Processing error:", error);
+      toast({
+        title: "Processing failed",
+        description: "An error occurred while processing your files",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDownload = () => {
+    if (!processedResult) return;
+
+    if (activeTab === "pdf-to-image" && Array.isArray(processedResult)) {
+      // Download images
+      processedResult.forEach((imageUrl, index) => {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `page-${index + 1}.${imageFormat}`;
+        link.click();
+      });
+    } else if (processedResult instanceof Blob) {
+      // Download PDF or Word file
+      const url = URL.createObjectURL(processedResult);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const extension = activeTab === "pdf-to-word" ? "docx" : "pdf";
+      link.download = `processed-file.${extension}`;
+      link.click();
+      
+      URL.revokeObjectURL(url);
+    }
+    
+    toast({
+      title: "Download started",
+      description: "Your processed files are being downloaded",
+    });
   };
 
   const currentTool = pdfTools.find(tool => tool.id === activeTab);
+  const requiresMultipleFiles = activeTab === "merge-pdf";
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -145,7 +211,11 @@ const PDFTools = () => {
                       ? "border-primary shadow-lg bg-primary/5" 
                       : "border-transparent hover:border-muted"
                   }`}
-                  onClick={() => setActiveTab(tool.id)}
+                  onClick={() => {
+                    setActiveTab(tool.id);
+                    setUploadedFiles([]);
+                    setProcessedResult(null);
+                  }}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
@@ -183,34 +253,11 @@ const PDFTools = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* File Upload */}
-                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-                    <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Upload your PDF file</h3>
-                    <p className="text-muted-foreground mb-4">Drag and drop or click to select</p>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="pdf-upload"
-                    />
-                    <label htmlFor="pdf-upload">
-                      <Button variant="outline" className="cursor-pointer">
-                        Choose File
-                      </Button>
-                    </label>
-                    {uploadedFile && (
-                      <div className="mt-4 p-3 bg-muted rounded-lg flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-primary" />
-                        <span className="font-medium">{uploadedFile.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <FileUpload
+                    onFileSelect={handleFileSelect}
+                    multiple={requiresMultipleFiles}
+                    maxSize={50}
+                  />
 
                   {/* Tool-specific options */}
                   {activeTab === "pdf-to-image" && (
@@ -222,17 +269,25 @@ const PDFTools = () => {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-2">Output Format</label>
-                          <select className="w-full p-2 border rounded-md bg-background">
+                          <select 
+                            className="w-full p-2 border rounded-md bg-background"
+                            value={imageFormat}
+                            onChange={(e) => setImageFormat(e.target.value as 'png' | 'jpg')}
+                          >
                             <option value="png">PNG (High Quality)</option>
                             <option value="jpg">JPG (Smaller Size)</option>
                           </select>
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">Resolution (DPI)</label>
-                          <select className="w-full p-2 border rounded-md bg-background">
-                            <option value="150">150 DPI (Standard)</option>
-                            <option value="300">300 DPI (High Quality)</option>
-                            <option value="600">600 DPI (Print Quality)</option>
+                          <select 
+                            className="w-full p-2 border rounded-md bg-background"
+                            value={imageDPI}
+                            onChange={(e) => setImageDPI(Number(e.target.value))}
+                          >
+                            <option value={150}>150 DPI (Standard)</option>
+                            <option value={300}>300 DPI (High Quality)</option>
+                            <option value={600}>600 DPI (Print Quality)</option>
                           </select>
                         </div>
                       </div>
@@ -246,88 +301,101 @@ const PDFTools = () => {
                         Compression Settings
                       </h4>
                       <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <input type="radio" id="low" name="compression" defaultChecked />
-                          <label htmlFor="low" className="flex-1">
-                            <div className="font-medium">Low Compression</div>
-                            <div className="text-sm text-muted-foreground">Better quality, larger file</div>
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <input type="radio" id="medium" name="compression" />
-                          <label htmlFor="medium" className="flex-1">
-                            <div className="font-medium">Medium Compression</div>
-                            <div className="text-sm text-muted-foreground">Balanced quality and size</div>
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <input type="radio" id="high" name="compression" />
-                          <label htmlFor="high" className="flex-1">
-                            <div className="font-medium">High Compression</div>
-                            <div className="text-sm text-muted-foreground">Smaller file, reduced quality</div>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "merge-pdf" && (
-                    <div className="space-y-4">
-                      <h4 className="font-semibold flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Merge Settings
-                      </h4>
-                      <div className="p-4 bg-muted/50 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Upload multiple PDF files to merge them into one document
-                        </p>
-                        <Button variant="outline" size="sm">
-                          Add More Files
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTab === "pdf-to-word" && (
-                    <div className="space-y-4">
-                      <h4 className="font-semibold flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Conversion Settings
-                      </h4>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Output Format</label>
-                        <select className="w-full p-2 border rounded-md bg-background">
-                          <option value="docx">Word Document (.docx)</option>
-                          <option value="doc">Word 97-2003 (.doc)</option>
-                        </select>
+                        {(['high', 'medium', 'low'] as const).map((level) => (
+                          <div key={level} className="flex items-center gap-3">
+                            <input 
+                              type="radio" 
+                              id={level} 
+                              name="compression" 
+                              value={level}
+                              checked={compressionLevel === level}
+                              onChange={(e) => setCompressionLevel(e.target.value as typeof compressionLevel)}
+                            />
+                            <label htmlFor={level} className="flex-1">
+                              <div className="font-medium capitalize">{level} Compression</div>
+                              <div className="text-sm text-muted-foreground">
+                                {level === 'high' && 'Better quality, larger file'}
+                                {level === 'medium' && 'Balanced quality and size'}
+                                {level === 'low' && 'Smaller file, reduced quality'}
+                              </div>
+                            </label>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
 
                   {/* Process Button */}
-                  <Button 
-                    onClick={handleProcess}
-                    disabled={!uploadedFile || isProcessing}
-                    className="w-full h-12 text-lg"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-5 w-5 mr-2" />
-                        Start Processing
-                      </>
+                  <div className="flex gap-4">
+                    <Button 
+                      onClick={handleProcess}
+                      disabled={uploadedFiles.length === 0 || isProcessing}
+                      className="flex-1 h-12 text-lg"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="h-5 w-5 mr-2" />
+                          Start Processing
+                        </>
+                      )}
+                    </Button>
+                    
+                    {processedResult && (
+                      <Button 
+                        onClick={handleDownload}
+                        variant="outline"
+                        className="h-12"
+                      >
+                        <Download className="h-5 w-5 mr-2" />
+                        Download
+                      </Button>
                     )}
-                  </Button>
+                  </div>
+
+                  {/* Results Preview */}
+                  {processedResult && (
+                    <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-green-800">Processing Complete!</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Your files have been processed successfully. Click the download button to save them.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Tool Info & Features */}
-            <div>
+            {/* Tool Info & Preview */}
+            <div className="space-y-6">
+              {/* File Preview */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-semibold">File Preview</h3>
+                  {uploadedFiles.slice(0, 3).map((file, index) => (
+                    <PDFPreview
+                      key={index}
+                      file={file}
+                      isProcessing={isProcessing}
+                      onDownload={processedResult ? handleDownload : undefined}
+                    />
+                  ))}
+                  {uploadedFiles.length > 3 && (
+                    <p className="text-sm text-muted-foreground">
+                      And {uploadedFiles.length - 3} more files...
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Tool Features */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -345,7 +413,8 @@ const PDFTools = () => {
                 </CardContent>
               </Card>
 
-              <Card className="mt-6">
+              {/* Privacy & Security */}
+              <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertCircle className="h-5 w-5" />
@@ -365,45 +434,15 @@ const PDFTools = () => {
                     <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
                     <span>Complete privacy and data security</span>
                   </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span>Fast local processing</span>
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
         )}
-
-        {/* Demo Section */}
-        <div className="mt-16">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">How It Works</h2>
-            <p className="text-muted-foreground">Simple 3-step process for all PDF tools</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Upload className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold mb-2">1. Upload</h3>
-              <p className="text-sm text-muted-foreground">Select your PDF file from your device</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Settings className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold mb-2">2. Configure</h3>
-              <p className="text-sm text-muted-foreground">Choose your preferred settings and options</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold mb-2">3. Download</h3>
-              <p className="text-sm text-muted-foreground">Get your processed files instantly</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
