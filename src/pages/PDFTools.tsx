@@ -17,21 +17,20 @@ import {
   Loader2,
   Download
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import PDFPreview from "@/components/PDFPreview";
-import { compressPDF, mergePDFs, pdfToImages, pdfToWord } from "@/utils/pdfUtils";
+import { compressPDF, mergePDFs, pdfToWord } from "@/utils/pdfUtils";
 
 const PDFTools = () => {
-  const [activeTab, setActiveTab] = useState("pdf-to-image");
+  const [activeTab, setActiveTab] = useState("compress-pdf");
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [processedResult, setProcessedResult] = useState<any>(null);
   const [compressionLevel, setCompressionLevel] = useState<'low' | 'medium' | 'high'>('medium');
-  const [imageFormat, setImageFormat] = useState<'png' | 'jpg'>('png');
-  const [imageDPI, setImageDPI] = useState(300);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const pdfTools = [
     {
@@ -40,7 +39,8 @@ const PDFTools = () => {
       description: "Convert PDF pages to high-quality images (PNG, JPG)",
       icon: FileImage,
       gradient: "from-blue-500 to-blue-600",
-      features: ["High-quality conversion", "Multiple formats", "Batch processing", "Custom DPI settings"]
+      features: ["High-quality conversion", "Multiple formats", "Batch processing", "Custom DPI settings"],
+      action: () => navigate("/pdf-to-image")
     },
     {
       id: "compress-pdf",
@@ -99,15 +99,6 @@ const PDFTools = () => {
       console.log(`Starting ${activeTab} processing for ${uploadedFiles.length} file(s)`);
       
       switch (activeTab) {
-        case "pdf-to-image":
-          if (uploadedFiles.length === 0) {
-            throw new Error("No file selected for conversion");
-          }
-          console.log(`Converting PDF to ${imageFormat} at ${imageDPI} DPI`);
-          result = await pdfToImages(uploadedFiles[0], imageFormat, imageDPI);
-          console.log(`Successfully converted ${result.length} pages to images`);
-          break;
-          
         case "compress-pdf":
           if (uploadedFiles.length === 0) {
             throw new Error("No file selected for compression");
@@ -166,15 +157,7 @@ const PDFTools = () => {
   const handleDownload = () => {
     if (!processedResult) return;
 
-    if (activeTab === "pdf-to-image" && Array.isArray(processedResult)) {
-      // Download images
-      processedResult.forEach((imageUrl, index) => {
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = `page-${index + 1}.${imageFormat}`;
-        link.click();
-      });
-    } else if (processedResult instanceof Blob) {
+    if (processedResult instanceof Blob) {
       // Download PDF or Word file
       const url = URL.createObjectURL(processedResult);
       const link = document.createElement('a');
@@ -189,8 +172,18 @@ const PDFTools = () => {
     
     toast({
       title: "Download started",
-      description: "Your processed files are being downloaded",
+      description: "Your processed file is being downloaded",
     });
+  };
+
+  const handleToolClick = (tool: typeof pdfTools[0]) => {
+    if (tool.action) {
+      tool.action();
+    } else {
+      setActiveTab(tool.id);
+      setUploadedFiles([]);
+      setProcessedResult(null);
+    }
   };
 
   const currentTool = pdfTools.find(tool => tool.id === activeTab);
@@ -232,15 +225,11 @@ const PDFTools = () => {
                 <Card 
                   key={tool.id}
                   className={`cursor-pointer transition-all duration-300 hover:scale-105 border-2 ${
-                    activeTab === tool.id 
+                    activeTab === tool.id && !tool.action
                       ? "border-primary shadow-lg bg-primary/5" 
                       : "border-transparent hover:border-muted"
                   }`}
-                  onClick={() => {
-                    setActiveTab(tool.id);
-                    setUploadedFiles([]);
-                    setProcessedResult(null);
-                  }}
+                  onClick={() => handleToolClick(tool)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
@@ -260,7 +249,7 @@ const PDFTools = () => {
         </div>
 
         {/* Main Tool Interface */}
-        {currentTool && (
+        {currentTool && !currentTool.action && (
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Upload & Process */}
             <div className="lg:col-span-2">
@@ -285,40 +274,6 @@ const PDFTools = () => {
                   />
 
                   {/* Tool-specific options */}
-                  {activeTab === "pdf-to-image" && (
-                    <div className="space-y-4">
-                      <h4 className="font-semibold flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Conversion Settings
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Output Format</label>
-                          <select 
-                            className="w-full p-2 border rounded-md bg-background"
-                            value={imageFormat}
-                            onChange={(e) => setImageFormat(e.target.value as 'png' | 'jpg')}
-                          >
-                            <option value="png">PNG (High Quality)</option>
-                            <option value="jpg">JPG (Smaller Size)</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Resolution (DPI)</label>
-                          <select 
-                            className="w-full p-2 border rounded-md bg-background"
-                            value={imageDPI}
-                            onChange={(e) => setImageDPI(Number(e.target.value))}
-                          >
-                            <option value={150}>150 DPI (Standard)</option>
-                            <option value={300}>300 DPI (High Quality)</option>
-                            <option value={600}>600 DPI (Print Quality)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {activeTab === "compress-pdf" && (
                     <div className="space-y-4">
                       <h4 className="font-semibold flex items-center gap-2">
@@ -390,10 +345,7 @@ const PDFTools = () => {
                         <span className="font-medium text-green-800">Processing Complete!</span>
                       </div>
                       <p className="text-sm text-green-700">
-                        {activeTab === "pdf-to-image" && Array.isArray(processedResult) 
-                          ? `Successfully converted ${processedResult.length} pages to images.`
-                          : "Your file has been processed successfully."
-                        } Click the download button to save.
+                        Your file has been processed successfully. Click the download button to save.
                       </p>
                     </div>
                   )}

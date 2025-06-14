@@ -4,7 +4,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 // Configure PDF.js worker with version 2.5.207
 const setupWorker = () => {
-  if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+  if (typeof window !== 'undefined') {
+    // Force set the worker source to match our installed version
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
   }
 };
@@ -62,19 +63,18 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
-    console.log('Starting PDF to images conversion with PDF.js v2.5.207...');
+    console.log('Starting PDF to images conversion...');
     
-    // Ensure worker is set up correctly for v2.5.207
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+    // Ensure worker is properly configured
+    setupWorker();
     
     const arrayBuffer = await file.arrayBuffer();
     
-    // Use simpler configuration for v2.5.207 compatibility
-    const loadingTask = pdfjsLib.getDocument({
-      data: arrayBuffer,
-    });
+    // Create loading task with minimal configuration for v2.5.207
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer
+    }).promise;
     
-    const pdf = await loadingTask.promise;
     const images: string[] = [];
     
     // Calculate scale based on DPI (PDF.js default is 72 DPI)
@@ -98,7 +98,7 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
       
       const renderContext = {
         canvasContext: context,
-        viewport: viewport,
+        viewport: viewport
       };
       
       await page.render(renderContext).promise;
@@ -124,16 +124,15 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
   try {
     console.log('Starting PDF to Word conversion...');
     
-    // Ensure worker is set up for v2.5.207
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+    // Ensure worker is properly configured
+    setupWorker();
     
     const arrayBuffer = await file.arrayBuffer();
     
-    const loadingTask = pdfjsLib.getDocument({
-      data: arrayBuffer,
-    });
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer
+    }).promise;
     
-    const pdf = await loadingTask.promise;
     let extractedText = '';
     
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
@@ -158,18 +157,17 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
 
 export const generatePDFPreview = async (file: File): Promise<string> => {
   try {
-    console.log('Generating PDF preview with v2.5.207...');
+    console.log('Generating PDF preview...');
     
-    // Ensure worker is set up for v2.5.207
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+    // Ensure worker is properly configured
+    setupWorker();
     
     const arrayBuffer = await file.arrayBuffer();
     
-    const loadingTask = pdfjsLib.getDocument({
-      data: arrayBuffer,
-    });
+    const pdf = await pdfjsLib.getDocument({
+      data: arrayBuffer
+    }).promise;
     
-    const pdf = await loadingTask.promise;
     const page = await pdf.getPage(1); // Get first page
     
     const scale = 0.8; // Scale for thumbnail
@@ -187,7 +185,7 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     const renderContext = {
       canvasContext: context,
-      viewport: viewport,
+      viewport: viewport
     };
     
     await page.render(renderContext).promise;
