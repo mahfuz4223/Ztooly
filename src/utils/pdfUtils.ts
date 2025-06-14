@@ -2,96 +2,145 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+// Configure PDF.js worker with matching version
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
 
 export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high' = 'medium'): Promise<Blob> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-  
-  // Compression settings based on quality
-  const compressionSettings = {
-    low: { useObjectStreams: true, compress: true },
-    medium: { useObjectStreams: true, compress: true },
-    high: { useObjectStreams: false, compress: false }
-  };
-  
-  const settings = compressionSettings[quality];
-  const pdfBytes = await pdfDoc.save({
-    useObjectStreams: settings.useObjectStreams,
-    addDefaultPage: false,
-  });
-  
-  return new Blob([pdfBytes], { type: 'application/pdf' });
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    
+    // Compression settings based on quality
+    const compressionSettings = {
+      low: { useObjectStreams: true, compress: true },
+      medium: { useObjectStreams: true, compress: true },
+      high: { useObjectStreams: false, compress: false }
+    };
+    
+    const settings = compressionSettings[quality];
+    const pdfBytes = await pdfDoc.save({
+      useObjectStreams: settings.useObjectStreams,
+      addDefaultPage: false,
+    });
+    
+    return new Blob([pdfBytes], { type: 'application/pdf' });
+  } catch (error) {
+    console.error('Error compressing PDF:', error);
+    throw new Error('Failed to compress PDF. Please try again.');
+  }
 };
 
 export const mergePDFs = async (files: File[]): Promise<Blob> => {
-  const mergedPdf = await PDFDocument.create();
-  
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await PDFDocument.load(arrayBuffer);
-    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-    copiedPages.forEach((page) => mergedPdf.addPage(page));
+  try {
+    const mergedPdf = await PDFDocument.create();
+    
+    for (const file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await PDFDocument.load(arrayBuffer);
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    }
+    
+    const pdfBytes = await mergedPdf.save();
+    return new Blob([pdfBytes], { type: 'application/pdf' });
+  } catch (error) {
+    console.error('Error merging PDFs:', error);
+    throw new Error('Failed to merge PDFs. Please check that all files are valid PDFs.');
   }
-  
-  const pdfBytes = await mergedPdf.save();
-  return new Blob([pdfBytes], { type: 'application/pdf' });
 };
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const images: string[] = [];
-  
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const scale = dpi / 72; // Convert DPI to scale factor
-    const viewport = page.getViewport({ scale });
+  try {
+    const arrayBuffer = await file.arrayBuffer();
     
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+    // Use a more compatible PDF.js configuration
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      useSystemFonts: true,
+      disableFontFace: false,
+      verbosity: 0
+    });
     
-    if (context) {
-      await page.render({
-        canvasContext: context,
-        viewport: viewport
-      }).promise;
+    const pdf = await loadingTask.promise;
+    const images: string[] = [];
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const scale = dpi / 72; // Convert DPI to scale factor
+      const viewport = page.getViewport({ scale });
       
-      const dataUrl = canvas.toDataURL(`image/${format}`, format === 'jpg' ? 0.8 : 1.0);
-      images.push(dataUrl);
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      
+      if (context) {
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+          enableWebGL: false
+        };
+        
+        await page.render(renderContext).promise;
+        
+        const quality = format === 'jpg' ? 0.8 : 1.0;
+        const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+        images.push(dataUrl);
+      }
     }
+    
+    return images;
+  } catch (error) {
+    console.error('Error converting PDF to images:', error);
+    throw new Error('Failed to convert PDF to images. Please ensure the file is a valid PDF.');
   }
-  
-  return images;
 };
 
 export const pdfToWord = async (file: File): Promise<Blob> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let extractedText = '';
-  
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: any) => item.str)
-      .join(' ');
-    extractedText += pageText + '\n\n';
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      useSystemFonts: true,
+      disableFontFace: false,
+      verbosity: 0
+    });
+    
+    const pdf = await loadingTask.promise;
+    let extractedText = '';
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      extractedText += pageText + '\n\n';
+    }
+    
+    // Create a simple text document (in a real app, you'd use a proper Word library)
+    const content = `Document converted from PDF: ${file.name}\n\nExtracted Content:\n\n${extractedText}`;
+    
+    return new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  } catch (error) {
+    console.error('Error converting PDF to Word:', error);
+    throw new Error('Failed to convert PDF to Word. Please ensure the file is a valid PDF.');
   }
-  
-  // Create a simple text document (in a real app, you'd use a proper Word library)
-  const content = `Document converted from PDF: ${file.name}\n\nExtracted Content:\n\n${extractedText}`;
-  
-  return new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 };
 
 export const generatePDFPreview = async (file: File): Promise<string> => {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      useSystemFonts: true,
+      disableFontFace: false,
+      verbosity: 0
+    });
+    
+    const pdf = await loadingTask.promise;
     const page = await pdf.getPage(1); // Get first page
     
     const scale = 0.8; // Scale for thumbnail
@@ -103,11 +152,13 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     canvas.width = viewport.width;
     
     if (context) {
-      await page.render({
+      const renderContext = {
         canvasContext: context,
-        viewport: viewport
-      }).promise;
+        viewport: viewport,
+        enableWebGL: false
+      };
       
+      await page.render(renderContext).promise;
       return canvas.toDataURL();
     }
   } catch (error) {

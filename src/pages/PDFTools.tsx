@@ -91,17 +91,32 @@ const PDFTools = () => {
     }
 
     setIsProcessing(true);
+    setProcessedResult(null);
     
     try {
       let result;
       
+      console.log(`Starting ${activeTab} processing for ${uploadedFiles.length} file(s)`);
+      
       switch (activeTab) {
         case "pdf-to-image":
+          if (uploadedFiles.length === 0) {
+            throw new Error("No file selected for conversion");
+          }
+          console.log(`Converting PDF to ${imageFormat} at ${imageDPI} DPI`);
           result = await pdfToImages(uploadedFiles[0], imageFormat, imageDPI);
+          console.log(`Successfully converted ${result.length} pages to images`);
           break;
+          
         case "compress-pdf":
+          if (uploadedFiles.length === 0) {
+            throw new Error("No file selected for compression");
+          }
+          console.log(`Compressing PDF with ${compressionLevel} quality`);
           result = await compressPDF(uploadedFiles[0], compressionLevel);
+          console.log("PDF compressed successfully");
           break;
+          
         case "merge-pdf":
           if (uploadedFiles.length < 2) {
             toast({
@@ -112,13 +127,22 @@ const PDFTools = () => {
             setIsProcessing(false);
             return;
           }
+          console.log(`Merging ${uploadedFiles.length} PDF files`);
           result = await mergePDFs(uploadedFiles);
+          console.log("PDFs merged successfully");
           break;
+          
         case "pdf-to-word":
+          if (uploadedFiles.length === 0) {
+            throw new Error("No file selected for conversion");
+          }
+          console.log("Converting PDF to Word document");
           result = await pdfToWord(uploadedFiles[0]);
+          console.log("PDF converted to Word successfully");
           break;
+          
         default:
-          throw new Error("Unknown tool selected");
+          throw new Error(`Unknown tool selected: ${activeTab}`);
       }
       
       setProcessedResult(result);
@@ -128,9 +152,10 @@ const PDFTools = () => {
       });
     } catch (error) {
       console.error("Processing error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Processing failed",
-        description: "An error occurred while processing your files",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -365,7 +390,10 @@ const PDFTools = () => {
                         <span className="font-medium text-green-800">Processing Complete!</span>
                       </div>
                       <p className="text-sm text-green-700">
-                        Your files have been processed successfully. Click the download button to save them.
+                        {activeTab === "pdf-to-image" && Array.isArray(processedResult) 
+                          ? `Successfully converted ${processedResult.length} pages to images.`
+                          : "Your file has been processed successfully."
+                        } Click the download button to save.
                       </p>
                     </div>
                   )}
