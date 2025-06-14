@@ -2,10 +2,10 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with version 2.5.207
+// Configure PDF.js worker for version 2.5.207
 const setupWorker = () => {
   if (typeof window !== 'undefined') {
-    // Force set the worker source to match our installed version
+    // Set the worker source to match version 2.5.207
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
   }
 };
@@ -70,10 +70,9 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
     
     const arrayBuffer = await file.arrayBuffer();
     
-    // Create loading task with minimal configuration for v2.5.207
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer
-    }).promise;
+    // For PDF.js 2.5.207, use simpler getDocument call
+    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+    const pdf = await loadingTask.promise;
     
     const images: string[] = [];
     
@@ -129,9 +128,8 @@ export const pdfToWord = async (file: File): Promise<Blob> => {
     
     const arrayBuffer = await file.arrayBuffer();
     
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer
-    }).promise;
+    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+    const pdf = await loadingTask.promise;
     
     let extractedText = '';
     
@@ -164,9 +162,8 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     const arrayBuffer = await file.arrayBuffer();
     
-    const pdf = await pdfjsLib.getDocument({
-      data: arrayBuffer
-    }).promise;
+    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+    const pdf = await loadingTask.promise;
     
     const page = await pdf.getPage(1); // Get first page
     
