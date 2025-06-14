@@ -1,6 +1,6 @@
 
 import { useCallback, useState } from 'react';
-import { Upload, X, FileText } from 'lucide-react';
+import { Upload, X, FileText, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -21,18 +21,42 @@ const FileUpload = ({
 }: FileUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [error, setError] = useState<string>('');
+
+  const validateFile = (file: File): boolean => {
+    const sizeInMB = file.size / 1024 / 1024;
+    
+    if (sizeInMB > maxSize) {
+      setError(`File "${file.name}" is too large. Maximum size is ${maxSize}MB.`);
+      return false;
+    }
+    
+    if (file.type !== 'application/pdf') {
+      setError(`File "${file.name}" is not a PDF file.`);
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
 
+    setError('');
     const fileArray = Array.from(files);
-    const validFiles = fileArray.filter(file => {
-      const sizeInMB = file.size / 1024 / 1024;
-      return sizeInMB <= maxSize && file.type === 'application/pdf';
-    });
+    const validFiles: File[] = [];
+    
+    for (const file of fileArray) {
+      if (validateFile(file)) {
+        validFiles.push(file);
+      }
+    }
 
-    setSelectedFiles(prev => multiple ? [...prev, ...validFiles] : validFiles);
-    onFileSelect(multiple ? [...selectedFiles, ...validFiles] : validFiles);
+    if (validFiles.length > 0) {
+      const newFiles = multiple ? [...selectedFiles, ...validFiles] : validFiles;
+      setSelectedFiles(newFiles);
+      onFileSelect(newFiles);
+    }
   }, [onFileSelect, maxSize, multiple, selectedFiles]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -55,7 +79,10 @@ const FileUpload = ({
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     onFileSelect(newFiles);
+    setError('');
   };
+
+  const clearError = () => setError('');
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -80,7 +107,7 @@ const FileUpload = ({
               Drag and drop your files here, or click to browse
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Max size: {maxSize}MB per file
+              Max size: {maxSize}MB per file {multiple && '• Multiple files allowed'}
             </p>
           </div>
           <Button variant="outline">Choose Files</Button>
@@ -96,30 +123,42 @@ const FileUpload = ({
         className="hidden"
       />
 
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+          <span className="text-sm text-destructive flex-1">{error}</span>
+          <Button variant="ghost" size="sm" onClick={clearError}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {selectedFiles.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-medium">Selected Files:</h4>
-          {selectedFiles.map((file, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 p-3 bg-muted rounded-lg"
-            >
-              <FileText className="h-5 w-5 text-primary" />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{file.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeFile(index)}
+          <h4 className="font-medium">Selected Files ({selectedFiles.length}):</h4>
+          <div className="max-h-48 overflow-y-auto space-y-2">
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 p-3 bg-muted rounded-lg"
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+                <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate" title={file.name}>{file.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
