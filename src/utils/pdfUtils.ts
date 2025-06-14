@@ -1,11 +1,12 @@
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker - use a more reliable worker setup for Vite
+// Configure PDF.js worker with a more reliable setup for Vite
 const setupWorker = () => {
   if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    // Use jsdelivr CDN which is more reliable than unpkg
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    // Try multiple CDN sources for better reliability
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
   }
 };
 
@@ -62,20 +63,25 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
-    console.log('Starting PDF to images conversion with PDF.js...');
+    console.log('Starting PDF to images conversion with enhanced PDF.js setup...');
     
-    // Ensure worker is set up
-    setupWorker();
+    // Force worker setup with fallback options
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
     
     const arrayBuffer = await file.arrayBuffer();
     
+    // Enhanced loading configuration for better compatibility
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       verbosity: 0,
       disableAutoFetch: true,
       disableStream: true,
-      useSystemFonts: true,
-      standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
+      disableRange: true,
+      useSystemFonts: false,
+      cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+      cMapPacked: true
     });
     
     const pdf = await loadingTask.promise;
@@ -102,7 +108,8 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
       
       const renderContext = {
         canvasContext: context,
-        viewport: viewport
+        viewport: viewport,
+        enableWebGL: false // Disable WebGL for better compatibility
       };
       
       await page.render(renderContext).promise;
@@ -127,13 +134,20 @@ export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi
 export const pdfToWord = async (file: File): Promise<Blob> => {
   try {
     console.log('Starting PDF to Word conversion...');
+    
+    // Force worker setup
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
+    
     const arrayBuffer = await file.arrayBuffer();
     
     const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
       verbosity: 0,
       disableAutoFetch: true,
-      disableStream: true
+      disableStream: true,
+      disableRange: true
     });
     
     const pdf = await loadingTask.promise;
@@ -163,8 +177,10 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
   try {
     console.log('Generating PDF preview...');
     
-    // Ensure worker is set up
-    setupWorker();
+    // Force worker setup
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
     
     const arrayBuffer = await file.arrayBuffer();
     
@@ -173,8 +189,8 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
       verbosity: 0,
       disableAutoFetch: true,
       disableStream: true,
-      useSystemFonts: true,
-      standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
+      disableRange: true,
+      useSystemFonts: false
     });
     
     const pdf = await loadingTask.promise;
@@ -195,7 +211,8 @@ export const generatePDFPreview = async (file: File): Promise<string> => {
     
     const renderContext = {
       canvasContext: context,
-      viewport: viewport
+      viewport: viewport,
+      enableWebGL: false
     };
     
     await page.render(renderContext).promise;
