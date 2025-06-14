@@ -74,7 +74,7 @@ const Index = () => {
       description: "Generate strong, unique passwords. Created on your device—never stored or transmitted.",
       icon: Shield,
       category: "security",
-      link: "#",
+      link: "/password-generator",
       gradient: "from-orange-500 to-orange-600"
     },
     {
@@ -83,7 +83,7 @@ const Index = () => {
       description: "View, format, and validate JSON data. Essential tools for developers and students.",
       icon: Code,
       category: "security",
-      link: "#",
+      link: "/json-tools",
       gradient: "from-indigo-500 to-indigo-600"
     }
   ];
