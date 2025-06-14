@@ -1,7 +1,5 @@
-
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
-import pdf2pic from 'pdf2pic';
 
 // Configure PDF.js worker using unpkg CDN which is more reliable
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
@@ -56,33 +54,52 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
 
 export const pdfToImages = async (file: File, format: 'png' | 'jpg' = 'png', dpi: number = 150): Promise<string[]> => {
   try {
-    console.log('Starting PDF to images conversion with pdf2pic...');
+    console.log('Starting PDF to images conversion with PDF.js...');
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
     
-    // Configure pdf2pic options
-    const convert = pdf2pic.fromBuffer(buffer, {
-      density: dpi,
-      saveFilename: "page",
-      savePath: "./",
-      format: format === 'jpg' ? 'jpeg' : 'png',
-      width: undefined,
-      height: undefined
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      verbosity: 0,
+      disableAutoFetch: true,
+      disableStream: true
     });
     
-    console.log('Converting PDF pages to images...');
-    const results = await convert.bulk(-1); // Convert all pages
-    
+    const pdf = await loadingTask.promise;
     const images: string[] = [];
     
-    for (const result of results) {
-      if (result.buffer) {
-        // Convert buffer to data URL
-        const base64 = result.buffer.toString('base64');
-        const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-        const dataUrl = `data:${mimeType};base64,${base64}`;
-        images.push(dataUrl);
+    // Calculate scale based on DPI (PDF.js default is 72 DPI)
+    const scale = dpi / 72;
+    
+    console.log(`Converting ${pdf.numPages} pages to ${format} at ${dpi} DPI...`);
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale });
+      
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        throw new Error('Failed to get canvas 2D context');
       }
+      
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise;
+      
+      // Convert canvas to data URL with specified format
+      const dataUrl = format === 'jpg' 
+        ? canvas.toDataURL('image/jpeg', 0.8) 
+        : canvas.toDataURL('image/png');
+      
+      images.push(dataUrl);
+      console.log(`Converted page ${pageNum}/${pdf.numPages}`);
     }
     
     console.log(`PDF to images conversion completed. ${images.length} images generated.`);
