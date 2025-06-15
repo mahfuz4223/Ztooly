@@ -1,4 +1,3 @@
-
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -44,21 +43,43 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
   try {
     console.log('Starting PDF merge...');
     const mergedPdf = await PDFDocument.create();
+    let importedPageCount = 0;
 
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer();
-      // FIX: Allow merging encrypted PDFs
+
+      // Try to load the PDF with ignoreEncryption as before
       const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-      copiedPages.forEach((page) => mergedPdf.addPage(page));
+
+      // Only process if the PDF has pages
+      if (pdf.getPageCount() > 0) {
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach((page) => {
+          mergedPdf.addPage(page);
+          importedPageCount++;
+        });
+      }
+    }
+
+    // If no pages were added, throw a descriptive error
+    if (importedPageCount === 0) {
+      throw new Error('None of the uploaded PDFs contain any pages.');
+    }
+
+    // Remove possible default blank page accidentally added (pdf-lib can do this on new docs)
+    if (mergedPdf.getPageCount() > importedPageCount) {
+      // Remove any blank extra pages at the end
+      while (mergedPdf.getPageCount() > importedPageCount) {
+        mergedPdf.removePage(mergedPdf.getPageCount() - 1);
+      }
     }
 
     const pdfBytes = await mergedPdf.save();
-    console.log('PDF merge completed successfully');
+    console.log(`PDF merge completed successfully - Pages merged: ${importedPageCount}`);
     return new Blob([pdfBytes], { type: 'application/pdf' });
   } catch (error) {
     console.error('Error merging PDFs:', error);
-    throw new Error('Failed to merge PDFs. Please check that all files are valid PDFs.');
+    throw new Error('Failed to merge PDFs. Please check that all files are valid and not password protected.');
   }
 };
 
