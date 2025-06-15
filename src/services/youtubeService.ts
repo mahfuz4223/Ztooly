@@ -1,4 +1,3 @@
-
 interface YouTubeVideoData {
   title: string;
   tags: string[];
@@ -67,7 +66,6 @@ export class YouTubeService {
 
   private static async scrapeYouTubeData(videoId: string): Promise<Partial<YouTubeVideoData>> {
     try {
-      // Using a CORS proxy to fetch YouTube page content
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`;
       const response = await fetch(proxyUrl);
       
@@ -78,8 +76,14 @@ export class YouTubeService {
       const data = await response.json();
       const htmlContent = data.contents;
       
-      // Extract data from the HTML content
-      const tags = this.extractTagsFromHTML(htmlContent);
+      // Try to get description for better fallback tags
+      const descMatch = htmlContent.match(/<meta name="description" content="([^"]*)">/);
+      const titleMatch = htmlContent.match(/<title>([^<]*)<\/title>/);
+      const fallbackPayload = {
+        description: descMatch ? descMatch[1] : undefined,
+        title: titleMatch ? titleMatch[1].replace(' - YouTube', '') : undefined,
+      };
+      const tags = this.extractTagsFromHTML(htmlContent, fallbackPayload);
       const metadata = this.extractMetadataFromHTML(htmlContent);
       
       return {
@@ -87,9 +91,16 @@ export class YouTubeService {
         ...metadata
       };
     } catch (error) {
+      // Fallback: add hashtag/keyword extraction so tags are never empty!
       console.error('Error scraping YouTube data:', error);
+      // Try to get at least title/description as fallback for keywords
+      const oembed = await this.tryGetOEmbed(videoId);
+      let tags: string[] = [];
+      if (oembed) {
+        tags = this.extractTagsFromHTML('', { title: oembed.title, description: '' });
+      }
       return {
-        tags: [],
+        tags,
         description: 'Unable to fetch description',
         publishedAt: 'Unknown',
         viewCount: 'Unknown',
@@ -99,41 +110,75 @@ export class YouTubeService {
     }
   }
 
-  private static extractTagsFromHTML(html: string): string[] {
+  private static async tryGetOEmbed(videoId:string) {
     try {
-      // Look for keywords in meta tags
+      const oEmbedResponse = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+      );
+      if (oEmbedResponse.ok) {
+        return await oEmbedResponse.json();
+      }
+    } catch { /* ignore */ }
+    return null;
+  }
+
+  private static extractTagsFromHTML(html: string, fallbackPayload?: {title?:string, description?:string}): string[] {
+    try {
+      // Try meta "keywords"
       const keywordsMatch = html.match(/<meta name="keywords" content="([^"]*)">/);
       if (keywordsMatch && keywordsMatch[1]) {
         return keywordsMatch[1].split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
       }
 
-      // Look for tags in JSON-LD structured data
+      // Try JSON-LD
       const jsonLdMatch = html.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/s);
       if (jsonLdMatch) {
         try {
           const jsonData = JSON.parse(jsonLdMatch[1]);
           if (jsonData.keywords) {
-            return Array.isArray(jsonData.keywords) ? jsonData.keywords : jsonData.keywords.split(',');
+            return Array.isArray(jsonData.keywords)
+              ? jsonData.keywords
+              : jsonData.keywords.split(',').map((t: string) => t.trim());
           }
-        } catch (e) {
-          console.log('Failed to parse JSON-LD');
-        }
+        } catch (e) { /* Failed to parse JSON-LD */ }
+      }
+    } catch (error) {
+      // Fallback handled below
+    }
+
+    // --- New: fallback using hashtags from description or title ---
+    let tags: string[] = [];
+    if (fallbackPayload) {
+      // Extract hashtags (e.g., #ai, #reactjs)
+      const hashtagRegex = /#(\w+)/g;
+      const combinedText = (fallbackPayload.title || '') + '\n' + (fallbackPayload.description || '');
+      const found = Array.from(combinedText.matchAll(hashtagRegex)).map(match => match[1]);
+      if (found.length > 0) {
+        tags = [...new Set(found.map(t => t.trim()))]; // Unique hashtags
       }
 
-      // Fallback: Extract from title and description
-      const titleMatch = html.match(/<title>([^<]*)<\/title>/);
-      const title = titleMatch ? titleMatch[1].replace(' - YouTube', '') : '';
-      
-      // Generate tags from title
-      const titleWords = title.split(/\s+/).filter(word => 
-        word.length > 3 && !['with', 'that', 'this', 'from', 'they', 'have', 'been', 'were'].includes(word.toLowerCase())
-      );
-      
-      return titleWords.slice(0, 10); // Limit to 10 tags
-    } catch (error) {
-      console.error('Error extracting tags:', error);
-      return ['youtube', 'video'];
+      // If no hashtags, extract frequent words from title/description
+      if (tags.length === 0) {
+        const text = (fallbackPayload.title + ' ' + fallbackPayload.description).toLowerCase();
+        // Remove punctuation, split, remove stop words
+        const stopWords = new Set([
+          "the","and","for","with","this","that","from","they","have","been","were",
+          "are","was","you","your","can","but","not","his","her","she","him","their",
+          "has","will","had","all","any","one"
+        ]);
+        const wordCounts: Record<string, number> = {};
+        for (const word of text.replace(/[^\w# ]/g, '').split(/\s+/)) {
+          if (word.length >= 3 && !stopWords.has(word)) {
+            wordCounts[word] = (wordCounts[word] || 0) + 1;
+          }
+        }
+        const sorted = Object.entries(wordCounts).sort((a,b)=>b[1]-a[1]);
+        tags = sorted.slice(0, 10).map(([w]) => w);
+      }
     }
+
+    // Fallback: at least some tag, even if generic!
+    return tags.length ? tags : ['youtube','video'];
   }
 
   private static extractMetadataFromHTML(html: string): Partial<YouTubeVideoData> {
