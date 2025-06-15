@@ -32,6 +32,7 @@ import HashtagGenerator from "./pages/HashtagGenerator";
 import ReadingTimeEstimator from "./pages/ReadingTimeEstimator";
 import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
 import CSVToJSONConverter from "./pages/CSVToJSONConverter";
+import FakeIBANGenerator from "./pages/FakeIBANGenerator";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const AppContent = () => (
       <Route path="/hashtag-generator" element={<HashtagGenerator />} />
       <Route path="/reading-time-estimator" element={<ReadingTimeEstimator />} />
       <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
+      <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
