@@ -28,23 +28,6 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
     };
     const settings = compressionSettings[quality];
 
-    // Advanced: attempt to recompress image objects for better size reduction
-    for (const page of pdfDoc.getPages()) {
-      const images = page.node.Resources().lookupMaybe('XObject');
-      if (images) {
-        const keys = images.keys();
-        for (const key of keys) {
-          const img = images.lookup(key);
-          // If an image, try to recompress it (pdf-lib limitation: only supports jpeg out)
-          if (img && img.constructor?.name?.includes('PDFRawStream')) {
-            // Skipping custom compression logic for strict compatibility,
-            // but in a real advanced solution, images would be downscaled here
-            // (with pdf-lib this is limited, but libraries like pdf.js can do better)
-          }
-        }
-      }
-    }
-    
     const pdfBytes = await pdfDoc.save({
       useObjectStreams: settings.useObjectStreams,
       addDefaultPage: false,
