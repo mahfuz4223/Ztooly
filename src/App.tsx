@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ import LoanRepaymentCalculator from "./pages/LoanRepaymentCalculator";
 import BMICalculator from "./pages/BMICalculator";
 import LoremIpsumGenerator from "./pages/LoremIpsumGenerator";
 import CaseConverter from "./pages/CaseConverter";
+import HashtagGenerator from "./pages/HashtagGenerator";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +76,7 @@ const AppContent = () => (
       <Route path="/bmi-calculator" element={<BMICalculator />} />
       <Route path="/lorem-ipsum-generator" element={<LoremIpsumGenerator />} />
       <Route path="/case-converter" element={<CaseConverter />} />
+      <Route path="/hashtag-generator" element={<HashtagGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
