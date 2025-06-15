@@ -42,44 +42,50 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
 export const mergePDFs = async (files: File[]): Promise<Blob> => {
   try {
     console.log('Starting PDF merge...');
+    // Do NOT add any page by default
     const mergedPdf = await PDFDocument.create();
     let importedPageCount = 0;
+    let inputPageTotal = 0;
 
-    for (const file of files) {
+    for (const [fileIndex, file] of files.entries()) {
       const arrayBuffer = await file.arrayBuffer();
-
-      // Try to load the PDF with ignoreEncryption as before
       const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
-      // Only process if the PDF has pages
-      if (pdf.getPageCount() > 0) {
-        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach((page) => {
+      const pageIndices = pdf.getPageIndices();
+      inputPageTotal += pageIndices.length;
+
+      if (pageIndices.length > 0) {
+        const copiedPages = await mergedPdf.copyPages(pdf, pageIndices);
+        copiedPages.forEach((page, i) => {
           mergedPdf.addPage(page);
           importedPageCount++;
+          console.log(`Added page ${i + 1}/${pageIndices.length} from PDF ${fileIndex + 1}: ${file.name}`);
         });
+      } else {
+        console.warn(`PDF ${fileIndex + 1} ('${file.name}') had no pages, skipping.`);
       }
     }
 
-    // If no pages were added, throw a descriptive error
+    // Final check: If somehow a blank page was still added (should not happen), remove it
+    while (mergedPdf.getPageCount() > importedPageCount) {
+      mergedPdf.removePage(mergedPdf.getPageCount() - 1);
+    }
+
+    // If no pages were added, fail with a clear error
     if (importedPageCount === 0) {
-      throw new Error('None of the uploaded PDFs contain any pages.');
-    }
-
-    // Remove possible default blank page accidentally added (pdf-lib can do this on new docs)
-    if (mergedPdf.getPageCount() > importedPageCount) {
-      // Remove any blank extra pages at the end
-      while (mergedPdf.getPageCount() > importedPageCount) {
-        mergedPdf.removePage(mergedPdf.getPageCount() - 1);
-      }
+      throw new Error('None of the uploaded PDFs contained any pages to merge. Please double-check your files.');
     }
 
     const pdfBytes = await mergedPdf.save();
-    console.log(`PDF merge completed successfully - Pages merged: ${importedPageCount}`);
+    console.log(
+      `PDF merge completed: total source pages: ${inputPageTotal}, imported: ${importedPageCount}, output pages: ${mergedPdf.getPageCount()}`
+    );
     return new Blob([pdfBytes], { type: 'application/pdf' });
   } catch (error) {
     console.error('Error merging PDFs:', error);
-    throw new Error('Failed to merge PDFs. Please check that all files are valid and not password protected.');
+    throw new Error(
+      'Failed to merge PDFs. Please make sure all files are valid PDFs and not password protected. If the issue persists, try re-uploading your files.'
+    );
   }
 };
 
