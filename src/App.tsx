@@ -28,6 +28,7 @@ import LoremIpsumGenerator from "./pages/LoremIpsumGenerator";
 import CaseConverter from "./pages/CaseConverter";
 import HashtagGenerator from "./pages/HashtagGenerator";
 import ReadingTimeEstimator from "./pages/ReadingTimeEstimator";
+import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,7 @@ const AppContent = () => (
       <Route path="/case-converter" element={<CaseConverter />} />
       <Route path="/hashtag-generator" element={<HashtagGenerator />} />
       <Route path="/reading-time-estimator" element={<ReadingTimeEstimator />} />
+      <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
