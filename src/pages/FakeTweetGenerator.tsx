@@ -110,6 +110,23 @@ const FakeTweetGenerator = () => {
     </svg>
   );
 
+  // Views icon component
+  const ViewsIcon = ({ size = 16 }: { size?: number }) => (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="#536471"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+
   const downloadTweet = async () => {
     setIsGenerating(true);
     const tweetElement = document.getElementById('fake-tweet');
@@ -149,9 +166,9 @@ const FakeTweetGenerator = () => {
               // Fix SVG badge positioning
               const svgElements = clonedElement.querySelectorAll('svg');
               svgElements.forEach(svg => {
-                (svg as unknown as HTMLElement).style.display = 'inline-block';
-                (svg as unknown as HTMLElement).style.verticalAlign = 'middle';
-                (svg as unknown as HTMLElement).style.marginLeft = '4px';
+                (svg as HTMLElement).style.display = 'inline-block';
+                (svg as HTMLElement).style.verticalAlign = 'middle';
+                (svg as HTMLElement).style.marginLeft = '4px';
               });
             }
           }
@@ -434,69 +451,65 @@ const FakeTweetGenerator = () => {
                   }}
                 >
                   {/* Tweet Header */}
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-                        {tweetData.profileImage ? (
-                          <img src={tweetData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">
-                              {tweetData.displayName.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                          <span 
-                            className="font-bold truncate"
-                            style={{ 
-                              fontSize: '15px',
-                              color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419',
-                              fontWeight: '700',
-                              maxWidth: '200px'
-                            }}
-                          >
-                            {tweetData.displayName}
-                          </span>
-                          {tweetData.isVerified && <VerificationBadge size={20} />}
-                          <span 
-                            className="text-gray-500 truncate"
-                            style={{ 
-                              fontSize: '15px',
-                              color: '#536471',
-                              fontWeight: '400'
-                            }}
-                          >
-                            @{tweetData.username}
-                          </span>
-                          <span 
-                            className="text-gray-500"
-                            style={{ 
-                              fontSize: '15px',
-                              color: '#536471'
-                            }}
-                          >
-                            ·
-                          </span>
-                          <span 
-                            className="text-gray-500"
-                            style={{ 
-                              fontSize: '15px',
-                              color: '#536471'
-                            }}
-                          >
-                            {tweetData.timestamp}
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                      {tweetData.profileImage ? (
+                        <img src={tweetData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">
+                            {tweetData.displayName.charAt(0).toUpperCase()}
                           </span>
                         </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1 mb-1">
+                        <span 
+                          className="font-bold"
+                          style={{ 
+                            fontSize: '15px',
+                            color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419',
+                            fontWeight: '700'
+                          }}
+                        >
+                          {tweetData.displayName}
+                        </span>
+                        {tweetData.isVerified && <VerificationBadge size={20} />}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span 
+                          style={{ 
+                            fontSize: '15px',
+                            color: '#536471',
+                            fontWeight: '400'
+                          }}
+                        >
+                          @{tweetData.username}
+                        </span>
+                        <span 
+                          style={{ 
+                            fontSize: '15px',
+                            color: '#536471'
+                          }}
+                        >
+                          ·
+                        </span>
+                        <span 
+                          style={{ 
+                            fontSize: '15px',
+                            color: '#536471'
+                          }}
+                        >
+                          {tweetData.timestamp}
+                        </span>
                       </div>
                     </div>
-                    <MoreHorizontal className="h-5 w-5 text-gray-500 flex-shrink-0" style={{ color: '#536471' }} />
+                    <MoreHorizontal className="h-5 w-5 flex-shrink-0" style={{ color: '#536471' }} />
                   </div>
 
                   {/* Tweet Content */}
-                  <div className="mb-3 pl-13" style={{ paddingLeft: '52px' }}>
+                  <div className="mb-3">
                     <p 
                       className="whitespace-pre-wrap"
                       style={{ 
@@ -511,7 +524,7 @@ const FakeTweetGenerator = () => {
                   </div>
 
                   {/* Tweet Actions */}
-                  <div className="flex items-center justify-between pt-3 pl-13" style={{ paddingLeft: '52px', paddingTop: '12px' }}>
+                  <div className="flex items-center justify-between pt-3" style={{ paddingTop: '12px' }}>
                     <div className="flex items-center gap-1 group cursor-pointer">
                       <div className="p-2 rounded-full group-hover:bg-blue-50 -ml-2">
                         <MessageCircle className="h-4 w-4" style={{ color: '#536471' }} />
@@ -556,9 +569,7 @@ const FakeTweetGenerator = () => {
                     </div>
                     <div className="flex items-center gap-1 group cursor-pointer">
                       <div className="p-2 rounded-full group-hover:bg-blue-50 -ml-2">
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" style={{ color: '#536471' }}>
-                          <path fill="currentColor" d="M8.75 21V3h2v18l-2-2zm6-18v18l2-2V3h-2z"/>
-                        </svg>
+                        <ViewsIcon size={16} />
                       </div>
                       <span 
                         className="text-sm"
@@ -570,7 +581,7 @@ const FakeTweetGenerator = () => {
                         {tweetData.views}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <div className="p-2 rounded-full hover:bg-blue-50 -ml-2 cursor-pointer">
                         <Bookmark className="h-4 w-4" style={{ color: '#536471' }} />
                       </div>
