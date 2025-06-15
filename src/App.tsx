@@ -15,6 +15,7 @@ import PasswordGenerator from "./pages/PasswordGenerator";
 import PrivacyPolicyGenerator from "./pages/PrivacyPolicyGenerator";
 import TermsConditionsGenerator from "./pages/TermsConditionsGenerator";
 import MarkdownPreviewer from "./pages/MarkdownPreviewer";
+import ColorPaletteGenerator from "./pages/ColorPaletteGenerator";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
           <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
           <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
+          <Route path="/color-palette-generator" element={<ColorPaletteGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
