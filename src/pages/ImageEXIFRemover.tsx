@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { toast } from '@/hooks/use-toast';
 import { Upload, Download, Eye, EyeOff, Trash2, Camera, MapPin, Calendar, Settings, ChevronDown, Shield, Plus, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import EXIF from 'exif-js';
+import { extractEXIFData } from '@/utils/exifExtractor';
 
 interface EXIFData {
   [key: string]: any;
@@ -30,169 +30,18 @@ const ImageEXIFRemover = () => {
   const defaultFakeEXIF = {
     'Camera Make': 'Canon',
     'Camera Model': 'EOS 5D Mark IV',
-    'Date Created': '2020-01-01 12:00:00',
+    'Date Original': '2020:01:01 12:00:00',
     'GPS Latitude': 'Removed for privacy',
     'GPS Longitude': 'Removed for privacy',
-    'Exposure Time': '1/60',
+    'Exposure Time': '1/60s',
     'F-Number': 'f/4.0',
     'ISO Speed': '200',
     'Focal Length': '50mm',
-    'White Balance': 'Auto',
+    'White Point': 'Auto',
     'Flash': 'No Flash',
     'Artist': 'Anonymous',
     'Copyright': 'Public Domain',
     'Software': 'Generic Editor v1.0'
-  };
-
-  const extractEXIFData = (file: File): Promise<EXIFData> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const arrayBuffer = e.target?.result as ArrayBuffer;
-        if (!arrayBuffer) {
-          resolve({
-            'File Name': file.name,
-            'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            'MIME Type': file.type,
-            'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
-            'Error': 'Could not read file'
-          });
-          return;
-        }
-
-        const img = new Image();
-        img.onload = () => {
-          EXIF.getData(img as any, function() {
-            const allMetaData = EXIF.getAllTags(this);
-            const exifData: EXIFData = {};
-            
-            // Basic file information
-            exifData['File Name'] = file.name;
-            exifData['File Size'] = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-            exifData['MIME Type'] = file.type;
-            exifData['Last Modified'] = new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19);
-            
-            // Extract real EXIF data
-            if (Object.keys(allMetaData).length > 0) {
-              // Camera information
-              if (allMetaData.Make) exifData['Camera Make'] = allMetaData.Make;
-              if (allMetaData.Model) exifData['Camera Model'] = allMetaData.Model;
-              if (allMetaData.Software) exifData['Software'] = allMetaData.Software;
-              
-              // Date and time
-              if (allMetaData.DateTime) exifData['Date Created'] = allMetaData.DateTime;
-              if (allMetaData.DateTimeOriginal) exifData['Date Original'] = allMetaData.DateTimeOriginal;
-              if (allMetaData.DateTimeDigitized) exifData['Date Digitized'] = allMetaData.DateTimeDigitized;
-              
-              // Camera settings
-              if (allMetaData.ExposureTime) {
-                const exposure = allMetaData.ExposureTime;
-                exifData['Exposure Time'] = exposure < 1 ? `1/${Math.round(1/exposure)}` : `${exposure}s`;
-              }
-              if (allMetaData.FNumber) exifData['F-Number'] = `f/${allMetaData.FNumber}`;
-              if (allMetaData.ISO || allMetaData.ISOSpeedRatings) {
-                exifData['ISO Speed'] = allMetaData.ISO || allMetaData.ISOSpeedRatings;
-              }
-              if (allMetaData.FocalLength) exifData['Focal Length'] = `${allMetaData.FocalLength}mm`;
-              if (allMetaData.WhiteBalance) {
-                exifData['White Balance'] = allMetaData.WhiteBalance === 0 ? 'Auto' : 'Manual';
-              }
-              if (allMetaData.Flash !== undefined) {
-                const flashValue = allMetaData.Flash;
-                if (flashValue === 0) exifData['Flash'] = 'No Flash';
-                else if (flashValue === 1) exifData['Flash'] = 'Flash fired';
-                else if (flashValue === 16) exifData['Flash'] = 'Flash off, compulsory';
-                else if (flashValue === 24) exifData['Flash'] = 'Flash auto, did not fire';
-                else if (flashValue === 25) exifData['Flash'] = 'Flash auto, fired';
-                else exifData['Flash'] = `Flash mode: ${flashValue}`;
-              }
-              
-              // GPS information
-              if (allMetaData.GPSLatitude && allMetaData.GPSLongitude) {
-                const lat = allMetaData.GPSLatitude;
-                const lon = allMetaData.GPSLongitude;
-                const latRef = allMetaData.GPSLatitudeRef || 'N';
-                const lonRef = allMetaData.GPSLongitudeRef || 'E';
-                
-                if (Array.isArray(lat) && Array.isArray(lon)) {
-                  const latDecimal = lat[0] + lat[1]/60 + lat[2]/3600;
-                  const lonDecimal = lon[0] + lon[1]/60 + lon[2]/3600;
-                  exifData['GPS Latitude'] = `${latDecimal.toFixed(6)}° ${latRef}`;
-                  exifData['GPS Longitude'] = `${lonDecimal.toFixed(6)}° ${lonRef}`;
-                }
-              }
-              
-              // Image dimensions
-              if (allMetaData.PixelXDimension) exifData['Image Width'] = `${allMetaData.PixelXDimension}px`;
-              if (allMetaData.PixelYDimension) exifData['Image Height'] = `${allMetaData.PixelYDimension}px`;
-              if (allMetaData.XResolution) exifData['X Resolution'] = `${allMetaData.XResolution} dpi`;
-              if (allMetaData.YResolution) exifData['Y Resolution'] = `${allMetaData.YResolution} dpi`;
-              
-              // Other metadata
-              if (allMetaData.Artist) exifData['Artist'] = allMetaData.Artist;
-              if (allMetaData.Copyright) exifData['Copyright'] = allMetaData.Copyright;
-              if (allMetaData.ImageDescription) exifData['Description'] = allMetaData.ImageDescription;
-              if (allMetaData.Orientation) {
-                const orientations = {
-                  1: 'Normal',
-                  2: 'Horizontal flip',
-                  3: '180° rotation',
-                  4: 'Vertical flip',
-                  5: '90° CCW + horizontal flip',
-                  6: '90° CW',
-                  7: '90° CW + horizontal flip',
-                  8: '90° CCW'
-                };
-                exifData['Orientation'] = orientations[allMetaData.Orientation as keyof typeof orientations] || `Unknown (${allMetaData.Orientation})`;
-              }
-              
-              // Color space
-              if (allMetaData.ColorSpace) {
-                exifData['Color Space'] = allMetaData.ColorSpace === 1 ? 'sRGB' : 'Adobe RGB';
-              }
-              
-              // Lens information
-              if (allMetaData.LensModel) exifData['Lens Model'] = allMetaData.LensModel;
-              if (allMetaData.LensMake) exifData['Lens Make'] = allMetaData.LensMake;
-              
-              console.log('Raw EXIF data:', allMetaData);
-              console.log('Processed EXIF data:', exifData);
-            } else {
-              console.log('No EXIF data found in image');
-            }
-            
-            resolve(exifData);
-          });
-        };
-        
-        img.onerror = () => {
-          console.error('Failed to load image for EXIF extraction');
-          resolve({
-            'File Name': file.name,
-            'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-            'MIME Type': file.type,
-            'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
-            'Error': 'Could not extract EXIF data'
-          });
-        };
-        
-        // Create blob URL for the image
-        const blob = new Blob([arrayBuffer], { type: file.type });
-        img.src = URL.createObjectURL(blob);
-      };
-      
-      reader.onerror = () => {
-        resolve({
-          'File Name': file.name,
-          'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          'MIME Type': file.type,
-          'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
-          'Error': 'Could not read file'
-        });
-      };
-      
-      reader.readAsArrayBuffer(file);
-    });
   };
 
   const handleFileSelect = useCallback(async (files: FileList | null) => {
@@ -216,7 +65,7 @@ const ImageEXIFRemover = () => {
     setProcessingMode(null);
     
     try {
-      // Extract real EXIF data
+      // Extract real EXIF data using our custom extractor
       const exifData = await extractEXIFData(file);
       setOriginalEXIF(exifData);
       
@@ -227,7 +76,9 @@ const ImageEXIFRemover = () => {
       };
       reader.readAsDataURL(file);
 
-      const exifCount = Object.keys(exifData).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length;
+      const exifCount = Object.keys(exifData).filter(key => 
+        !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)
+      ).length;
       
       toast({
         title: "Image loaded successfully",
@@ -352,7 +203,9 @@ const ImageEXIFRemover = () => {
   };
 
   const hasLocationData = originalEXIF['GPS Latitude'] && originalEXIF['GPS Longitude'] && 
-    !originalEXIF['GPS Latitude'].includes('Removed');
+    !String(originalEXIF['GPS Latitude']).includes('Removed');
+
+  const hasPrivacyRisk = hasLocationData || originalEXIF['Artist'] || originalEXIF['Copyright'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
@@ -364,13 +217,17 @@ const ImageEXIFRemover = () => {
               <Shield className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900">
-              EXIF Data Manager
+              Professional EXIF Data Manager
             </h1>
           </div>
           <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-            Protect your privacy by removing sensitive metadata from images or add fake EXIF data for anonymization
+            Extract, view, and manage image metadata with professional-grade tools. Remove sensitive information or add anonymized data for privacy protection.
           </p>
           <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <span>Real EXIF Extraction</span>
+            </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <span>Privacy Protection</span>
@@ -378,10 +235,6 @@ const ImageEXIFRemover = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <span>Local Processing</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span>No Data Upload</span>
             </div>
           </div>
         </div>
@@ -425,17 +278,25 @@ const ImageEXIFRemover = () => {
         {originalFile && (
           <>
             {/* Privacy Alert */}
-            {hasLocationData && (
+            {hasPrivacyRisk && (
               <Card className="border-amber-200 bg-amber-50/80 backdrop-blur-sm">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <AlertTriangle className="h-6 w-6 text-amber-600 mt-1" />
                     <div>
-                      <h4 className="font-semibold text-amber-800 mb-2">Privacy Warning Detected</h4>
-                      <p className="text-amber-700">
-                        This image contains GPS location data that reveals where the photo was taken. 
-                        Consider removing this sensitive information before sharing.
-                      </p>
+                      <h4 className="font-semibold text-amber-800 mb-2">Privacy Risk Detected</h4>
+                      <div className="space-y-1 text-amber-700">
+                        {hasLocationData && (
+                          <p>• GPS location data reveals where this photo was taken</p>
+                        )}
+                        {originalEXIF['Artist'] && (
+                          <p>• Artist information: {originalEXIF['Artist']}</p>
+                        )}
+                        {originalEXIF['Copyright'] && (
+                          <p>• Copyright information: {originalEXIF['Copyright']}</p>
+                        )}
+                        <p className="mt-2 font-medium">Consider removing this sensitive information before sharing.</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -478,23 +339,31 @@ const ImageEXIFRemover = () => {
                         {originalFile.type} • {(originalFile.size / 1024 / 1024).toFixed(2)} MB
                       </div>
                     </div>
-                    <Badge variant="outline" className={cn(
-                      Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0
-                        ? "bg-red-50 text-red-700 border-red-200"
-                        : "bg-green-50 text-green-700 border-green-200"
-                    )}>
-                      {Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0 ? (
-                        <>
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className={cn(
+                        Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0
+                          ? "bg-red-50 text-red-700 border-red-200"
+                          : "bg-green-50 text-green-700 border-green-200"
+                      )}>
+                        {Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0 ? (
+                          <>
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            {Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length} EXIF
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Clean
+                          </>
+                        )}
+                      </Badge>
+                      {hasPrivacyRisk && (
+                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
                           <AlertTriangle className="h-3 w-3 mr-1" />
-                          Has EXIF
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          No EXIF
-                        </>
+                          Privacy Risk
+                        </Badge>
                       )}
-                    </Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -653,7 +522,7 @@ const ImageEXIFRemover = () => {
                           <div key={key} className="flex justify-between items-center py-3 px-4 hover:bg-gray-50 rounded-lg border-b border-gray-100 last:border-b-0">
                             <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                               {key.includes('GPS') && <MapPin className="h-3 w-3 text-red-500" />}
-                              {key.includes('Date') && <Calendar className="h-3 w-3 text-blue-500" />}
+                              {(key.includes('Date') || key.includes('Time')) && <Calendar className="h-3 w-3 text-blue-500" />}
                               {key}
                             </span>
                             <span className="text-sm text-gray-600 text-right max-w-xs truncate">
@@ -704,7 +573,7 @@ const ImageEXIFRemover = () => {
                           <div key={key} className="space-y-2">
                             <Label htmlFor={key} className="text-sm font-medium text-gray-700 flex items-center gap-2">
                               {key.includes('GPS') && <MapPin className="h-3 w-3 text-green-500" />}
-                              {key.includes('Date') && <Calendar className="h-3 w-3 text-blue-500" />}
+                              {(key.includes('Date') || key.includes('Time')) && <Calendar className="h-3 w-3 text-blue-500" />}
                               {key}
                             </Label>
                             <Input
