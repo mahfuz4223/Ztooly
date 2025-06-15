@@ -137,16 +137,12 @@ const FakeCreditCardGenerator = () => {
     }, 1200);
   };
 
-  const copyCardData = (card: CreditCardData) => {
-    const cardData = `Card Number: ${card.number}
-Expiry: ${card.expiryMonth}/${card.expiryYear}
-CVV: ${card.cvv}
-Holder: ${card.holderName}`;
-    
-    navigator.clipboard.writeText(cardData);
+  const copyOutputData = () => {
+    const outputData = generateOutputData(outputFormat);
+    navigator.clipboard.writeText(outputData);
     toast({
       title: "📋 Copied",
-      description: "Card data copied to clipboard!",
+      description: `${outputFormat.toUpperCase()} data copied to clipboard!`,
     });
   };
 
@@ -270,7 +266,7 @@ Brand: ${card.brand.toUpperCase()}
                     <SelectTrigger className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-blue-300 transition-colors">
                       <SelectValue placeholder="Select brand" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-white z-50">
                       {cardBrands.map((brand) => (
                         <SelectItem key={brand.value} value={brand.value}>
                           <div className="flex items-center space-x-2">
@@ -319,7 +315,7 @@ Brand: ${card.brand.toUpperCase()}
                     <SelectTrigger className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-blue-300 transition-colors">
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-white z-50">
                       {outputFormats.map((format) => (
                         <SelectItem key={format.value} value={format.value}>
                           <div className="flex items-center space-x-3">
@@ -355,7 +351,15 @@ Brand: ${card.brand.toUpperCase()}
                   </Button>
 
                   {cards.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <Button
+                        onClick={copyOutputData}
+                        variant="outline"
+                        className="h-12 border-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300 text-blue-700"
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy
+                      </Button>
                       <Button
                         onClick={downloadData}
                         variant="outline"
@@ -369,7 +373,7 @@ Brand: ${card.brand.toUpperCase()}
                         variant="outline"
                         className="h-12 border-2 border-red-200 hover:bg-red-50 hover:border-red-300 text-red-700"
                       >
-                        Clear All
+                        Clear
                       </Button>
                     </div>
                   )}
@@ -378,20 +382,20 @@ Brand: ${card.brand.toUpperCase()}
             </Card>
           </div>
 
-          {/* Enhanced Credit Cards Display */}
+          {/* Output Display */}
           <div className="lg:col-span-8">
             <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader className="pb-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl text-gray-800">Generated Cards</CardTitle>
+                    <CardTitle className="text-2xl text-gray-800">Generated Output</CardTitle>
                     <CardDescription className="text-gray-600">
-                      {cards.length > 0 ? `${cards.length} card${cards.length > 1 ? 's' : ''} ready for export` : 'No cards generated yet'}
+                      {cards.length > 0 ? `${cards.length} card${cards.length > 1 ? 's' : ''} in ${outputFormat.toUpperCase()} format` : 'No cards generated yet'}
                     </CardDescription>
                   </div>
                   {cards.length > 0 && (
                     <div className="text-right">
-                      <div className="text-sm text-gray-500">Export as {outputFormat.toUpperCase()}</div>
+                      <div className="text-sm text-gray-500">Format: {outputFormat.toUpperCase()}</div>
                       <div className="text-2xl font-bold text-blue-600">{cards.length}</div>
                     </div>
                   )}
@@ -405,72 +409,31 @@ Brand: ${card.brand.toUpperCase()}
                     <p className="text-gray-500">Configure your settings and click generate to create cards</p>
                   </div>
                 ) : (
-                  <div className="grid gap-6">
-                    {cards.map((card, index) => (
-                      <div
-                        key={index}
-                        className="relative group"
-                      >
-                        {/* Enhanced Credit Card Design */}
-                        <div className={`relative w-full h-64 bg-gradient-to-br ${getBrandColor(card.brand)} rounded-3xl p-8 text-white shadow-2xl transform transition-all duration-500 hover:scale-105 hover:shadow-3xl overflow-hidden`}>
-                          {/* Card Background Patterns */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-3xl"></div>
-                          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
-                          <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full translate-y-16 -translate-x-16"></div>
-                          
-                          {/* Chip */}
-                          <div className="absolute top-6 left-8">
-                            <div className="w-14 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-lg">
-                              <div className="w-10 h-6 bg-yellow-300 rounded-md"></div>
-                            </div>
-                          </div>
-                          
-                          {/* Card Number */}
-                          <div className="absolute top-24 left-8 right-8">
-                            <p className="text-3xl font-mono tracking-wider font-semibold">
-                              {formatCardNumber(card.number)}
-                            </p>
-                          </div>
-                          
-                          {/* Card Details */}
-                          <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
-                            <div>
-                              <p className="text-xs opacity-80 mb-1 font-medium">VALID THRU</p>
-                              <p className="text-xl font-mono font-bold">{card.expiryMonth}/{card.expiryYear}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs opacity-80 mb-1 font-medium">CVV</p>
-                              <p className="text-xl font-mono font-bold">{card.cvv}</p>
-                            </div>
-                          </div>
-                          
-                          {/* Cardholder Name */}
-                          <div className="absolute bottom-16 left-8">
-                            <p className="text-xs opacity-80 mb-1 font-medium">CARDHOLDER NAME</p>
-                            <p className="text-lg font-bold tracking-wider">{card.holderName}</p>
-                          </div>
-                          
-                          {/* Brand Logo */}
-                          <div className="absolute top-6 right-8 flex items-center space-x-2">
-                            <span className="text-2xl">{getBrandLogo(card.brand)}</span>
-                            <p className="text-xl font-bold tracking-wider">
-                              {card.brand.toUpperCase()}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Enhanced Copy Button */}
-                        <Button
-                          onClick={() => copyCardData(card)}
-                          size="sm"
-                          className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border-white/30 shadow-lg"
-                          variant="outline"
-                        >
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy
-                        </Button>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        Output ({outputFormat.toUpperCase()})
+                      </h3>
+                      <div className="flex space-x-2">
+                        {outputFormats.map((format) => (
+                          <Button
+                            key={format.value}
+                            onClick={() => setOutputFormat(format.value)}
+                            variant={outputFormat === format.value ? "default" : "outline"}
+                            size="sm"
+                            className="h-8"
+                          >
+                            <format.icon className="w-3 h-3 mr-1" />
+                            {format.label}
+                          </Button>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                    <div className="bg-gray-900 rounded-lg p-6 overflow-auto max-h-96">
+                      <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
+                        {generateOutputData(outputFormat)}
+                      </pre>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -522,7 +485,7 @@ Brand: ${card.brand.toUpperCase()}
                 <ul className="text-gray-600 space-y-2">
                   <li className="flex items-center">• Luhn algorithm compliance</li>
                   <li className="flex items-center">• Multiple card brand support</li>
-                  <li className="flex items-center">• Realistic 3D card design</li>
+                  <li className="flex items-center">• Real-time format switching</li>
                   <li className="flex items-center">• Bulk generation (up to 20)</li>
                   <li className="flex items-center">• Multiple export formats</li>
                 </ul>
@@ -536,7 +499,7 @@ Brand: ${card.brand.toUpperCase()}
                   <li className="flex items-center">• CSV for spreadsheets</li>
                   <li className="flex items-center">• XML for enterprise systems</li>
                   <li className="flex items-center">• TXT for simple text files</li>
-                  <li className="flex items-center">• Copy individual cards</li>
+                  <li className="flex items-center">• Real-time format preview</li>
                 </ul>
               </div>
             </div>
