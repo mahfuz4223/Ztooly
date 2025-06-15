@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,7 @@ import URLScanner from "./pages/URLScanner";
 import PercentageCalculator from "./pages/PercentageCalculator";
 import LoanRepaymentCalculator from "./pages/LoanRepaymentCalculator";
 import BMICalculator from "./pages/BMICalculator";
+import LoremIpsumGenerator from "./pages/LoremIpsumGenerator";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +71,7 @@ const AppContent = () => (
       <Route path="/percentage-calculator" element={<PercentageCalculator />} />
       <Route path="/loan-repayment-calculator" element={<LoanRepaymentCalculator />} />
       <Route path="/bmi-calculator" element={<BMICalculator />} />
+      <Route path="/lorem-ipsum-generator" element={<LoremIpsumGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
