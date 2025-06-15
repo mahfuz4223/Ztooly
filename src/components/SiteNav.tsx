@@ -1,6 +1,6 @@
 
 import { ArrowLeft, Menu, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 // Updated and more relevant menu links for tool pages
@@ -12,7 +12,9 @@ const menuLinks = [
 
 export default function SiteNav() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isHomePage = location.pathname === "/";
 
   // Handle the back navigation, fallback to homepage for a more consistent experience
   const handleBack = () => {
@@ -29,15 +31,17 @@ export default function SiteNav() {
         <div className="flex items-center justify-between h-16">
           {/* Back Button and Logo */}
           <div className="flex items-center space-x-3">
-            {/* Back Button (always show on tool pages) */}
-            <button
-              aria-label="Back"
-              onClick={handleBack}
-              className="mr-2 p-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors flex gap-2 items-center"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="hidden sm:inline text-base font-medium">Back</span>
-            </button>
+            {/* Back Button (show on non-home pages) */}
+            {!isHomePage && (
+              <button
+                aria-label="Back"
+                onClick={handleBack}
+                className="mr-2 p-2 rounded-lg bg-muted hover:bg-primary/10 transition-colors flex gap-2 items-center"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                <span className="hidden sm:inline text-base font-medium">Back</span>
+              </button>
+            )}
             {/* Logo and Brand Name linked to homepage */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">

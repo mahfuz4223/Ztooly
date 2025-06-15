@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useCallback } from "react";
@@ -117,12 +116,9 @@ const AppHeader = () => {
 };
 
 const AppContent = () => {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
-
   return (
     <div className="min-h-screen flex flex-col">
-      {!isHomePage && <SiteNav />}
+      <SiteNav />
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<Index />} />
@@ -177,7 +173,7 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-      {!isHomePage && <SiteFooter />}
+      <SiteFooter />
     </div>
   );
 };
