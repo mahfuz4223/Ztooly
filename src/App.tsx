@@ -14,6 +14,7 @@ import JSONTools from "./pages/JSONTools";
 import PasswordGenerator from "./pages/PasswordGenerator";
 import PrivacyPolicyGenerator from "./pages/PrivacyPolicyGenerator";
 import TermsConditionsGenerator from "./pages/TermsConditionsGenerator";
+import MarkdownPreviewer from "./pages/MarkdownPreviewer";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/password-generator" element={<PasswordGenerator />} />
           <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
           <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
+          <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
