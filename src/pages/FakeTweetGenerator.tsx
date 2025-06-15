@@ -166,9 +166,9 @@ const FakeTweetGenerator = () => {
               // Fix SVG badge positioning
               const svgElements = clonedElement.querySelectorAll('svg');
               svgElements.forEach(svg => {
-                (svg as HTMLElement).style.display = 'inline-block';
-                (svg as HTMLElement).style.verticalAlign = 'middle';
-                (svg as HTMLElement).style.marginLeft = '4px';
+                (svg as SVGElement).style.display = 'inline-block';
+                (svg as SVGElement).style.verticalAlign = 'middle';
+                (svg as SVGElement).style.marginLeft = '4px';
               });
             }
           }
