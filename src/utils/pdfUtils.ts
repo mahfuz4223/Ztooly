@@ -16,26 +16,27 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
   try {
     console.log('Starting PDF compression...');
     const arrayBuffer = await file.arrayBuffer();
-    
-    // Always ignore encryption to avoid failure on encrypted PDFs
     const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-    
-    // Compression settings: "low" = more compression, "high" = less
+
+    // Tweaked compression settings for stronger effect at "low"
     const compressionSettings = {
-      low: { useObjectStreams: true, compress: true, objectCompressionLevel: 6 },
-      medium: { useObjectStreams: true, compress: true, objectCompressionLevel: 3 },
-      high: { useObjectStreams: false, compress: false, objectCompressionLevel: 0 }
+      // Lower numbers = more compression, less quality
+      // pdf-lib does not allow image downsampling, but we set internal PDF stream compression as strong as possible
+      low:    { useObjectStreams: true, compress: true, objectCompressionLevel: 9 },  // maximum
+      medium: { useObjectStreams: true, compress: true, objectCompressionLevel: 6 },
+      high:   { useObjectStreams: false, compress: false, objectCompressionLevel: 0 }
     };
     const settings = compressionSettings[quality];
 
+    // In pdf-lib, compress/objectCompressionLevel only affects PDF object streams, not images, so result depends on original file content
     const pdfBytes = await pdfDoc.save({
       useObjectStreams: settings.useObjectStreams,
       addDefaultPage: false,
-      // compress option is already default in pdf-lib
+      // compress is default true, objectCompressionLevel is new in recent versions
+      objectCompressionLevel: settings.objectCompressionLevel
     });
 
-    // Check for 0 byte save (= blank PDF due to input error), throw clear message
-    if (!pdfBytes || pdfBytes.length < 100 /* arbitrary minimum valid PDF size */) {
+    if (!pdfBytes || pdfBytes.length < 100) {
       throw new Error('PDF could not be compressed. The file may be corrupted or invalid.');
     }
 
