@@ -8,31 +8,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Upload, Download, RotateCcw, Type, Image as ImageIcon, Grid2X2, AlignLeft } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Upload, Download, RotateCcw, Type, Image as ImageIcon, Grid, Palette, Settings, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ImageWatermarker = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [watermarkedImage, setWatermarkedImage] = useState<string | null>(null);
-  const [watermarkText, setWatermarkText] = useState('Watermark');
-  const [fontSize, setFontSize] = useState([24]);
+  const [watermarkText, setWatermarkText] = useState('© Your Watermark');
+  const [fontSize, setFontSize] = useState([32]);
   const [fontFamily, setFontFamily] = useState('Arial');
   const [fontColor, setFontColor] = useState('#ffffff');
-  const [opacity, setOpacity] = useState([70]);
+  const [opacity, setOpacity] = useState([80]);
   const [position, setPosition] = useState('bottom-right');
   const [rotation, setRotation] = useState([0]);
-  const [offsetX, setOffsetX] = useState([20]);
-  const [offsetY, setOffsetY] = useState([20]);
-  const [shadowBlur, setShadowBlur] = useState([2]);
+  const [offsetX, setOffsetX] = useState([30]);
+  const [offsetY, setOffsetY] = useState([30]);
+  const [shadowBlur, setShadowBlur] = useState([4]);
   const [shadowColor, setShadowColor] = useState('#000000');
-  const [strokeWidth, setStrokeWidth] = useState([0]);
+  const [strokeWidth, setStrokeWidth] = useState([1]);
   const [strokeColor, setStrokeColor] = useState('#000000');
   
   // Tiled watermark settings
   const [isTiled, setIsTiled] = useState(false);
-  const [tileSpacingX, setTileSpacingX] = useState([100]);
-  const [tileSpacingY, setTileSpacingY] = useState([100]);
-  const [tileRotation, setTileRotation] = useState([-45]);
+  const [tileSpacingX, setTileSpacingX] = useState([150]);
+  const [tileSpacingY, setTileSpacingY] = useState([120]);
+  const [tileRotation, setTileRotation] = useState([-35]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,6 +52,7 @@ const ImageWatermarker = () => {
     reader.onload = (e) => {
       setOriginalImage(e.target?.result as string);
       setWatermarkedImage(null);
+      toast.success('Image uploaded successfully!');
     };
     reader.readAsDataURL(file);
   }, []);
@@ -170,7 +173,7 @@ const ImageWatermarker = () => {
       }
 
       // Convert to data URL
-      const watermarkedDataURL = canvas.toDataURL('image/png');
+      const watermarkedDataURL = canvas.toDataURL('image/png', 0.95);
       setWatermarkedImage(watermarkedDataURL);
       toast.success('Watermark applied successfully!');
     };
@@ -186,7 +189,7 @@ const ImageWatermarker = () => {
 
     const link = document.createElement('a');
     link.href = watermarkedImage;
-    link.download = 'watermarked-image.png';
+    link.download = `watermarked-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -194,389 +197,481 @@ const ImageWatermarker = () => {
   }, [watermarkedImage]);
 
   const resetSettings = () => {
-    setWatermarkText('Watermark');
-    setFontSize([24]);
+    setWatermarkText('© Your Watermark');
+    setFontSize([32]);
     setFontFamily('Arial');
     setFontColor('#ffffff');
-    setOpacity([70]);
+    setOpacity([80]);
     setPosition('bottom-right');
     setRotation([0]);
-    setOffsetX([20]);
-    setOffsetY([20]);
-    setShadowBlur([2]);
+    setOffsetX([30]);
+    setOffsetY([30]);
+    setShadowBlur([4]);
     setShadowColor('#000000');
-    setStrokeWidth([0]);
+    setStrokeWidth([1]);
     setStrokeColor('#000000');
     setIsTiled(false);
-    setTileSpacingX([100]);
-    setTileSpacingY([100]);
-    setTileRotation([-45]);
+    setTileSpacingX([150]);
+    setTileSpacingY([120]);
+    setTileRotation([-35]);
     toast.success('Settings reset to default');
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Image Watermarker</h1>
-        <p className="text-muted-foreground">Add custom text watermarks to your images with advanced styling and tiling options</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="container mx-auto px-6 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-slate-900 mb-3">Professional Image Watermarker</h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Add stunning watermarks to your images with advanced customization options. 
+            Perfect for photographers, designers, and content creators.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Settings Panel */}
-        <div className="xl:col-span-2 space-y-6">
-          {/* Upload Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Upload Image
-              </CardTitle>
-              <CardDescription>Select an image to add watermark to</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                variant="outline"
-                className="w-full h-24 border-dashed"
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <ImageIcon className="h-8 w-8" />
-                  <span>Choose Image or Drag & Drop</span>
-                </div>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Watermark Mode */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Grid2X2 className="h-5 w-5" />
-                Watermark Mode
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Tiled Watermark</Label>
-                  <p className="text-sm text-muted-foreground">Apply watermark across entire image</p>
-                </div>
-                <Switch checked={isTiled} onCheckedChange={setIsTiled} />
-              </div>
-
-              {isTiled && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="space-y-2">
-                    <Label>Horizontal Spacing</Label>
-                    <Slider
-                      value={tileSpacingX}
-                      onValueChange={setTileSpacingX}
-                      max={300}
-                      min={50}
-                      step={10}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{tileSpacingX[0]}px</div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Settings Panel */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Upload Section */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Upload className="h-5 w-5 text-blue-600" />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Vertical Spacing</Label>
-                    <Slider
-                      value={tileSpacingY}
-                      onValueChange={setTileSpacingY}
-                      max={300}
-                      min={50}
-                      step={10}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{tileSpacingY[0]}px</div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Tile Rotation</Label>
-                    <Slider
-                      value={tileRotation}
-                      onValueChange={setTileRotation}
-                      max={90}
-                      min={-90}
-                      step={5}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{tileRotation[0]}°</div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Text Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Type className="h-5 w-5" />
-                Text Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="watermark-text">Watermark Text</Label>
-                <Textarea
-                  id="watermark-text"
-                  value={watermarkText}
-                  onChange={(e) => setWatermarkText(e.target.value)}
-                  placeholder="Enter your watermark text"
-                  rows={2}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Font Size</Label>
-                  <Slider
-                    value={fontSize}
-                    onValueChange={setFontSize}
-                    max={100}
-                    min={8}
-                    step={1}
-                  />
-                  <div className="text-xs text-muted-foreground text-center">{fontSize[0]}px</div>
-                </div>
-
-                <div>
-                  <Label>Font Family</Label>
-                  <Select value={fontFamily} onValueChange={setFontFamily}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Arial">Arial</SelectItem>
-                      <SelectItem value="Helvetica">Helvetica</SelectItem>
-                      <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Verdana">Verdana</SelectItem>
-                      <SelectItem value="Courier New">Courier New</SelectItem>
-                      <SelectItem value="Impact">Impact</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Font Color</Label>
-                  <div className="flex gap-2 items-center mt-2">
-                    <Input
-                      type="color"
-                      value={fontColor}
-                      onChange={(e) => setFontColor(e.target.value)}
-                      className="w-16 h-10"
-                    />
-                    <Input
-                      type="text"
-                      value={fontColor}
-                      onChange={(e) => setFontColor(e.target.value)}
-                      placeholder="#ffffff"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Opacity</Label>
-                  <Slider
-                    value={opacity}
-                    onValueChange={setOpacity}
-                    max={100}
-                    min={10}
-                    step={5}
-                  />
-                  <div className="text-xs text-muted-foreground text-center">{opacity[0]}%</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Position & Effects (only show when not tiled) */}
-          {!isTiled && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlignLeft className="h-5 w-5" />
-                  Position & Effects
+                  Upload Your Image
                 </CardTitle>
+                <CardDescription className="text-slate-600">
+                  Select a high-quality image to add your professional watermark
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <Label>Position</Label>
-                  <Select value={position} onValueChange={setPosition}>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="top-left">Top Left</SelectItem>
-                      <SelectItem value="top-center">Top Center</SelectItem>
-                      <SelectItem value="top-right">Top Right</SelectItem>
-                      <SelectItem value="center-left">Center Left</SelectItem>
-                      <SelectItem value="center">Center</SelectItem>
-                      <SelectItem value="center-right">Center Right</SelectItem>
-                      <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                      <SelectItem value="bottom-center">Bottom Center</SelectItem>
-                      <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Offset X</Label>
-                    <Slider
-                      value={offsetX}
-                      onValueChange={setOffsetX}
-                      max={100}
-                      min={0}
-                      step={1}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{offsetX[0]}px</div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Offset Y</Label>
-                    <Slider
-                      value={offsetY}
-                      onValueChange={setOffsetY}
-                      max={100}
-                      min={0}
-                      step={1}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{offsetY[0]}px</div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Rotation</Label>
-                    <Slider
-                      value={rotation}
-                      onValueChange={setRotation}
-                      max={360}
-                      min={-360}
-                      step={5}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{rotation[0]}°</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Shadow Blur</Label>
-                    <Slider
-                      value={shadowBlur}
-                      onValueChange={setShadowBlur}
-                      max={20}
-                      min={0}
-                      step={1}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{shadowBlur[0]}px</div>
-                  </div>
-                  <div>
-                    <Label>Shadow Color</Label>
-                    <Input
-                      type="color"
-                      value={shadowColor}
-                      onChange={(e) => setShadowColor(e.target.value)}
-                      className="mt-2 w-full h-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Stroke Width</Label>
-                    <Slider
-                      value={strokeWidth}
-                      onValueChange={setStrokeWidth}
-                      max={10}
-                      min={0}
-                      step={1}
-                    />
-                    <div className="text-xs text-muted-foreground text-center">{strokeWidth[0]}px</div>
-                  </div>
-                  <div>
-                    <Label>Stroke Color</Label>
-                    <Input
-                      type="color"
-                      value={strokeColor}
-                      onChange={(e) => setStrokeColor(e.target.value)}
-                      className="mt-2 w-full h-10"
-                    />
+              <CardContent>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative cursor-pointer group"
+                >
+                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors group-hover:bg-blue-50/50">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-4 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+                        <ImageIcon className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-1">Drop your image here</h3>
+                        <p className="text-sm text-slate-500">or click to browse files</p>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        PNG, JPG, JPEG supported
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-4">
-            <Button onClick={applyWatermark} className="flex-1" size="lg">
-              Apply Watermark
-            </Button>
-            <Button onClick={resetSettings} variant="outline" size="lg">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reset
-            </Button>
+            {/* Watermark Mode */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Grid className="h-5 w-5 text-purple-600" />
+                  </div>
+                  Watermark Style
+                </CardTitle>
+                <CardDescription className="text-slate-600">
+                  Choose between single placement or tiled pattern across the entire image
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Tiled Pattern</Label>
+                    <p className="text-sm text-slate-500">Apply watermark across entire image</p>
+                  </div>
+                  <Switch checked={isTiled} onCheckedChange={setIsTiled} />
+                </div>
+
+                {isTiled && (
+                  <div className="space-y-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h4 className="font-medium text-purple-900 mb-3">Tiling Options</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Horizontal Spacing</Label>
+                        <Slider
+                          value={tileSpacingX}
+                          onValueChange={setTileSpacingX}
+                          max={300}
+                          min={50}
+                          step={10}
+                          className="w-full"
+                        />
+                        <div className="text-xs text-center text-slate-500 bg-white px-2 py-1 rounded">{tileSpacingX[0]}px</div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Vertical Spacing</Label>
+                        <Slider
+                          value={tileSpacingY}
+                          onValueChange={setTileSpacingY}
+                          max={300}
+                          min={50}
+                          step={10}
+                          className="w-full"
+                        />
+                        <div className="text-xs text-center text-slate-500 bg-white px-2 py-1 rounded">{tileSpacingY[0]}px</div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Tile Rotation</Label>
+                        <Slider
+                          value={tileRotation}
+                          onValueChange={setTileRotation}
+                          max={90}
+                          min={-90}
+                          step={5}
+                          className="w-full"
+                        />
+                        <div className="text-xs text-center text-slate-500 bg-white px-2 py-1 rounded">{tileRotation[0]}°</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Text Settings */}
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Type className="h-5 w-5 text-green-600" />
+                  </div>
+                  Text Customization
+                </CardTitle>
+                <CardDescription className="text-slate-600">
+                  Customize your watermark text and typography settings
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Watermark Text</Label>
+                  <Textarea
+                    value={watermarkText}
+                    onChange={(e) => setWatermarkText(e.target.value)}
+                    placeholder="Enter your watermark text..."
+                    rows={2}
+                    className="resize-none border-slate-300 focus:border-blue-500"
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Font Size</Label>
+                    <Slider
+                      value={fontSize}
+                      onValueChange={setFontSize}
+                      max={120}
+                      min={12}
+                      step={2}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-center text-slate-500 bg-slate-100 px-3 py-1 rounded">{fontSize[0]}px</div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Font Family</Label>
+                    <Select value={fontFamily} onValueChange={setFontFamily}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Arial">Arial</SelectItem>
+                        <SelectItem value="Helvetica">Helvetica</SelectItem>
+                        <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                        <SelectItem value="Georgia">Georgia</SelectItem>
+                        <SelectItem value="Verdana">Verdana</SelectItem>
+                        <SelectItem value="Courier New">Courier New</SelectItem>
+                        <SelectItem value="Impact">Impact</SelectItem>
+                        <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Font Color</Label>
+                    <div className="flex gap-3 items-center">
+                      <Input
+                        type="color"
+                        value={fontColor}
+                        onChange={(e) => setFontColor(e.target.value)}
+                        className="w-16 h-12 p-1 border-slate-300"
+                      />
+                      <Input
+                        type="text"
+                        value={fontColor}
+                        onChange={(e) => setFontColor(e.target.value)}
+                        placeholder="#ffffff"
+                        className="flex-1 border-slate-300 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Opacity</Label>
+                    <Slider
+                      value={opacity}
+                      onValueChange={setOpacity}
+                      max={100}
+                      min={10}
+                      step={5}
+                      className="w-full"
+                    />
+                    <div className="text-sm text-center text-slate-500 bg-slate-100 px-3 py-1 rounded">{opacity[0]}%</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Position & Effects (only show when not tiled) */}
+            {!isTiled && (
+              <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-xl">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <Settings className="h-5 w-5 text-orange-600" />
+                    </div>
+                    Position & Effects
+                  </CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Fine-tune watermark placement and visual effects
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Position</Label>
+                    <Select value={position} onValueChange={setPosition}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top-left">Top Left</SelectItem>
+                        <SelectItem value="top-center">Top Center</SelectItem>
+                        <SelectItem value="top-right">Top Right</SelectItem>
+                        <SelectItem value="center-left">Center Left</SelectItem>
+                        <SelectItem value="center">Center</SelectItem>
+                        <SelectItem value="center-right">Center Right</SelectItem>
+                        <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                        <SelectItem value="bottom-center">Bottom Center</SelectItem>
+                        <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">X Offset</Label>
+                      <Slider
+                        value={offsetX}
+                        onValueChange={setOffsetX}
+                        max={200}
+                        min={0}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="text-xs text-center text-slate-500 bg-slate-100 px-2 py-1 rounded">{offsetX[0]}px</div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Y Offset</Label>
+                      <Slider
+                        value={offsetY}
+                        onValueChange={setOffsetY}
+                        max={200}
+                        min={0}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="text-xs text-center text-slate-500 bg-slate-100 px-2 py-1 rounded">{offsetY[0]}px</div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Rotation</Label>
+                      <Slider
+                        value={rotation}
+                        onValueChange={setRotation}
+                        max={360}
+                        min={-360}
+                        step={5}
+                        className="w-full"
+                      />
+                      <div className="text-xs text-center text-slate-500 bg-slate-100 px-2 py-1 rounded">{rotation[0]}°</div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-slate-900">Visual Effects</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Shadow Blur</Label>
+                        <Slider
+                          value={shadowBlur}
+                          onValueChange={setShadowBlur}
+                          max={20}
+                          min={0}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="text-xs text-center text-slate-500 bg-slate-100 px-2 py-1 rounded">{shadowBlur[0]}px</div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Shadow Color</Label>
+                        <Input
+                          type="color"
+                          value={shadowColor}
+                          onChange={(e) => setShadowColor(e.target.value)}
+                          className="w-full h-12 p-1 border-slate-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Stroke Width</Label>
+                        <Slider
+                          value={strokeWidth}
+                          onValueChange={setStrokeWidth}
+                          max={10}
+                          min={0}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="text-xs text-center text-slate-500 bg-slate-100 px-2 py-1 rounded">{strokeWidth[0]}px</div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">Stroke Color</Label>
+                        <Input
+                          type="color"
+                          value={strokeColor}
+                          onChange={(e) => setStrokeColor(e.target.value)}
+                          className="w-full h-12 p-1 border-slate-300"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <Button 
+                onClick={applyWatermark} 
+                className="flex-1 h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg"
+                size="lg"
+              >
+                <Palette className="h-5 w-5 mr-2" />
+                Apply Watermark
+              </Button>
+              <Button 
+                onClick={resetSettings} 
+                variant="outline" 
+                className="h-14 px-8 border-slate-300 hover:bg-slate-50"
+                size="lg"
+              >
+                <RotateCcw className="h-5 w-5 mr-2" />
+                Reset
+              </Button>
+            </div>
+          </div>
+
+          {/* Preview Panel */}
+          <div className="lg:col-span-4">
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm sticky top-6">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Eye className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  Live Preview
+                </CardTitle>
+                <CardDescription className="text-slate-600">
+                  See your watermarked image in real-time
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {originalImage && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-slate-700">Original Image</Label>
+                    <div className="relative border-2 border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                      <img
+                        src={originalImage}
+                        alt="Original"
+                        className="w-full h-auto max-h-48 object-contain"
+                      />
+                      <Badge className="absolute top-2 left-2 bg-slate-900/80 text-white">
+                        Original
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
+                {watermarkedImage && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-slate-700">Watermarked Result</Label>
+                    <div className="relative border-2 border-green-200 rounded-lg overflow-hidden bg-slate-50">
+                      <img
+                        src={watermarkedImage}
+                        alt="Watermarked"
+                        className="w-full h-auto max-h-48 object-contain"
+                      />
+                      <Badge className="absolute top-2 left-2 bg-green-600 text-white">
+                        Watermarked
+                      </Badge>
+                    </div>
+                    <Button 
+                      onClick={downloadImage} 
+                      className="w-full h-12 bg-green-600 hover:bg-green-700 shadow-md" 
+                      size="lg"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Image
+                    </Button>
+                  </div>
+                )}
+
+                {!originalImage && (
+                  <div className="text-center py-16 px-4">
+                    <div className="space-y-4">
+                      <div className="p-4 bg-slate-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto">
+                        <ImageIcon className="h-10 w-10 text-slate-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2">No Image Selected</h3>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                          Upload an image above to start creating your professional watermark
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        {/* Preview Panel */}
-        <div className="space-y-6">
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-              <CardDescription>Live preview of your watermarked image</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {originalImage && (
-                <div>
-                  <Label className="text-sm font-medium">Original Image</Label>
-                  <div className="mt-2 border rounded-lg overflow-hidden bg-muted/20">
-                    <img
-                      src={originalImage}
-                      alt="Original"
-                      className="w-full h-auto max-h-48 object-contain"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {watermarkedImage && (
-                <div>
-                  <Label className="text-sm font-medium">Watermarked Image</Label>
-                  <div className="mt-2 border rounded-lg overflow-hidden bg-muted/20">
-                    <img
-                      src={watermarkedImage}
-                      alt="Watermarked"
-                      className="w-full h-auto max-h-48 object-contain"
-                    />
-                  </div>
-                  <Button onClick={downloadImage} className="w-full mt-4" size="lg">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Image
-                  </Button>
-                </div>
-              )}
-
-              {!originalImage && (
-                <div className="text-center py-16 text-muted-foreground">
-                  <ImageIcon className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                  <h3 className="font-medium mb-1">No Image Selected</h3>
-                  <p className="text-sm">Upload an image to start watermarking</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Hidden canvas for image processing */}
+        <canvas ref={canvasRef} className="hidden" />
       </div>
-
-      {/* Hidden canvas for image processing */}
-      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 };
