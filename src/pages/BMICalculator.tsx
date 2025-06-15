@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calculator, Info, Target, TrendingUp } from "lucide-react";
+import { Calculator, Info, Target, TrendingUp, Heart } from "lucide-react";
 
 const BMICalculator = () => {
   const [height, setHeight] = useState('');
@@ -121,209 +120,240 @@ const BMICalculator = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Calculator className="h-12 w-12 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+      <div className="container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-6">
+              <div className="bg-white p-4 rounded-full shadow-lg">
+                <Calculator className="h-12 w-12 text-blue-600" />
+              </div>
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">BMI Calculator</h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Calculate your Body Mass Index with multiple units and get personalized health insights
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Advanced BMI Calculator</h1>
-          <p className="text-gray-600">
-            Calculate your Body Mass Index with multiple units and get personalized health insights
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Calculator Card */}
-          <Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Calculator Card */}
+            <div className="lg:col-span-1">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calculator className="h-5 w-5" />
+                    Calculate Your BMI
+                  </CardTitle>
+                  <CardDescription className="text-blue-100">
+                    Enter your measurements below
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* Height Input */}
+                  <div className="space-y-3">
+                    <Label htmlFor="height" className="text-sm font-semibold text-gray-700">Height</Label>
+                    <div className="flex gap-3">
+                      <Input
+                        id="height"
+                        type="number"
+                        placeholder="Enter height"
+                        value={height}
+                        onChange={(e) => setHeight(e.target.value)}
+                        className="flex-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <Select value={heightUnit} onValueChange={setHeightUnit}>
+                        <SelectTrigger className="w-24 border-gray-200">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cm">cm</SelectItem>
+                          <SelectItem value="m">m</SelectItem>
+                          <SelectItem value="ft">ft</SelectItem>
+                          <SelectItem value="in">in</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Weight Input */}
+                  <div className="space-y-3">
+                    <Label htmlFor="weight" className="text-sm font-semibold text-gray-700">Weight</Label>
+                    <div className="flex gap-3">
+                      <Input
+                        id="weight"
+                        type="number"
+                        placeholder="Enter weight"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        className="flex-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <Select value={weightUnit} onValueChange={setWeightUnit}>
+                        <SelectTrigger className="w-24 border-gray-200">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="lbs">lbs</SelectItem>
+                          <SelectItem value="st">st</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Age and Gender */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label htmlFor="age" className="text-sm font-semibold text-gray-700">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="Years"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">Gender</Label>
+                      <Select value={gender} onValueChange={setGender}>
+                        <SelectTrigger className="border-gray-200">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button 
+                      onClick={calculateBMI} 
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3"
+                    >
+                      <Calculator className="h-4 w-4 mr-2" />
+                      Calculate BMI
+                    </Button>
+                    <Button onClick={clearCalculation} variant="outline" className="px-6 border-gray-300 hover:bg-gray-50">
+                      Clear
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Results Section */}
+            <div className="lg:col-span-2 space-y-6">
+              {bmi !== null ? (
+                <>
+                  {/* BMI Result Card */}
+                  <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                        <Heart className="h-6 w-6 text-red-500" />
+                        Your BMI Result
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+                        <div className="text-6xl font-bold text-blue-600 mb-2">{bmi}</div>
+                        <div className={`text-2xl font-semibold ${getCategoryColor(category)} mb-4`}>
+                          {category}
+                        </div>
+                        
+                        {idealWeight && (
+                          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 className="font-semibold text-blue-900 mb-2 flex items-center justify-center gap-2">
+                              <Target className="h-4 w-4" />
+                              Ideal Weight Range
+                            </h4>
+                            <p className="text-blue-800 text-lg font-medium">
+                              {idealWeight.min} - {idealWeight.max} kg
+                              {weightUnit !== 'kg' && (
+                                <span className="text-sm ml-2 font-normal">
+                                  ({(idealWeight.min * (weightUnit === 'lbs' ? 2.20462 : 0.157473)).toFixed(1)} - {(idealWeight.max * (weightUnit === 'lbs' ? 2.20462 : 0.157473)).toFixed(1)} {weightUnit})
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Health Tips Card */}
+                  {category && (
+                    <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                      <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+                        <CardTitle className="flex items-center gap-2">
+                          <Info className="h-5 w-5" />
+                          Personalized Health Tips
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <div className="grid gap-3">
+                          {getHealthTips(category, age, gender).map((tip, index) => (
+                            <div key={index} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                              <span className="text-green-600 mt-1 text-lg">•</span>
+                              <span className="text-green-800 font-medium">{tip}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              ) : (
+                <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+                  <CardContent className="p-12 text-center">
+                    <TrendingUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">Ready to Calculate</h3>
+                    <p className="text-gray-500">Enter your height and weight to see your BMI results and personalized health tips.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* BMI Categories Reference */}
+          <Card className="mt-10 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Calculate Your BMI</CardTitle>
-              <CardDescription>
-                Enter your measurements to calculate your Body Mass Index
-              </CardDescription>
+              <CardTitle className="text-center text-2xl">BMI Categories Reference</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Height Input */}
-              <div className="space-y-2">
-                <Label htmlFor="height">Height</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="height"
-                    type="number"
-                    placeholder="Enter height"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Select value={heightUnit} onValueChange={setHeightUnit}>
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cm">cm</SelectItem>
-                      <SelectItem value="m">m</SelectItem>
-                      <SelectItem value="ft">ft</SelectItem>
-                      <SelectItem value="in">in</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-6 border-2 border-blue-200 rounded-xl bg-blue-50 text-center">
+                  <div className="text-blue-600 font-bold text-lg mb-2">Underweight</div>
+                  <div className="text-blue-700 font-medium">BMI less than 18.5</div>
                 </div>
-              </div>
-
-              {/* Weight Input */}
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="weight"
-                    type="number"
-                    placeholder="Enter weight"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Select value={weightUnit} onValueChange={setWeightUnit}>
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="kg">kg</SelectItem>
-                      <SelectItem value="lbs">lbs</SelectItem>
-                      <SelectItem value="st">st</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="p-6 border-2 border-green-200 rounded-xl bg-green-50 text-center">
+                  <div className="text-green-600 font-bold text-lg mb-2">Normal weight</div>
+                  <div className="text-green-700 font-medium">BMI 18.5 - 24.9</div>
                 </div>
-              </div>
-
-              {/* Age and Gender */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="age">Age (optional)</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Years"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                  />
+                <div className="p-6 border-2 border-yellow-200 rounded-xl bg-yellow-50 text-center">
+                  <div className="text-yellow-600 font-bold text-lg mb-2">Overweight</div>
+                  <div className="text-yellow-700 font-medium">BMI 25 - 29.9</div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender (optional)</Label>
-                  <Select value={gender} onValueChange={setGender}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="p-6 border-2 border-red-200 rounded-xl bg-red-50 text-center">
+                  <div className="text-red-600 font-bold text-lg mb-2">Obese</div>
+                  <div className="text-red-700 font-medium">BMI 30 or greater</div>
                 </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button onClick={calculateBMI} className="flex-1">
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Calculate BMI
-                </Button>
-                <Button onClick={clearCalculation} variant="outline">
-                  Clear
-                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Results Card */}
-          {bmi !== null && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Your Results
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2">Your BMI</h3>
-                  <div className="text-4xl font-bold text-primary mb-2">{bmi}</div>
-                  <div className={`text-lg font-medium ${getCategoryColor(category)}`}>
-                    {category}
-                  </div>
-                </div>
-
-                {idealWeight && (
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                      <Target className="h-4 w-4" />
-                      Ideal Weight Range
-                    </h4>
-                    <p className="text-blue-800">
-                      {idealWeight.min} - {idealWeight.max} kg
-                      {weightUnit !== 'kg' && (
-                        <span className="text-sm ml-2">
-                          ({(idealWeight.min * (weightUnit === 'lbs' ? 2.20462 : 0.157473)).toFixed(1)} - {(idealWeight.max * (weightUnit === 'lbs' ? 2.20462 : 0.157473)).toFixed(1)} {weightUnit})
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                )}
-
-                {category && (
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      Health Tips
-                    </h4>
-                    <ul className="text-green-800 text-sm space-y-2">
-                      {getHealthTips(category, age, gender).map((tip, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-green-600 mt-1">•</span>
-                          {tip}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* BMI Categories Reference */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>BMI Categories Reference</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 border rounded-lg">
-                <div className="text-blue-600 font-semibold">Underweight</div>
-                <div className="text-sm text-gray-600">BMI less than 18.5</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-green-600 font-semibold">Normal weight</div>
-                <div className="text-sm text-gray-600">BMI 18.5 - 24.9</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-yellow-600 font-semibold">Overweight</div>
-                <div className="text-sm text-gray-600">BMI 25 - 29.9</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-red-600 font-semibold">Obese</div>
-                <div className="text-sm text-gray-600">BMI 30 or greater</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Disclaimer */}
-        <div className="mt-8 p-4 bg-yellow-50 rounded-lg">
-          <h4 className="font-semibold text-yellow-900 mb-2">Important Disclaimer</h4>
-          <p className="text-yellow-800 text-sm">
-            BMI is a screening tool and doesn't directly measure body fat. It may not be accurate for athletes, 
-            elderly individuals, pregnant women, or those with certain medical conditions. Always consult with 
-            a healthcare professional for personalized health advice and before making significant lifestyle changes.
-          </p>
+          {/* Disclaimer */}
+          <div className="mt-8 p-6 bg-amber-50 rounded-xl border border-amber-200 shadow-lg">
+            <h4 className="font-bold text-amber-900 mb-3 text-lg">⚠️ Important Disclaimer</h4>
+            <p className="text-amber-800 leading-relaxed">
+              BMI is a screening tool and doesn't directly measure body fat. It may not be accurate for athletes, 
+              elderly individuals, pregnant women, or those with certain medical conditions. Always consult with 
+              a healthcare professional for personalized health advice and before making significant lifestyle changes.
+            </p>
+          </div>
         </div>
       </div>
     </div>
