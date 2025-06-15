@@ -38,52 +38,7 @@ const AIHeadlineGenerator = () => {
     { value: "marketing", label: "Marketing" }
   ];
 
-  const headlineTemplates = {
-    professional: [
-      "How to {topic}: A Complete Guide",
-      "{topic}: Best Practices for 2024",
-      "The Ultimate {topic} Strategy",
-      "5 Essential {topic} Tips Every Professional Should Know",
-      "Transform Your {topic} with These Proven Methods"
-    ],
-    casual: [
-      "Why Everyone's Talking About {topic}",
-      "The Simple Truth About {topic}",
-      "{topic} Made Easy: Your Quick Guide",
-      "What I Learned About {topic} (And You Should Too)",
-      "The Real Deal on {topic}"
-    ],
-    urgent: [
-      "URGENT: {topic} Changes You Need to Know Now",
-      "Don't Miss Out: Critical {topic} Updates",
-      "Act Fast: {topic} Opportunity Ending Soon",
-      "Breaking: Major {topic} Developments",
-      "Time-Sensitive {topic} Alert"
-    ],
-    inspiring: [
-      "Unlock Your {topic} Potential Today",
-      "Transform Your Life with {topic}",
-      "The {topic} Journey That Changed Everything",
-      "Rise Above: Mastering {topic}",
-      "Your {topic} Success Story Starts Here"
-    ],
-    humorous: [
-      "Why {topic} is Like Pizza (Everyone Has an Opinion)",
-      "The Hilarious Truth About {topic}",
-      "{topic}: What They Don't Tell You",
-      "Confessions of a {topic} Enthusiast",
-      "The Funny Side of {topic}"
-    ],
-    mysterious: [
-      "The Secret Behind {topic} Revealed",
-      "What Experts Won't Tell You About {topic}",
-      "The Hidden Truth of {topic}",
-      "Mysterious {topic} Facts That Will Shock You",
-      "The {topic} Secret Nobody Talks About"
-    ]
-  };
-
-  const generateHeadlines = () => {
+  const generateHeadlines = async () => {
     if (!topic.trim()) {
       toast.error("Please enter a topic to generate headlines");
       return;
@@ -91,39 +46,89 @@ const AIHeadlineGenerator = () => {
 
     setIsGenerating(true);
     
-    // Simulate AI generation delay
-    setTimeout(() => {
-      const templates = headlineTemplates[tone as keyof typeof headlineTemplates];
-      const keywordList = keywords.split(',').map(k => k.trim()).filter(k => k);
+    try {
+      const keywordText = keywords ? ` Keywords to include: ${keywords}.` : '';
+      const industryText = industry !== 'general' ? ` Industry: ${industry}.` : '';
       
-      let generatedHeadlines = templates.map(template => 
-        template.replace(/{topic}/g, topic)
-      );
+      const prompt = `Generate 10 compelling and engaging headlines for the topic: "${topic}". 
+      Tone: ${tone}.${industryText}${keywordText}
+      
+      Requirements:
+      - Headlines should be attention-grabbing and clickable
+      - Keep them between 50-60 characters for SEO optimization
+      - Make them specific and actionable
+      - Use power words that trigger emotions
+      - Vary the headline structures and formats
+      
+      Return only the headlines, one per line, without numbering or bullets.`;
 
-      // Add keyword variations if keywords are provided
-      if (keywordList.length > 0) {
-        const keywordHeadlines = [
-          `${keywordList[0]}: The Complete ${topic} Guide`,
-          `Master ${topic} with ${keywordList[0]}`,
-          `${keywordList.join(', ')} and ${topic}: A Perfect Match`
-        ];
-        generatedHeadlines = [...generatedHeadlines, ...keywordHeadlines];
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAYLvZQ3zLz5r8yke7gCNQ4_hwdI8KdJEI`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.9,
+            topK: 1,
+            topP: 1,
+            maxOutputTokens: 2048,
+          },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
-      // Add industry-specific headlines
-      if (industry !== "general") {
-        const industryHeadlines = [
-          `${topic} for ${industry.charAt(0).toUpperCase() + industry.slice(1)} Professionals`,
-          `How ${industry.charAt(0).toUpperCase() + industry.slice(1)} Leaders Use ${topic}`,
-          `${topic} Trends Shaping the ${industry.charAt(0).toUpperCase() + industry.slice(1)} Industry`
-        ];
-        generatedHeadlines = [...generatedHeadlines, ...industryHeadlines];
-      }
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const generatedText = data.candidates[0].content.parts[0].text;
+        const headlineList = generatedText
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0 && !line.match(/^\d+\./))
+          .slice(0, 10);
 
-      setHeadlines(generatedHeadlines.slice(0, 10)); // Limit to 10 headlines
+        if (headlineList.length > 0) {
+          setHeadlines(headlineList);
+          toast.success(`Generated ${headlineList.length} AI-powered headlines!`);
+        } else {
+          throw new Error("No valid headlines generated");
+        }
+      } else {
+        throw new Error("Invalid response format from AI");
+      }
+    } catch (error) {
+      console.error('Error generating headlines:', error);
+      toast.error("Failed to generate headlines. Please try again.");
+    } finally {
       setIsGenerating(false);
-      toast.success(`Generated ${generatedHeadlines.slice(0, 10).length} headlines!`);
-    }, 1500);
+    }
   };
 
   const toggleHeadlineSelection = (headline: string) => {
@@ -171,13 +176,15 @@ Industry: ${industry}
 Keywords: ${keywords || 'None'}
 
 Headlines:
-${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
+${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}
+
+Generated using Google Gemini AI`;
 
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `headlines-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`;
+    a.download = `ai-headlines-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -204,7 +211,12 @@ ${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
             </div>
             <h1 className="text-3xl font-bold text-gray-900">AI Headline Generator</h1>
           </div>
-          <p className="text-gray-600 text-lg">Create compelling headlines that grab attention and drive engagement</p>
+          <p className="text-gray-600 text-lg">Create compelling headlines powered by Google Gemini AI</p>
+          <div className="mt-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              🤖 Powered by Google Gemini AI
+            </Badge>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -288,12 +300,12 @@ ${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
                     {isGenerating ? (
                       <>
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        Generating...
+                        Generating with AI...
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4" />
-                        Generate Headlines
+                        Generate AI Headlines
                       </>
                     )}
                   </Button>
@@ -315,7 +327,7 @@ ${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl font-semibold text-gray-800 flex items-center gap-3">
                       <Target className="h-6 w-6 text-green-600" />
-                      Generated Headlines ({headlines.length})
+                      AI Generated Headlines ({headlines.length})
                     </CardTitle>
                     <div className="flex gap-2">
                       <Button
@@ -395,6 +407,36 @@ ${selectedHeadlines.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
 
           {/* Info Section */}
           <div className="space-y-6">
+            {/* AI Info Card */}
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-3">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                  AI Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-600">🤖</span>
+                    <span className="text-gray-600">Powered by Google Gemini AI for intelligent headline generation</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-600">🎯</span>
+                    <span className="text-gray-600">Context-aware headlines based on your topic and tone</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-600">✨</span>
+                    <span className="text-gray-600">Industry-specific optimization for better engagement</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-blue-600">🔄</span>
+                    <span className="text-gray-600">Generate fresh variations with each request</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Tips Card */}
             <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader className="pb-4">
