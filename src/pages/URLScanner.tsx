@@ -55,8 +55,8 @@ export default function URLScanner() {
                   required
                   className="flex-1"
                 />
-                <Button type="submit" isLoading={loading}>
-                  Scan URL
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Scanning..." : "Scan URL"}
                 </Button>
               </form>
 
