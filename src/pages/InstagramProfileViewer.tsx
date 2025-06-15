@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, User, ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle } from "lucide-react";
+import { Download, User, ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const InstagramProfileViewer = () => {
   const [username, setUsername] = useState('');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { toast } = useToast();
 
   const extractUsername = (input: string) => {
@@ -40,6 +41,7 @@ const InstagramProfileViewer = () => {
     }
 
     setIsLoading(true);
+    setImageError(false);
     const cleanUsername = extractUsername(username.trim());
     
     if (!cleanUsername) {
@@ -53,29 +55,30 @@ const InstagramProfileViewer = () => {
     }
 
     try {
-      // Note: This is a demo implementation. In a real app, you'd need a backend service
-      // to fetch Instagram data due to CORS and API restrictions
-      const mockProfileData = {
+      // For demonstration, we'll construct potential Instagram profile picture URLs
+      // Note: These URLs may not work due to Instagram's restrictions
+      const profilePicUrl = `https://www.instagram.com/${cleanUsername}/`;
+      const profilePicDirectUrl = `https://instagram.com/${cleanUsername}`;
+      
+      const profileData = {
         username: cleanUsername,
-        fullName: `${cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1)} User`,
-        profilePicUrl: `https://via.placeholder.com/400x400/e11d48/white?text=${cleanUsername.charAt(0).toUpperCase()}`,
-        profilePicUrlHD: `https://via.placeholder.com/1080x1080/e11d48/white?text=${cleanUsername.charAt(0).toUpperCase()}`,
-        isPrivate: false,
-        followerCount: Math.floor(Math.random() * 10000),
-        followingCount: Math.floor(Math.random() * 1000),
-        postCount: Math.floor(Math.random() * 500)
+        fullName: cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
+        profilePicUrl: `https://www.instagram.com/api/v1/users/web_profile_info/?username=${cleanUsername}`,
+        profileUrl: `https://www.instagram.com/${cleanUsername}/`,
+        isPrivate: null, // Unknown without API access
+        note: "Profile data is limited due to Instagram's API restrictions"
       };
 
-      setProfileData(mockProfileData);
+      setProfileData(profileData);
       
       toast({
-        title: "Success!",
-        description: "Profile data loaded successfully!"
+        title: "Profile Loaded",
+        description: "Click 'Open Profile' to view on Instagram",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to load profile data. Please try again.",
+        description: "Failed to process username. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -83,39 +86,18 @@ const InstagramProfileViewer = () => {
     }
   };
 
-  const downloadImage = async (url: string, filename: string) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-      
-      toast({
-        title: "Downloaded!",
-        description: "Profile picture saved to your device"
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to download image",
-        variant: "destructive"
-      });
-    }
+  const openInstagramProfile = (username: string) => {
+    const url = `https://www.instagram.com/${username}/`;
+    window.open(url, '_blank');
   };
 
-  const copyToClipboard = async (url: string) => {
+  const copyProfileUrl = async (username: string) => {
     try {
+      const url = `https://www.instagram.com/${username}/`;
       await navigator.clipboard.writeText(url);
       toast({
         title: "Copied!",
-        description: "Image URL copied to clipboard"
+        description: "Instagram profile URL copied to clipboard"
       });
     } catch (error) {
       toast({
@@ -124,10 +106,6 @@ const InstagramProfileViewer = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const openInNewTab = (url: string) => {
-    window.open(url, '_blank');
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -150,7 +128,7 @@ const InstagramProfileViewer = () => {
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            View and download Instagram profile pictures in high definition quality. Perfect for viewing public profiles and saving profile images.
+            View Instagram profiles quickly and easily. Open profiles directly on Instagram with a single click.
           </p>
         </div>
 
@@ -161,7 +139,7 @@ const InstagramProfileViewer = () => {
               <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
-              View Profile Picture
+              View Instagram Profile
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -182,7 +160,7 @@ const InstagramProfileViewer = () => {
                   disabled={isLoading}
                   className="h-12 px-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 transition-all duration-200 font-semibold"
                 >
-                  {isLoading ? 'Loading...' : 'View Profile'}
+                  {isLoading ? 'Processing...' : 'View Profile'}
                 </Button>
               </div>
             </div>
@@ -216,7 +194,7 @@ const InstagramProfileViewer = () => {
                 <div>
                   <p className="font-medium text-amber-900 mb-2">Important Note:</p>
                   <p className="text-amber-800">
-                    This tool only works with public Instagram profiles. Private profiles cannot be accessed due to Instagram's privacy settings.
+                    Due to Instagram's API restrictions and privacy policies, this tool will redirect you to the official Instagram profile page. Profile pictures and data cannot be directly accessed or downloaded from third-party applications.
                   </p>
                 </div>
               </div>
@@ -228,143 +206,67 @@ const InstagramProfileViewer = () => {
         {profileData && (
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Profile Information</h2>
-              <p className="text-gray-600">View and download profile picture in different qualities</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Profile Ready</h2>
+              <p className="text-gray-600">Click the buttons below to view the profile on Instagram</p>
             </div>
             
-            <div className="grid gap-8 lg:grid-cols-2">
-              {/* Profile Info Card */}
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                    <User className="h-5 w-5" />
-                    Profile Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-center mb-6">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gradient-to-r from-pink-500 to-purple-500 p-1">
-                      <img
-                        src={profileData.profilePicUrl}
-                        alt={`${profileData.username}'s profile`}
-                        className="w-full h-full object-cover rounded-full"
-                      />
+            <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm max-w-2xl mx-auto">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-semibold flex items-center gap-2 justify-center">
+                  <User className="h-5 w-5" />
+                  @{profileData.username}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-center mb-6">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gradient-to-r from-pink-500 to-purple-500 p-1 bg-gradient-to-r from-pink-500 to-purple-500">
+                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
+                      <Instagram className="h-12 w-12 text-gray-400" />
                     </div>
                   </div>
+                </div>
+                
+                <div className="space-y-3 text-center">
+                  <h3 className="text-2xl font-bold text-gray-900">@{profileData.username}</h3>
+                  <p className="text-lg text-gray-600">{profileData.fullName}</p>
+                </div>
+                
+                <div className="space-y-4 pt-4 border-t">
+                  <Button
+                    onClick={() => openInstagramProfile(profileData.username)}
+                    className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 h-12 text-lg"
+                  >
+                    <Eye className="h-5 w-5 mr-2" />
+                    Open Instagram Profile
+                  </Button>
                   
-                  <div className="space-y-3 text-center">
-                    <h3 className="text-2xl font-bold text-gray-900">@{profileData.username}</h3>
-                    <p className="text-lg text-gray-600">{profileData.fullName}</p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => copyProfileUrl(profileData.username)}
+                      className="flex-1 border-2 h-12"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Profile URL
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => openInstagramProfile(profileData.username)}
+                      className="flex-1 border-2 h-12"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View on Instagram
+                    </Button>
                   </div>
-                  
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-gray-900">{profileData.postCount}</p>
-                      <p className="text-sm text-gray-500">Posts</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-gray-900">{profileData.followerCount.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">Followers</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-gray-900">{profileData.followingCount}</p>
-                      <p className="text-sm text-gray-500">Following</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Download Options Card */}
-              <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                    <Download className="h-5 w-5" />
-                    Download Options
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="p-4 border-2 border-dashed border-gray-200 rounded-xl">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">Standard Quality</h4>
-                          <p className="text-sm text-gray-500">400x400 pixels</p>
-                        </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                          Fast
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => downloadImage(profileData.profilePicUrl, `${profileData.username}_profile_standard.jpg`)}
-                          className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download Standard
-                        </Button>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => copyToClipboard(profileData.profilePicUrl)}
-                            className="flex-1 border-2"
-                          >
-                            <Copy className="h-4 w-4 mr-1" />
-                            Copy URL
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => openInNewTab(profileData.profilePicUrl)}
-                            className="flex-1 border-2"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Open
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 border-2 border-dashed border-purple-200 rounded-xl bg-purple-50">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">HD Quality</h4>
-                          <p className="text-sm text-gray-500">1080x1080 pixels</p>
-                        </div>
-                        <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs font-semibold">
-                          Premium
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        <Button
-                          onClick={() => downloadImage(profileData.profilePicUrlHD, `${profileData.username}_profile_hd.jpg`)}
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download HD
-                        </Button>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => copyToClipboard(profileData.profilePicUrlHD)}
-                            className="flex-1 border-2"
-                          >
-                            <Copy className="h-4 w-4 mr-1" />
-                            Copy URL
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => openInNewTab(profileData.profilePicUrlHD)}
-                            className="flex-1 border-2"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Open
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-sm text-gray-600 text-center">
+                    <strong>Note:</strong> {profileData.note}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -377,7 +279,7 @@ const InstagramProfileViewer = () => {
               </div>
               <h3 className="text-2xl font-semibold mb-3 text-gray-900">Ready to View Profile</h3>
               <p className="text-gray-600 text-center max-w-md leading-relaxed">
-                Enter an Instagram username or profile URL above and click "View Profile" to see the profile picture and download options.
+                Enter an Instagram username or profile URL above and click "View Profile" to access the Instagram profile page directly.
               </p>
             </CardContent>
           </Card>
