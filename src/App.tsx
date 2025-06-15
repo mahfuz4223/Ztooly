@@ -39,6 +39,7 @@ import FakeAddressGenerator from "./pages/FakeAddressGenerator";
 import RandomUserProfileGenerator from "./pages/RandomUserProfileGenerator";
 import AIImageCaptionGenerator from "./pages/AIImageCaptionGenerator";
 import SocialMediaBioGenerator from "./pages/SocialMediaBioGenerator";
+import VideoScriptHookGenerator from "./pages/VideoScriptHookGenerator";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +96,7 @@ const AppContent = () => (
       <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
       <Route path="/youtube-title-generator" element={<YouTubeTitleGenerator />} />
       <Route path="/social-media-bio-generator" element={<SocialMediaBioGenerator />} />
+      <Route path="/video-script-hook-generator" element={<VideoScriptHookGenerator />} />
       <Route path="/ai-image-caption-generator" element={<AIImageCaptionGenerator />} />
       <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
       <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
