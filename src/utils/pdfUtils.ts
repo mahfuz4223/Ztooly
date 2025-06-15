@@ -1,3 +1,4 @@
+
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -20,18 +21,17 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
 
     // Adjusted compression settings for effect within pdf-lib's limits
     const compressionSettings = {
-      // pdf-lib supports compress (stream compression) and object stream optimization
-      low:    { useObjectStreams: true, compress: true },  // "maximum" available
-      medium: { useObjectStreams: true, compress: true },
-      high:   { useObjectStreams: false, compress: false }
+      // pdf-lib supports useObjectStreams for optimization
+      low:    { useObjectStreams: true },   // maximum available compression
+      medium: { useObjectStreams: true },
+      high:   { useObjectStreams: false }   // least compression for best quality
     };
     const settings = compressionSettings[quality];
 
-    // Remove objectCompressionLevel property -- not supported in SaveOptions!
+    // Only use supported SaveOptions properties
     const pdfBytes = await pdfDoc.save({
       useObjectStreams: settings.useObjectStreams,
-      addDefaultPage: false,
-      compress: settings.compress
+      addDefaultPage: false
     });
 
     if (!pdfBytes || pdfBytes.length < 100) {
