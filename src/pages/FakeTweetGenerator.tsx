@@ -12,16 +12,16 @@ import { toast } from "sonner";
 
 const FakeTweetGenerator = () => {
   const [tweetData, setTweetData] = useState({
-    username: "johndoe",
-    displayName: "John Doe",
-    isVerified: false,
+    username: "neiltyson",
+    displayName: "Neil deGrasse Tyson",
+    isVerified: true,
     profileImage: "",
-    tweetText: "This is a sample tweet! 🚀",
+    tweetText: "gaming #gg",
     timestamp: "2:30 PM",
     date: "Dec 15, 2024",
-    likes: "1,234",
-    retweets: "567",
-    replies: "89",
+    likes: "3,300",
+    retweets: "1,300",
+    replies: "102",
     theme: "light"
   });
 
@@ -64,13 +64,13 @@ const FakeTweetGenerator = () => {
     return parts.map((part, index) => {
       if (part.startsWith('#')) {
         return (
-          <span key={index} className="text-blue-500 hover:underline">
+          <span key={index} style={{ color: '#1d9bf0' }}>
             {part}
           </span>
         );
       } else if (part.startsWith('@')) {
         return (
-          <span key={index} className="text-blue-500 hover:underline">
+          <span key={index} style={{ color: '#1d9bf0' }}>
             {part}
           </span>
         );
@@ -79,42 +79,49 @@ const FakeTweetGenerator = () => {
     });
   };
 
-  const downloadTweet = () => {
+  const downloadTweet = async () => {
     setIsGenerating(true);
     const tweetElement = document.getElementById('fake-tweet');
     
     if (tweetElement) {
-      // Use html2canvas to capture the tweet
-      import('html2canvas').then(html2canvas => {
-        html2canvas.default(tweetElement, {
+      try {
+        const html2canvas = (await import('html2canvas')).default;
+        
+        // Create a clone of the element for rendering
+        const clonedElement = tweetElement.cloneNode(true) as HTMLElement;
+        clonedElement.style.position = 'absolute';
+        clonedElement.style.top = '-9999px';
+        clonedElement.style.left = '-9999px';
+        clonedElement.style.width = '598px'; // Fixed width for consistency
+        document.body.appendChild(clonedElement);
+
+        const canvas = await html2canvas(clonedElement, {
           backgroundColor: tweetData.theme === 'dark' ? '#000000' : '#ffffff',
-          scale: 3,
+          scale: 2,
           useCORS: true,
           allowTaint: false,
-          foreignObjectRendering: false,
+          width: 598,
+          height: clonedElement.offsetHeight,
           logging: false,
-          width: tweetElement.scrollWidth,
-          height: tweetElement.scrollHeight,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: tweetElement.scrollWidth,
-          windowHeight: tweetElement.scrollHeight
-        }).then(canvas => {
-          const link = document.createElement('a');
-          link.download = `fake-tweet-${Date.now()}.png`;
-          link.href = canvas.toDataURL('image/png', 1.0);
-          link.click();
-          toast.success("Tweet image downloaded!");
-          setIsGenerating(false);
-        }).catch((error) => {
-          console.error('Error generating image:', error);
-          toast.error("Failed to download tweet image");
-          setIsGenerating(false);
+          ignoreElements: (element) => {
+            return element.tagName === 'BUTTON' || element.classList.contains('no-capture');
+          }
         });
-      }).catch(() => {
-        toast.error("Download feature not available");
+
+        // Remove the cloned element
+        document.body.removeChild(clonedElement);
+
+        const link = document.createElement('a');
+        link.download = `fake-tweet-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+        toast.success("Tweet image downloaded!");
+      } catch (error) {
+        console.error('Error generating image:', error);
+        toast.error("Failed to download tweet image");
+      } finally {
         setIsGenerating(false);
-      });
+      }
     }
   };
 
@@ -374,6 +381,7 @@ const FakeTweetGenerator = () => {
                   } max-w-lg mx-auto shadow-lg`}
                   style={{
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                    width: '598px'
                   }}
                 >
                   {/* Tweet Header */}
