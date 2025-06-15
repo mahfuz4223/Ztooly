@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +32,7 @@ import ReadingTimeEstimator from "./pages/ReadingTimeEstimator";
 import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
 import CSVToJSONConverter from "./pages/CSVToJSONConverter";
 import FakeIBANGenerator from "./pages/FakeIBANGenerator";
+import BarcodeGenerator from "./pages/BarcodeGenerator";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +64,7 @@ const AppContent = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/qr-generator" element={<QRGenerator />} />
+      <Route path="/barcode-generator" element={<BarcodeGenerator />} />
       <Route path="/background-remover" element={<BackgroundRemover />} />
       <Route path="/image-resizer" element={<ImageResizer />} />
       <Route path="/image-watermarker" element={<ImageWatermarker />} />
