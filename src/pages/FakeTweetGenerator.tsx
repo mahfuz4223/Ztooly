@@ -436,8 +436,10 @@ const FakeTweetGenerator = () => {
                   {/* Tweet Header */}
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'url(/lovable-uploads/2a4d7460-043e-486e-9b97-23656518c26b.png) center/cover' }}>
-                        {!tweetData.profileImage && (
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                        {tweetData.profileImage ? (
+                          <img src={tweetData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
                           <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
                             <span className="text-white font-bold text-sm">
                               {tweetData.displayName.charAt(0).toUpperCase()}
@@ -446,20 +448,21 @@ const FakeTweetGenerator = () => {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 flex-wrap">
+                        <div className="flex items-center gap-1">
                           <span 
-                            className="font-bold text-black"
+                            className="font-bold truncate"
                             style={{ 
                               fontSize: '15px',
                               color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419',
-                              fontWeight: '700'
+                              fontWeight: '700',
+                              maxWidth: '200px'
                             }}
                           >
                             {tweetData.displayName}
                           </span>
-                          {tweetData.isVerified && <VerificationBadge size={18} />}
+                          {tweetData.isVerified && <VerificationBadge size={20} />}
                           <span 
-                            className="text-gray-500"
+                            className="text-gray-500 truncate"
                             style={{ 
                               fontSize: '15px',
                               color: '#536471',
@@ -493,13 +496,14 @@ const FakeTweetGenerator = () => {
                   </div>
 
                   {/* Tweet Content */}
-                  <div className="mb-3 ml-13" style={{ marginLeft: '52px' }}>
+                  <div className="mb-3 pl-13" style={{ paddingLeft: '52px' }}>
                     <p 
                       className="whitespace-pre-wrap"
                       style={{ 
                         fontSize: '15px',
                         lineHeight: '20px',
-                        color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419'
+                        color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419',
+                        margin: 0
                       }}
                     >
                       {renderTweetText(tweetData.tweetText)}
@@ -507,7 +511,7 @@ const FakeTweetGenerator = () => {
                   </div>
 
                   {/* Tweet Actions */}
-                  <div className="flex items-center justify-between pt-3 ml-13" style={{ marginLeft: '52px', paddingTop: '12px' }}>
+                  <div className="flex items-center justify-between pt-3 pl-13" style={{ paddingLeft: '52px', paddingTop: '12px' }}>
                     <div className="flex items-center gap-1 group cursor-pointer">
                       <div className="p-2 rounded-full group-hover:bg-blue-50 -ml-2">
                         <MessageCircle className="h-4 w-4" style={{ color: '#536471' }} />
