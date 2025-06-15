@@ -13,6 +13,7 @@ import PDFToImage from "./pages/PDFToImage";
 import JSONTools from "./pages/JSONTools";
 import PasswordGenerator from "./pages/PasswordGenerator";
 import PrivacyPolicyGenerator from "./pages/PrivacyPolicyGenerator";
+import TermsConditionsGenerator from "./pages/TermsConditionsGenerator";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/json-tools" element={<JSONTools />} />
           <Route path="/password-generator" element={<PasswordGenerator />} />
           <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
+          <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
