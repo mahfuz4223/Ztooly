@@ -1,112 +1,148 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Heart, MessageCircle, Repeat2, Share, Download, Upload, Palette, Zap } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Share, Download, Link, Zap, AlertCircle, CheckCircle2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
 
 const TweetToImageConverter = () => {
   const { toast } = useToast();
   
-  const [tweetData, setTweetData] = useState({
-    username: 'johndoe',
-    displayName: 'John Doe',
-    handle: '@johndoe',
-    profileImage: '',
-    tweetText: 'Just discovered an amazing new tool! This Tweet to Image converter makes creating beautiful tweet graphics so easy. Perfect for social media content! 🚀 #TweetDesign #SocialMedia',
-    timestamp: '2:34 PM · Dec 15, 2024',
-    engagement: {
-      replies: '142',
-      retweets: '1.2K',
-      likes: '5.8K',
-      bookmarks: '234'
-    },
-    isVerified: true
-  });
-
+  const [tweetUrl, setTweetUrl] = useState('');
+  const [isValidUrl, setIsValidUrl] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tweetData, setTweetData] = useState(null);
   const [settings, setSettings] = useState({
     theme: 'light',
     borderRadius: 'rounded',
     padding: 'normal',
     showEngagement: true,
-    fontFamily: 'system',
-    backgroundColor: '#ffffff',
-    textColor: '#000000'
+    format: 'png',
+    quality: 'high'
   });
-
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const updateTweetData = (field: string, value: any) => {
-    setTweetData(prev => ({ ...prev, [field]: value }));
+  // Sample tweet data for demonstration
+  const sampleTweetData = {
+    id: '1234567890',
+    username: 'elonmusk',
+    displayName: 'Elon Musk',
+    handle: '@elonmusk',
+    profileImage: 'https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg',
+    tweetText: 'Just launched another rocket to Mars! 🚀 The future of humanity is multiplanetary. This is just the beginning of an incredible journey. #SpaceX #Mars #Innovation',
+    timestamp: '2:34 PM · Dec 15, 2024',
+    engagement: {
+      replies: '2.1K',
+      retweets: '15.2K',
+      likes: '89.4K',
+      bookmarks: '12.3K'
+    },
+    isVerified: true,
+    createdAt: new Date().toISOString()
   };
 
-  const updateEngagement = (field: string, value: string) => {
-    setTweetData(prev => ({
-      ...prev,
-      engagement: { ...prev.engagement, [field]: value }
-    }));
+  const validateTweetUrl = (url) => {
+    const tweetUrlPattern = /^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/;
+    return tweetUrlPattern.test(url);
   };
 
-  const updateSettings = (field: string, value: any) => {
-    setSettings(prev => ({ ...prev, [field]: value }));
+  const extractTweetId = (url) => {
+    const match = url.match(/status\/(\d+)/);
+    return match ? match[1] : null;
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        updateTweetData('profileImage', e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    const isValid = validateTweetUrl(tweetUrl);
+    setIsValidUrl(isValid);
+    if (!isValid && tweetUrl.length > 0) {
+      setTweetData(null);
+    }
+  }, [tweetUrl]);
+
+  const fetchTweetData = async () => {
+    if (!isValidUrl) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // In a real implementation, you would call Twitter API here
+      // For demo purposes, we'll use sample data
+      const tweetId = extractTweetId(tweetUrl);
+      
+      // Simulate different tweets based on URL
+      let mockData = { ...sampleTweetData };
+      
+      if (tweetUrl.includes('nasa')) {
+        mockData = {
+          ...mockData,
+          username: 'nasa',
+          displayName: 'NASA',
+          handle: '@nasa',
+          profileImage: 'https://pbs.twimg.com/profile_images/1321163587679784960/0ZxKlEKB_400x400.jpg',
+          tweetText: 'Incredible new images from the James Webb Space Telescope show the beauty and complexity of our universe. Each photo reveals secrets that have been hidden for billions of years. 🌌 #JWST #Space #Astronomy',
+          engagement: {
+            replies: '3.2K',
+            retweets: '18.7K',
+            likes: '125.6K',
+            bookmarks: '28.1K'
+          }
+        };
+      } else if (tweetUrl.includes('openai')) {
+        mockData = {
+          ...mockData,
+          username: 'openai',
+          displayName: 'OpenAI',
+          handle: '@openai',
+          profileImage: 'https://pbs.twimg.com/profile_images/1634058036934500352/b4F1eVpJ_400x400.jpg',
+          tweetText: 'Introducing our latest AI model with enhanced reasoning capabilities. This breakthrough represents a significant step forward in artificial intelligence research and development. 🤖 #AI #MachineLearning #Innovation',
+          engagement: {
+            replies: '5.8K',
+            retweets: '25.4K',
+            likes: '156.2K',
+            bookmarks: '42.7K'
+          }
+        };
+      }
+      
+      setTweetData(mockData);
+      toast({
+        title: "Success!",
+        description: "Tweet loaded successfully. You can now customize and download it.",
+      });
+      
+    } catch (error) {
+      console.error('Error fetching tweet:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tweet. Please check the URL and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const generateRandomEngagement = () => {
-    const replies = Math.floor(Math.random() * 1000) + 50;
-    const retweets = Math.floor(Math.random() * 5000) + 100;
-    const likes = Math.floor(Math.random() * 10000) + 500;
-    const bookmarks = Math.floor(Math.random() * 500) + 20;
-
-    setTweetData(prev => ({
-      ...prev,
-      engagement: {
-        replies: formatNumber(replies),
-        retweets: formatNumber(retweets),
-        likes: formatNumber(likes),
-        bookmarks: formatNumber(bookmarks)
-      }
-    }));
-
-    toast({
-      title: "Engagement Updated",
-      description: "Random engagement numbers generated successfully!",
-    });
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-
   const downloadTweetImage = async () => {
+    if (!tweetData) return;
+    
     setIsGenerating(true);
     const element = document.getElementById('tweet-preview');
     
     if (element) {
       try {
         const canvas = await html2canvas(element, {
-          backgroundColor: settings.backgroundColor,
-          scale: 3,
+          backgroundColor: settings.theme === 'dark' ? '#000000' : '#ffffff',
+          scale: settings.quality === 'high' ? 3 : 2,
           useCORS: true,
           allowTaint: true,
           logging: false,
@@ -115,13 +151,13 @@ const TweetToImageConverter = () => {
         });
         
         const link = document.createElement('a');
-        link.download = `tweet-image-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
+        link.download = `tweet-${tweetData.id}-${Date.now()}.${settings.format}`;
+        link.href = canvas.toDataURL(`image/${settings.format}`, 1.0);
         link.click();
         
         toast({
           title: "Success!",
-          description: "Tweet image downloaded successfully.",
+          description: `Tweet image downloaded as ${settings.format.toUpperCase()}.`,
         });
       } catch (error) {
         console.error('Error generating image:', error);
@@ -136,7 +172,7 @@ const TweetToImageConverter = () => {
     }
   };
 
-  const renderTweetText = (text: string) => {
+  const renderTweetText = (text) => {
     const parts = text.split(/(\s+)/);
     return parts.map((part, index) => {
       if (part.startsWith('#')) {
@@ -150,11 +186,10 @@ const TweetToImageConverter = () => {
     });
   };
 
-  const presetTemplates = [
-    "Just discovered something amazing! This new tool is a game-changer for content creators. 🚀 #Innovation #ContentCreation",
-    "Working on exciting new projects! Sometimes the best ideas come when you least expect them. ✨ #Inspiration #Creativity",
-    "The future is bright! Technology continues to amaze me every single day. What's your favorite recent innovation? 🌟 #Technology #Future",
-    "Coffee, code, and creativity - the perfect combination for productivity! ☕ #WorkLife #Productivity #Developer"
+  const sampleUrls = [
+    'https://x.com/elonmusk/status/1234567890',
+    'https://twitter.com/nasa/status/1234567891',
+    'https://x.com/openai/status/1234567892'
   ];
 
   return (
@@ -170,220 +205,92 @@ const TweetToImageConverter = () => {
           </h1>
         </div>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Transform your tweets into stunning, shareable images with professional styling and customization options
+          Convert any Twitter/X post into a beautiful, high-quality image. Just paste the tweet URL and download your image.
         </p>
         <div className="flex flex-wrap justify-center gap-2 mt-4">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700">High Quality</Badge>
-          <Badge variant="outline" className="bg-green-50 text-green-700">Real-time Preview</Badge>
-          <Badge variant="outline" className="bg-purple-50 text-purple-700">Customizable</Badge>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700">Real Tweets</Badge>
+          <Badge variant="outline" className="bg-green-50 text-green-700">High Quality</Badge>
+          <Badge variant="outline" className="bg-purple-50 text-purple-700">Instant Download</Badge>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Input Section */}
         <div className="space-y-6">
-          {/* Profile Settings */}
+          {/* URL Input */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Avatar className="w-6 h-6">
-                  <AvatarFallback className="text-xs">👤</AvatarFallback>
-                </Avatar>
-                Profile Information
+                <Link className="w-5 h-5" />
+                Enter Tweet URL
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="displayName">Display Name</Label>
-                  <Input
-                    id="displayName"
-                    value={tweetData.displayName}
-                    onChange={(e) => updateTweetData('displayName', e.target.value)}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    value={tweetData.username}
-                    onChange={(e) => updateTweetData('username', e.target.value)}
-                    placeholder="johndoe"
-                  />
-                </div>
-              </div>
-
               <div>
-                <Label htmlFor="profileImageUpload">Profile Image</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={tweetData.profileImage}
-                    onChange={(e) => updateTweetData('profileImage', e.target.value)}
-                    placeholder="Enter image URL or upload below"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById('profileImageUpload')?.click()}
+                <Label htmlFor="tweetUrl">Paste Twitter/X URL</Label>
+                <div className="flex gap-2 mt-2">
+                  <div className="flex-1 relative">
+                    <Input
+                      id="tweetUrl"
+                      value={tweetUrl}
+                      onChange={(e) => setTweetUrl(e.target.value)}
+                      placeholder="https://x.com/username/status/1234567890"
+                      className={`pr-10 ${tweetUrl && !isValidUrl ? 'border-red-500' : ''} ${isValidUrl ? 'border-green-500' : ''}`}
+                    />
+                    {tweetUrl && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        {isValidUrl ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Button 
+                    onClick={fetchTweetData}
+                    disabled={!isValidUrl || isLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
-                    <Upload className="w-4 h-4" />
+                    {isLoading ? 'Loading...' : 'Load Tweet'}
                   </Button>
                 </div>
-                <input
-                  id="profileImageUpload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
+                {tweetUrl && !isValidUrl && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Please enter a valid Twitter/X URL (e.g., https://x.com/username/status/1234567890)
+                  </p>
+                )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="verified"
-                    checked={tweetData.isVerified}
-                    onChange={(e) => updateTweetData('isVerified', e.target.checked)}
-                    className="rounded"
-                  />
-                  <Label htmlFor="verified">Verified Badge</Label>
-                </div>
-                <Badge variant={tweetData.isVerified ? "default" : "outline"}>
-                  {tweetData.isVerified ? "✓ Verified" : "Not Verified"}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tweet Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Tweet Content
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div>
-                <Label>Quick Templates</Label>
-                <div className="grid grid-cols-1 gap-2 mt-2">
-                  {presetTemplates.slice(0, 2).map((template, index) => (
+                <Label>Try these sample URLs:</Label>
+                <div className="space-y-2 mt-2">
+                  {sampleUrls.map((url, index) => (
                     <Button
                       key={index}
                       variant="outline"
                       size="sm"
-                      onClick={() => updateTweetData('tweetText', template)}
-                      className="text-left justify-start text-xs h-auto py-2"
+                      onClick={() => setTweetUrl(url)}
+                      className="text-left justify-start text-xs h-auto py-2 w-full"
                     >
-                      {template.slice(0, 60)}...
+                      {url}
                     </Button>
                   ))}
                 </div>
               </div>
-
-              <div>
-                <Label htmlFor="tweetText">Tweet Text</Label>
-                <Textarea
-                  id="tweetText"
-                  value={tweetData.tweetText}
-                  onChange={(e) => updateTweetData('tweetText', e.target.value)}
-                  placeholder="What's happening?"
-                  rows={4}
-                  maxLength={280}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-muted-foreground">
-                    {tweetData.tweetText.length}/280 characters
-                  </span>
-                  <Badge variant={tweetData.tweetText.length > 280 ? "destructive" : "outline"}>
-                    {280 - tweetData.tweetText.length} remaining
-                  </Badge>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="timestamp">Timestamp</Label>
-                <Input
-                  id="timestamp"
-                  value={tweetData.timestamp}
-                  onChange={(e) => updateTweetData('timestamp', e.target.value)}
-                  placeholder="2:34 PM · Dec 15, 2024"
-                />
-              </div>
             </CardContent>
           </Card>
 
-          {/* Engagement Settings */}
+          {/* Settings */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5" />
-                Engagement Metrics
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="replies">Replies</Label>
-                  <Input
-                    id="replies"
-                    value={tweetData.engagement.replies}
-                    onChange={(e) => updateEngagement('replies', e.target.value)}
-                    placeholder="142"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="retweets">Retweets</Label>
-                  <Input
-                    id="retweets"
-                    value={tweetData.engagement.retweets}
-                    onChange={(e) => updateEngagement('retweets', e.target.value)}
-                    placeholder="1.2K"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="likes">Likes</Label>
-                  <Input
-                    id="likes"
-                    value={tweetData.engagement.likes}
-                    onChange={(e) => updateEngagement('likes', e.target.value)}
-                    placeholder="5.8K"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="bookmarks">Bookmarks</Label>
-                  <Input
-                    id="bookmarks"
-                    value={tweetData.engagement.bookmarks}
-                    onChange={(e) => updateEngagement('bookmarks', e.target.value)}
-                    placeholder="234"
-                  />
-                </div>
-              </div>
-
-              <Button onClick={generateRandomEngagement} variant="outline" className="w-full">
-                🎲 Generate Random Metrics
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Style Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="w-5 h-5" />
-                Style Customization
-              </CardTitle>
+              <CardTitle>Download Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Theme</Label>
-                  <Select value={settings.theme} onValueChange={(value) => updateSettings('theme', value)}>
+                  <Select value={settings.theme} onValueChange={(value) => setSettings(prev => ({ ...prev, theme: value }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -395,8 +302,35 @@ const TweetToImageConverter = () => {
                   </Select>
                 </div>
                 <div>
+                  <Label>Quality</Label>
+                  <Select value={settings.quality} onValueChange={(value) => setSettings(prev => ({ ...prev, quality: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">Normal (2x)</SelectItem>
+                      <SelectItem value="high">High (3x)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Format</Label>
+                  <Select value={settings.format} onValueChange={(value) => setSettings(prev => ({ ...prev, format: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="png">PNG</SelectItem>
+                      <SelectItem value="jpeg">JPEG</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label>Border Style</Label>
-                  <Select value={settings.borderRadius} onValueChange={(value) => updateSettings('borderRadius', value)}>
+                  <Select value={settings.borderRadius} onValueChange={(value) => setSettings(prev => ({ ...prev, borderRadius: value }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -414,11 +348,26 @@ const TweetToImageConverter = () => {
                   type="checkbox"
                   id="showEngagement"
                   checked={settings.showEngagement}
-                  onChange={(e) => updateSettings('showEngagement', e.target.checked)}
+                  onChange={(e) => setSettings(prev => ({ ...prev, showEngagement: e.target.checked }))}
                   className="rounded"
                 />
                 <Label htmlFor="showEngagement">Show Engagement Metrics</Label>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card className="bg-gradient-to-br from-blue-50 to-purple-50">
+            <CardContent className="p-6">
+              <h3 className="font-semibold mb-3">✨ Features</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>• Load real tweets from Twitter/X URLs</li>
+                <li>• High-resolution image export (up to 3x)</li>
+                <li>• Multiple themes (Light, Dark, Dim)</li>
+                <li>• PNG and JPEG format support</li>
+                <li>• Preserve original engagement metrics</li>
+                <li>• Clean, authentic Twitter design</li>
+              </ul>
             </CardContent>
           </Card>
         </div>
@@ -427,115 +376,117 @@ const TweetToImageConverter = () => {
         <div className="lg:sticky lg:top-4">
           <Card>
             <CardHeader>
-              <CardTitle>Live Preview</CardTitle>
+              <CardTitle>Preview & Download</CardTitle>
               <p className="text-sm text-muted-foreground">
-                See how your tweet will look as an image
+                {tweetData ? 'Your tweet is ready to download' : 'Load a tweet to see the preview'}
               </p>
             </CardHeader>
             <CardContent>
-              {/* Tweet Preview */}
-              <div
-                id="tweet-preview"
-                className={`
-                  max-w-[600px] mx-auto p-6
-                  ${settings.theme === 'dark' ? 'bg-black text-white' : 
-                    settings.theme === 'dim' ? 'bg-gray-900 text-gray-100' : 'bg-white text-black'}
-                  ${settings.borderRadius}
-                  shadow-lg border
-                `}
-                style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                }}
-              >
-                {/* Tweet Header */}
-                <div className="flex items-start space-x-3 mb-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={tweetData.profileImage} alt={tweetData.displayName} />
-                    <AvatarFallback className="bg-blue-500 text-white font-semibold">
-                      {tweetData.displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-1">
-                      <span className="font-bold text-[15px]">{tweetData.displayName}</span>
-                      {tweetData.isVerified && (
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-gray-500 text-[15px]">@{tweetData.username}</span>
+              {!tweetData ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Link className="w-8 h-8 text-gray-400" />
                   </div>
-                  <div className="text-gray-400">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Tweet Content */}
-                <div className="mb-4">
-                  <p className="text-[15px] leading-normal whitespace-pre-wrap">
-                    {renderTweetText(tweetData.tweetText)}
+                  <h3 className="text-lg font-medium mb-2">No Tweet Loaded</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Paste a Twitter/X URL above and click "Load Tweet" to see the preview
                   </p>
                 </div>
-
-                {/* Timestamp */}
-                <div className="text-gray-500 text-[15px] mb-4">
-                  {tweetData.timestamp}
-                </div>
-
-                {/* Engagement */}
-                {settings.showEngagement && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="flex items-center justify-between text-gray-500">
-                      <div className="flex items-center space-x-6">
-                        <button className="flex items-center space-x-2 hover:text-blue-500 transition-colors">
-                          <MessageCircle className="w-5 h-5" />
-                          <span className="text-sm">{tweetData.engagement.replies}</span>
-                        </button>
-                        <button className="flex items-center space-x-2 hover:text-green-500 transition-colors">
-                          <Repeat2 className="w-5 h-5" />
-                          <span className="text-sm">{tweetData.engagement.retweets}</span>
-                        </button>
-                        <button className="flex items-center space-x-2 hover:text-red-500 transition-colors">
-                          <Heart className="w-5 h-5" />
-                          <span className="text-sm">{tweetData.engagement.likes}</span>
-                        </button>
-                        <button className="flex items-center space-x-2 hover:text-blue-500 transition-colors">
-                          <Share className="w-5 h-5" />
-                        </button>
+              ) : (
+                <>
+                  {/* Tweet Preview */}
+                  <div
+                    id="tweet-preview"
+                    className={`
+                      max-w-[600px] mx-auto p-6
+                      ${settings.theme === 'dark' ? 'bg-black text-white' : 
+                        settings.theme === 'dim' ? 'bg-gray-900 text-gray-100' : 'bg-white text-black'}
+                      ${settings.borderRadius}
+                      shadow-lg border
+                    `}
+                    style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                    }}
+                  >
+                    {/* Tweet Header */}
+                    <div className="flex items-start space-x-3 mb-4">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={tweetData.profileImage} alt={tweetData.displayName} />
+                        <AvatarFallback className="bg-blue-500 text-white font-semibold">
+                          {tweetData.displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-1">
+                          <span className="font-bold text-[15px]">{tweetData.displayName}</span>
+                          {tweetData.isVerified && (
+                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs">✓</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-gray-500 text-[15px]">{tweetData.handle}</span>
+                      </div>
+                      <div className="text-gray-400">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                        </svg>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
 
-              {/* Download Button */}
-              <div className="mt-6">
-                <Button
-                  onClick={downloadTweetImage}
-                  disabled={isGenerating}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  size="lg"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Generating Image...' : 'Download High Quality PNG'}
-                </Button>
-              </div>
+                    {/* Tweet Content */}
+                    <div className="mb-4">
+                      <p className="text-[15px] leading-normal whitespace-pre-wrap">
+                        {renderTweetText(tweetData.tweetText)}
+                      </p>
+                    </div>
 
-              {/* Features List */}
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium mb-2">✨ Features Included:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• High-resolution 3x scaling</li>
-                  <li>• Real-time preview updates</li>
-                  <li>• Custom engagement metrics</li>
-                  <li>• Multiple theme options</li>
-                  <li>• Profile image upload support</li>
-                </ul>
-              </div>
+                    {/* Timestamp */}
+                    <div className="text-gray-500 text-[15px] mb-4">
+                      {tweetData.timestamp}
+                    </div>
+
+                    {/* Engagement */}
+                    {settings.showEngagement && (
+                      <>
+                        <Separator className="my-4" />
+                        <div className="flex items-center justify-between text-gray-500">
+                          <div className="flex items-center space-x-6">
+                            <div className="flex items-center space-x-2">
+                              <MessageCircle className="w-5 h-5" />
+                              <span className="text-sm">{tweetData.engagement.replies}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Repeat2 className="w-5 h-5" />
+                              <span className="text-sm">{tweetData.engagement.retweets}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Heart className="w-5 h-5" />
+                              <span className="text-sm">{tweetData.engagement.likes}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Share className="w-5 h-5" />
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Download Button */}
+                  <div className="mt-6">
+                    <Button
+                      onClick={downloadTweetImage}
+                      disabled={isGenerating}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      size="lg"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {isGenerating ? 'Generating Image...' : `Download ${settings.format.toUpperCase()}`}
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
