@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye, Search, Download, User } from "lucide-react";
+import { ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye, Search, Download, User, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface InstagramUser {
@@ -18,7 +18,9 @@ interface InstagramUser {
   profile_pic_url: string;
   profile_pic_id: string;
   social_context?: string;
+  search_social_context?: string;
   has_anonymous_profile_picture: boolean;
+  fbid_v2?: number;
 }
 
 interface ProfileData {
@@ -56,23 +58,47 @@ const InstagramProfileViewer = () => {
 
   const fetchInstagramProfile = async (username: string) => {
     try {
+      console.log('Fetching profile for username:', username);
+      
       // Using CORS proxy to fetch Instagram data
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.instagram.com/web/search/topsearch/?query=${username}`)}`;
       
       const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('Proxy response:', data);
       
       if (!data.contents) {
-        throw new Error('No data received');
+        throw new Error('No data received from proxy');
       }
 
-      const instagramData = JSON.parse(data.contents);
+      let instagramData;
+      try {
+        instagramData = JSON.parse(data.contents);
+        console.log('Parsed Instagram data:', instagramData);
+      } catch (parseError) {
+        console.error('Failed to parse Instagram data:', parseError);
+        throw new Error('Invalid response format');
+      }
+
+      // Check for Instagram API errors
+      if (instagramData.status === 'fail') {
+        if (instagramData.message && instagramData.message.includes('wait a few minutes')) {
+          throw new Error('Instagram is rate limiting requests. Please try again in a few minutes.');
+        }
+        throw new Error(instagramData.message || 'Instagram API returned an error');
+      }
       
       if (!instagramData.users || instagramData.users.length === 0) {
-        throw new Error('Profile not found');
+        throw new Error('Profile not found. Please check the username and try again.');
       }
 
       const user = instagramData.users[0].user;
+      console.log('Found user:', user);
       
       return {
         user,
@@ -118,11 +144,12 @@ const InstagramProfileViewer = () => {
         title: "Profile Found!",
         description: `Successfully loaded profile for @${data.user.username}`,
       });
-    } catch (error) {
-      setError('Failed to fetch profile. Please try again or check if the username exists.');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to fetch profile. Please try again or check if the username exists.';
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to fetch profile data. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -157,20 +184,19 @@ const InstagramProfileViewer = () => {
   const downloadProfilePic = async () => {
     if (profileData) {
       try {
-        const response = await fetch(profileData.highResProfilePic);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${profileData.user.username}_profile_pic.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        // Create a temporary link to download the image
+        const link = document.createElement('a');
+        link.href = profileData.highResProfilePic;
+        link.download = `${profileData.user.username}_profile_pic.jpg`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
         toast({
-          title: "Downloaded!",
-          description: "Profile picture downloaded successfully"
+          title: "Download Started!",
+          description: "Profile picture download has been initiated"
         });
       } catch (error) {
         toast({
@@ -202,7 +228,7 @@ const InstagramProfileViewer = () => {
             </h1>
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            View Instagram profiles and download profile pictures in high quality. Get real profile data instantly.
+            View Instagram profiles and access profile pictures. Get real profile data instantly.
           </p>
         </div>
 
@@ -242,7 +268,11 @@ const InstagramProfileViewer = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  {error.includes('rate limiting') ? (
+                    <Clock className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  )}
                   <p className="text-red-800">{error}</p>
                 </div>
               </div>
@@ -271,7 +301,7 @@ const InstagramProfileViewer = () => {
                     <ul className="space-y-1 text-sm text-green-800">
                       <li>• Real profile data</li>
                       <li>• High-quality profile pictures</li>
-                      <li>• Download functionality</li>
+                      <li>• Direct Instagram access</li>
                     </ul>
                   </div>
                 </div>
@@ -286,7 +316,7 @@ const InstagramProfileViewer = () => {
             <CardHeader className="text-center pb-4">
               <div className="flex items-center justify-center mb-6">
                 <div className="relative">
-                  <Avatar className="w-32 h-32 border-4 border-gradient-to-r from-pink-500 to-purple-500 shadow-lg">
+                  <Avatar className="w-32 h-32 border-4 border-white shadow-lg ring-4 ring-pink-200">
                     <AvatarImage 
                       src={profileData.highResProfilePic} 
                       alt={`${profileData.user.username}'s profile picture`}
@@ -309,7 +339,7 @@ const InstagramProfileViewer = () => {
               </CardTitle>
               <p className="text-lg text-gray-600 mb-2">@{profileData.user.username}</p>
               
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center justify-center gap-2 text-sm mb-4">
                 <span className={`px-3 py-1 rounded-full ${profileData.user.is_private ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
                   {profileData.user.is_private ? 'Private Account' : 'Public Account'}
                 </span>
@@ -318,11 +348,14 @@ const InstagramProfileViewer = () => {
                     Verified
                   </span>
                 )}
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-800">
+                  ID: {profileData.user.pk}
+                </span>
               </div>
               
-              {profileData.user.social_context && (
-                <p className="text-sm text-gray-600 mt-3 bg-gray-50 rounded-lg p-3">
-                  {profileData.user.social_context}
+              {(profileData.user.social_context || profileData.user.search_social_context) && (
+                <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 max-w-md mx-auto">
+                  {profileData.user.social_context || profileData.user.search_social_context}
                 </p>
               )}
             </CardHeader>
@@ -357,10 +390,7 @@ const InstagramProfileViewer = () => {
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-gray-600 mb-2">
-                  <strong>Profile ID:</strong> {profileData.user.pk}
-                </p>
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                   <ExternalLink className="h-4 w-4" />
                   <span>instagram.com/{profileData.user.username}</span>
                 </div>
@@ -378,7 +408,7 @@ const InstagramProfileViewer = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2 text-gray-900">Ready to Find Profile</h3>
               <p className="text-gray-600 text-center max-w-md leading-relaxed mb-6">
-                Enter an Instagram username or profile URL above to view the profile and download high-quality profile pictures.
+                Enter an Instagram username or profile URL above to view the profile and access profile pictures.
               </p>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
