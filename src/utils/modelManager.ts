@@ -39,14 +39,15 @@ class ModelManager {
 
   private async loadModel(): Promise<Pipeline> {
     // Using a smaller, faster model for better performance
-    const model = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', {
+    // Use explicit any type to avoid complex union type resolution
+    const model: any = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning', {
       // Enable caching and optimize for performance
       cache_dir: '.cache',
       local_files_only: false,
       revision: 'main'
-    }) as Pipeline;
+    });
     
-    return model;
+    return model as Pipeline;
   }
 
   async generateCaption(imageData: string): Promise<string> {
