@@ -61,12 +61,14 @@ const AIImageCaptionGenerator = () => {
       // Generate caption from the image
       const result = await captioner(imagePreview);
       
-      // Handle the result properly - it can be an array or single object
+      // Handle the result properly - check if it's an array first
       let generatedCaption = '';
-      if (Array.isArray(result)) {
-        generatedCaption = result[0]?.generated_text || '';
-      } else {
-        generatedCaption = (result as any).generated_text || '';
+      if (Array.isArray(result) && result.length > 0) {
+        // Result is an array of objects with generated_text
+        generatedCaption = result[0].generated_text || '';
+      } else if (result && typeof result === 'object' && 'generated_text' in result) {
+        // Result is a single object with generated_text
+        generatedCaption = (result as { generated_text: string }).generated_text || '';
       }
       
       if (generatedCaption) {
