@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download, User, ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye } from "lucide-react";
+import { ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye, Search, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const InstagramProfileViewer = () => {
   const [username, setUsername] = useState('');
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const { toast } = useToast();
 
   const extractUsername = (input: string) => {
@@ -41,7 +40,6 @@ const InstagramProfileViewer = () => {
     }
 
     setIsLoading(true);
-    setImageError(false);
     const cleanUsername = extractUsername(username.trim());
     
     if (!cleanUsername) {
@@ -55,25 +53,20 @@ const InstagramProfileViewer = () => {
     }
 
     try {
-      // For demonstration, we'll construct potential Instagram profile picture URLs
-      // Note: These URLs may not work due to Instagram's restrictions
-      const profilePicUrl = `https://www.instagram.com/${cleanUsername}/`;
-      const profilePicDirectUrl = `https://instagram.com/${cleanUsername}`;
-      
       const profileData = {
         username: cleanUsername,
         fullName: cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
-        profilePicUrl: `https://www.instagram.com/api/v1/users/web_profile_info/?username=${cleanUsername}`,
         profileUrl: `https://www.instagram.com/${cleanUsername}/`,
-        isPrivate: null, // Unknown without API access
-        note: "Profile data is limited due to Instagram's API restrictions"
+        webProfileUrl: `https://www.instagram.com/web/search/topsearch/?query=${cleanUsername}`,
+        directUrl: `https://instagram.com/${cleanUsername}`,
+        note: "Due to Instagram's privacy policies, profile data must be viewed directly on Instagram"
       };
 
       setProfileData(profileData);
       
       toast({
-        title: "Profile Loaded",
-        description: "Click 'Open Profile' to view on Instagram",
+        title: "Profile Ready",
+        description: "Click any button below to view the profile on Instagram",
       });
     } catch (error) {
       toast({
@@ -88,7 +81,12 @@ const InstagramProfileViewer = () => {
 
   const openInstagramProfile = (username: string) => {
     const url = `https://www.instagram.com/${username}/`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const openInstagramSearch = (username: string) => {
+    const url = `https://www.instagram.com/web/search/topsearch/?query=${username}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const copyProfileUrl = async (username: string) => {
@@ -114,37 +112,65 @@ const InstagramProfileViewer = () => {
     }
   };
 
+  const quickActions = [
+    {
+      name: "Direct Profile",
+      action: () => openInstagramProfile(profileData.username),
+      icon: Eye,
+      description: "Open profile directly",
+      primary: true
+    },
+    {
+      name: "Search Profile",
+      action: () => openInstagramSearch(profileData.username),
+      icon: Search,
+      description: "Search for profile"
+    },
+    {
+      name: "Copy URL",
+      action: () => copyProfileUrl(profileData.username),
+      icon: Copy,
+      description: "Copy profile link"
+    },
+    {
+      name: "External Link",
+      action: () => openInstagramProfile(profileData.username),
+      icon: ExternalLink,
+      description: "Open in new tab"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-r from-pink-100 to-purple-100 rounded-2xl">
-              <Instagram className="h-8 w-8 text-pink-600" />
+            <div className="p-3 bg-gradient-to-r from-pink-100 to-purple-100 rounded-2xl shadow-lg">
+              <Instagram className="h-10 w-10 text-pink-600" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
               Instagram Profile Viewer
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            View Instagram profiles quickly and easily. Open profiles directly on Instagram with a single click.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Access Instagram profiles quickly and easily. View profiles directly on Instagram with enhanced navigation options.
           </p>
         </div>
 
         {/* Input Section */}
-        <Card className="mb-10 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-6">
-            <CardTitle className="flex items-center gap-3 text-2xl">
+        <Card className="mb-8 shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
               <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg">
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
-              View Instagram Profile
+              Find Instagram Profile
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             <div className="space-y-3">
-              <Label htmlFor="username" className="text-lg font-medium">Instagram Username or Profile URL</Label>
+              <Label htmlFor="username" className="text-base font-medium">Instagram Username or Profile URL</Label>
               <div className="flex gap-3">
                 <Input
                   id="username"
@@ -153,49 +179,42 @@ const InstagramProfileViewer = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="flex-1 h-12 text-lg border-2 focus:border-pink-500 transition-all duration-200"
+                  className="flex-1 h-12 text-base border-2 focus:border-pink-500 transition-all duration-200"
                 />
                 <Button 
                   onClick={handleViewProfile} 
                   disabled={isLoading}
-                  className="h-12 px-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 transition-all duration-200 font-semibold"
+                  className="h-12 px-6 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 transition-all duration-200 font-semibold"
                 >
-                  {isLoading ? 'Processing...' : 'View Profile'}
+                  {isLoading ? 'Processing...' : 'Find Profile'}
                 </Button>
               </div>
             </div>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-blue-900 mb-2">Supported formats:</p>
-                  <ul className="space-y-1 text-blue-800">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                      https://instagram.com/username
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                      @username
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
-                      username (without @)
-                    </li>
-                  </ul>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-blue-900 mb-1">Supported formats:</p>
+                    <ul className="space-y-1 text-sm text-blue-800">
+                      <li>• https://instagram.com/username</li>
+                      <li>• @username</li>
+                      <li>• username</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-amber-900 mb-2">Important Note:</p>
-                  <p className="text-amber-800">
-                    Due to Instagram's API restrictions and privacy policies, this tool will redirect you to the official Instagram profile page. Profile pictures and data cannot be directly accessed or downloaded from third-party applications.
-                  </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium text-amber-900 mb-1">Privacy Notice:</p>
+                    <p className="text-sm text-amber-800">
+                      This tool redirects to official Instagram pages. No data is stored or downloaded.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -204,66 +223,54 @@ const InstagramProfileViewer = () => {
 
         {/* Results Section */}
         {profileData && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Profile Ready</h2>
-              <p className="text-gray-600">Click the buttons below to view the profile on Instagram</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile Found</h2>
+              <p className="text-gray-600">Choose an action below to view the Instagram profile</p>
             </div>
             
-            <Card className="hover:shadow-xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm max-w-2xl mx-auto">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-semibold flex items-center gap-2 justify-center">
-                  <User className="h-5 w-5" />
-                  @{profileData.username}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-center mb-6">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gradient-to-r from-pink-500 to-purple-500 p-1 bg-gradient-to-r from-pink-500 to-purple-500">
-                    <div className="w-full h-full bg-gray-200 rounded-full flex items-center justify-center">
-                      <Instagram className="h-12 w-12 text-gray-400" />
+            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+              <CardHeader className="text-center pb-4">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-24 h-24 rounded-full border-4 border-gradient-to-r from-pink-500 to-purple-500 p-1 bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg">
+                    <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                      <Instagram className="h-8 w-8 text-gray-400" />
                     </div>
                   </div>
                 </div>
-                
-                <div className="space-y-3 text-center">
-                  <h3 className="text-2xl font-bold text-gray-900">@{profileData.username}</h3>
-                  <p className="text-lg text-gray-600">{profileData.fullName}</p>
-                </div>
-                
-                <div className="space-y-4 pt-4 border-t">
-                  <Button
-                    onClick={() => openInstagramProfile(profileData.username)}
-                    className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 h-12 text-lg"
-                  >
-                    <Eye className="h-5 w-5 mr-2" />
-                    Open Instagram Profile
-                  </Button>
-                  
-                  <div className="flex gap-3">
+                <CardTitle className="text-xl font-bold text-gray-900">
+                  @{profileData.username}
+                </CardTitle>
+                <p className="text-gray-600">{profileData.fullName}</p>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {quickActions.map((action, index) => (
                     <Button
-                      variant="outline"
-                      onClick={() => copyProfileUrl(profileData.username)}
-                      className="flex-1 border-2 h-12"
+                      key={index}
+                      onClick={action.action}
+                      variant={action.primary ? "default" : "outline"}
+                      className={`h-16 flex flex-col gap-1 ${
+                        action.primary 
+                          ? "bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700" 
+                          : "border-2 hover:bg-gray-50"
+                      }`}
                     >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Profile URL
+                      <action.icon className="h-5 w-5" />
+                      <span className="text-xs font-medium">{action.name}</span>
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => openInstagramProfile(profileData.username)}
-                      className="flex-1 border-2 h-12"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View on Instagram
-                    </Button>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-600 text-center">
+                <div className="bg-gray-50 rounded-lg p-4 text-center">
+                  <p className="text-sm text-gray-600 mb-2">
                     <strong>Note:</strong> {profileData.note}
                   </p>
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <Link className="h-4 w-4" />
+                    <span>Profile URL: instagram.com/{profileData.username}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -272,15 +279,42 @@ const InstagramProfileViewer = () => {
 
         {/* Empty State */}
         {!profileData && (
-          <Card className="border-2 border-dashed border-gray-300 bg-white/50 backdrop-blur-sm">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="p-6 bg-gradient-to-br from-pink-100 to-purple-200 rounded-full mb-6">
-                <Instagram className="h-16 w-16 text-pink-600" />
+          <Card className="border-2 border-dashed border-gray-300 bg-white/60 backdrop-blur-sm">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="p-6 bg-gradient-to-br from-pink-100 to-purple-200 rounded-full mb-6 shadow-lg">
+                <Instagram className="h-12 w-12 text-pink-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3 text-gray-900">Ready to View Profile</h3>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Ready to Find Profile</h3>
               <p className="text-gray-600 text-center max-w-md leading-relaxed">
-                Enter an Instagram username or profile URL above and click "View Profile" to access the Instagram profile page directly.
+                Enter an Instagram username or profile URL above to access the profile with multiple viewing options.
               </p>
+              
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div className="space-y-2">
+                  <div className="w-12 h-12 bg-pink-100 rounded-lg mx-auto flex items-center justify-center">
+                    <Eye className="h-6 w-6 text-pink-600" />
+                  </div>
+                  <p className="text-xs text-gray-600">Direct Access</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg mx-auto flex items-center justify-center">
+                    <Search className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <p className="text-xs text-gray-600">Smart Search</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg mx-auto flex items-center justify-center">
+                    <Copy className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <p className="text-xs text-gray-600">Copy Links</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg mx-auto flex items-center justify-center">
+                    <ExternalLink className="h-6 w-6 text-green-600" />
+                  </div>
+                  <p className="text-xs text-gray-600">New Tab</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
