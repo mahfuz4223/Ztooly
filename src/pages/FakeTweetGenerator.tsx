@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,21 +7,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Twitter, Download, Copy, Heart, MessageCircle, Repeat2, Share, MoreHorizontal } from "lucide-react";
+import { Twitter, Download, Copy, Heart, MessageCircle, Repeat2, Share, MoreHorizontal, Bookmark, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const FakeTweetGenerator = () => {
   const [tweetData, setTweetData] = useState({
-    username: "neiltyson",
-    displayName: "Neil deGrasse Tyson",
+    username: "johndoe",
+    displayName: "John Doe",
     isVerified: true,
     profileImage: "",
-    tweetText: "The good thing about Science is that it's true, whether or not you believe in it. #science #cosmos",
-    timestamp: "2:30 PM",
-    date: "Dec 15, 2024",
-    likes: "3,300",
-    retweets: "1,300",
-    replies: "102",
+    tweetText: "This is a sample tweet. @mentions, #hashtags, https://links.com are all automatically converted.",
+    timestamp: "6m",
+    date: "",
+    likes: "400K",
+    retweets: "21",
+    replies: "500",
+    views: "1M",
     theme: "light"
   });
 
@@ -34,8 +36,12 @@ const FakeTweetGenerator = () => {
   };
 
   const formatNumber = (num: string) => {
-    const number = parseInt(num.replace(/,/g, '')) || 0;
-    if (number >= 1000000) {
+    const number = parseInt(num.replace(/[KM,]/g, '')) || 0;
+    if (num.includes('M')) {
+      return num;
+    } else if (num.includes('K')) {
+      return num;
+    } else if (number >= 1000000) {
       return (number / 1000000).toFixed(1) + 'M';
     } else if (number >= 1000) {
       return (number / 1000).toFixed(1) + 'K';
@@ -44,21 +50,23 @@ const FakeTweetGenerator = () => {
   };
 
   const generateRandomMetrics = () => {
-    const likes = Math.floor(Math.random() * 10000) + 1;
-    const retweets = Math.floor(Math.random() * (likes / 2)) + 1;
-    const replies = Math.floor(Math.random() * (likes / 10)) + 1;
+    const likes = Math.floor(Math.random() * 1000000) + 1000;
+    const retweets = Math.floor(Math.random() * (likes / 10)) + 1;
+    const replies = Math.floor(Math.random() * (likes / 50)) + 1;
+    const views = likes * (Math.floor(Math.random() * 5) + 2);
     
     setTweetData(prev => ({
       ...prev,
-      likes: likes.toLocaleString(),
-      retweets: retweets.toLocaleString(),
-      replies: replies.toLocaleString()
+      likes: formatNumber(likes.toString()),
+      retweets: formatNumber(retweets.toString()),
+      replies: formatNumber(replies.toString()),
+      views: formatNumber(views.toString())
     }));
     
     toast.success("Random engagement metrics generated!");
   };
 
-  const renderTweetText = (text: string, isDark: boolean = false) => {
+  const renderTweetText = (text: string) => {
     const parts = text.split(/(\s+)/);
     return parts.map((part, index) => {
       if (part.startsWith('#')) {
@@ -73,12 +81,18 @@ const FakeTweetGenerator = () => {
             {part}
           </span>
         );
+      } else if (part.startsWith('http')) {
+        return (
+          <span key={index} style={{ color: '#1d9bf0' }}>
+            {part}
+          </span>
+        );
       }
       return part;
     });
   };
 
-  // Custom verification badge component for perfect rendering
+  // Custom verification badge component
   const VerificationBadge = ({ size = 20 }: { size?: number }) => (
     <svg
       viewBox="0 0 24 24"
@@ -109,7 +123,7 @@ const FakeTweetGenerator = () => {
         
         const canvas = await html2canvas(tweetElement, {
           backgroundColor: tweetData.theme === 'dark' ? '#000000' : '#ffffff',
-          scale: 2,
+          scale: 3,
           useCORS: true,
           allowTaint: false,
           logging: false,
@@ -125,18 +139,19 @@ const FakeTweetGenerator = () => {
               clonedElement.style.width = '598px';
               clonedElement.style.boxSizing = 'border-box';
               
-              // Force hashtag colors
-              const hashtags = clonedElement.querySelectorAll('span[style*="color: rgb(29, 155, 240)"]');
-              hashtags.forEach(tag => {
-                (tag as HTMLElement).style.color = '#1d9bf0';
+              // Force hashtag and mention colors
+              const blueElements = clonedElement.querySelectorAll('span[style*="color: rgb(29, 155, 240)"]');
+              blueElements.forEach(element => {
+                (element as HTMLElement).style.color = '#1d9bf0 !important';
+                (element as HTMLElement).style.setProperty('color', '#1d9bf0', 'important');
               });
               
-              // Ensure verification badge positioning
-              const badges = clonedElement.querySelectorAll('svg');
-              badges.forEach(badge => {
-                (badge as HTMLElement).style.display = 'inline-block';
-                (badge as HTMLElement).style.verticalAlign = 'middle';
-                (badge as HTMLElement).style.marginLeft = '4px';
+              // Fix SVG badge positioning
+              const svgElements = clonedElement.querySelectorAll('svg');
+              svgElements.forEach(svg => {
+                (svg as unknown as HTMLElement).style.display = 'inline-block';
+                (svg as unknown as HTMLElement).style.verticalAlign = 'middle';
+                (svg as unknown as HTMLElement).style.marginLeft = '4px';
               });
             }
           }
@@ -166,10 +181,10 @@ const FakeTweetGenerator = () => {
   };
 
   const presetUsers = [
+    { username: "johndoe", displayName: "John Doe", verified: true },
     { username: "elonmusk", displayName: "Elon Musk", verified: true },
     { username: "BillGates", displayName: "Bill Gates", verified: true },
     { username: "TheRealMikeT", displayName: "Mike Tyson", verified: true },
-    { username: "RobertDowneyJr", displayName: "Robert Downey Jr.", verified: true },
     { username: "neiltyson", displayName: "Neil deGrasse Tyson", verified: true }
   ];
 
@@ -288,18 +303,18 @@ const FakeTweetGenerator = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">Time</label>
                       <Input
-                        placeholder="2:30 PM"
+                        placeholder="6m"
                         value={tweetData.timestamp}
                         onChange={(e) => handleInputChange('timestamp', e.target.value)}
                         className="border-2 border-gray-200 focus:border-blue-400"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Date</label>
+                      <label className="text-sm font-medium text-gray-700">Views</label>
                       <Input
-                        placeholder="Dec 15, 2024"
-                        value={tweetData.date}
-                        onChange={(e) => handleInputChange('date', e.target.value)}
+                        placeholder="1M"
+                        value={tweetData.views}
+                        onChange={(e) => handleInputChange('views', e.target.value)}
                         className="border-2 border-gray-200 focus:border-blue-400"
                       />
                     </div>
@@ -307,29 +322,29 @@ const FakeTweetGenerator = () => {
                   
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Likes</label>
+                      <label className="text-sm font-medium text-gray-700">Replies</label>
                       <Input
-                        placeholder="1,234"
-                        value={tweetData.likes}
-                        onChange={(e) => handleInputChange('likes', e.target.value)}
+                        placeholder="500"
+                        value={tweetData.replies}
+                        onChange={(e) => handleInputChange('replies', e.target.value)}
                         className="border-2 border-gray-200 focus:border-blue-400"
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-700">Retweets</label>
                       <Input
-                        placeholder="567"
+                        placeholder="21"
                         value={tweetData.retweets}
                         onChange={(e) => handleInputChange('retweets', e.target.value)}
                         className="border-2 border-gray-200 focus:border-blue-400"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Replies</label>
+                      <label className="text-sm font-medium text-gray-700">Likes</label>
                       <Input
-                        placeholder="89"
-                        value={tweetData.replies}
-                        onChange={(e) => handleInputChange('replies', e.target.value)}
+                        placeholder="400K"
+                        value={tweetData.likes}
+                        onChange={(e) => handleInputChange('likes', e.target.value)}
                         className="border-2 border-gray-200 focus:border-blue-400"
                       />
                     </div>
@@ -405,79 +420,160 @@ const FakeTweetGenerator = () => {
                 {/* Fake Tweet */}
                 <div 
                   id="fake-tweet"
-                  className={`border rounded-xl p-6 ${
+                  className={`border-0 rounded-none px-4 py-3 ${
                     tweetData.theme === 'dark' 
-                      ? 'bg-black text-white border-gray-800' 
-                      : 'bg-white text-black border-gray-200'
-                  } max-w-lg mx-auto shadow-lg`}
+                      ? 'bg-black text-white' 
+                      : 'bg-white text-black'
+                  } max-w-lg mx-auto`}
                   style={{
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                     width: '598px',
-                    minHeight: 'auto',
+                    fontSize: '15px',
+                    lineHeight: '20px',
                     boxSizing: 'border-box'
                   }}
                 >
                   {/* Tweet Header */}
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-lg">
-                        {tweetData.displayName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 mb-1">
-                        <span 
-                          className="font-bold text-base"
-                          style={{ 
-                            overflow: 'visible',
-                            textOverflow: 'unset',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {tweetData.displayName}
-                        </span>
-                        {tweetData.isVerified && <VerificationBadge size={20} />}
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'url(/lovable-uploads/2a4d7460-043e-486e-9b97-23656518c26b.png) center/cover' }}>
+                        {!tweetData.profileImage && (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">
+                              {tweetData.displayName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        @{tweetData.username}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span 
+                            className="font-bold text-black"
+                            style={{ 
+                              fontSize: '15px',
+                              color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419',
+                              fontWeight: '700'
+                            }}
+                          >
+                            {tweetData.displayName}
+                          </span>
+                          {tweetData.isVerified && <VerificationBadge size={18} />}
+                          <span 
+                            className="text-gray-500"
+                            style={{ 
+                              fontSize: '15px',
+                              color: '#536471',
+                              fontWeight: '400'
+                            }}
+                          >
+                            @{tweetData.username}
+                          </span>
+                          <span 
+                            className="text-gray-500"
+                            style={{ 
+                              fontSize: '15px',
+                              color: '#536471'
+                            }}
+                          >
+                            ·
+                          </span>
+                          <span 
+                            className="text-gray-500"
+                            style={{ 
+                              fontSize: '15px',
+                              color: '#536471'
+                            }}
+                          >
+                            {tweetData.timestamp}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <MoreHorizontal className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} flex-shrink-0`} />
+                    <MoreHorizontal className="h-5 w-5 text-gray-500 flex-shrink-0" style={{ color: '#536471' }} />
                   </div>
 
                   {/* Tweet Content */}
-                  <div className="mb-4">
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">
-                      {renderTweetText(tweetData.tweetText, tweetData.theme === 'dark')}
+                  <div className="mb-3 ml-13" style={{ marginLeft: '52px' }}>
+                    <p 
+                      className="whitespace-pre-wrap"
+                      style={{ 
+                        fontSize: '15px',
+                        lineHeight: '20px',
+                        color: tweetData.theme === 'dark' ? '#e7e9ea' : '#0f1419'
+                      }}
+                    >
+                      {renderTweetText(tweetData.tweetText)}
                     </p>
                   </div>
 
-                  {/* Tweet Timestamp */}
-                  <div className={`text-sm mb-4 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {tweetData.timestamp} · {tweetData.date}
-                  </div>
-
                   {/* Tweet Actions */}
-                  <div className={`flex items-center justify-between pt-3 border-t ${tweetData.theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {formatNumber(tweetData.replies)}
+                  <div className="flex items-center justify-between pt-3 ml-13" style={{ marginLeft: '52px', paddingTop: '12px' }}>
+                    <div className="flex items-center gap-1 group cursor-pointer">
+                      <div className="p-2 rounded-full group-hover:bg-blue-50 -ml-2">
+                        <MessageCircle className="h-4 w-4" style={{ color: '#536471' }} />
+                      </div>
+                      <span 
+                        className="text-sm"
+                        style={{ 
+                          fontSize: '13px',
+                          color: '#536471'
+                        }}
+                      >
+                        {tweetData.replies}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Repeat2 className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {formatNumber(tweetData.retweets)}
+                    <div className="flex items-center gap-1 group cursor-pointer">
+                      <div className="p-2 rounded-full group-hover:bg-green-50 -ml-2">
+                        <Repeat2 className="h-4 w-4" style={{ color: '#536471' }} />
+                      </div>
+                      <span 
+                        className="text-sm"
+                        style={{ 
+                          fontSize: '13px',
+                          color: '#536471'
+                        }}
+                      >
+                        {tweetData.retweets}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Heart className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {formatNumber(tweetData.likes)}
+                    <div className="flex items-center gap-1 group cursor-pointer">
+                      <div className="p-2 rounded-full group-hover:bg-red-50 -ml-2">
+                        <Heart className="h-4 w-4" style={{ color: '#536471' }} />
+                      </div>
+                      <span 
+                        className="text-sm"
+                        style={{ 
+                          fontSize: '13px',
+                          color: '#536471'
+                        }}
+                      >
+                        {tweetData.likes}
                       </span>
                     </div>
-                    <Share className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <div className="flex items-center gap-1 group cursor-pointer">
+                      <div className="p-2 rounded-full group-hover:bg-blue-50 -ml-2">
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" style={{ color: '#536471' }}>
+                          <path fill="currentColor" d="M8.75 21V3h2v18l-2-2zm6-18v18l2-2V3h-2z"/>
+                        </svg>
+                      </div>
+                      <span 
+                        className="text-sm"
+                        style={{ 
+                          fontSize: '13px',
+                          color: '#536471'
+                        }}
+                      >
+                        {tweetData.views}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-full hover:bg-blue-50 -ml-2 cursor-pointer">
+                        <Bookmark className="h-4 w-4" style={{ color: '#536471' }} />
+                      </div>
+                      <div className="p-2 rounded-full hover:bg-blue-50 -ml-2 cursor-pointer">
+                        <Upload className="h-4 w-4" style={{ color: '#536471' }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
