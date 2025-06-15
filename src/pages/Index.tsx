@@ -9,8 +9,6 @@ import {
   Code, 
   Plus,
   ArrowRight,
-  Menu,
-  X,
   Sparkles,
   Zap,
   Lock,
@@ -502,7 +500,7 @@ export default function Index() {
       icon: Instagram,
       category: "media-tools",
       link: toolRoutes["instagram-profile-viewer"],
-      gradient: "from-gradient-to-r from-purple-500 via-pink-500 to-orange-500"
+      gradient: "from-purple-500 via-pink-500 to-orange-500"
     },
     {
       id: "youtube-tag-extractor",
@@ -739,7 +737,7 @@ export default function Index() {
                 return (
                   <div key={stat.label} className="text-center group cursor-pointer" style={{ animationDelay: `${600 + index * 100}ms` }}>
                     <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                      <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                      <Icon className="h-8 w-8 text-primary-foreground group-hover:scale-110 transition-transform" />
                     </div>
                     <div className="text-2xl md:text-3xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{stat.value}</div>
                     <div className="text-xs md:text-sm text-muted-foreground font-medium">{stat.label}</div>
