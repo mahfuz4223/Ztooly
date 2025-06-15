@@ -15,6 +15,10 @@ import ImageWatermarker from "./pages/ImageWatermarker";
 import ImageEXIFRemover from "./pages/ImageEXIFRemover";
 import PDFTools from "./pages/PDFTools";
 import PDFToImage from "./pages/PDFToImage";
+import PDFMerge from "./pages/PDFMerge";
+import PDFCompress from "./pages/PDFCompress";
+import PDFPassword from "./pages/PDFPassword";
+import PDFToWord from "./pages/PDFToWord";
 import JSONTools from "./pages/JSONTools";
 import PasswordGenerator from "./pages/PasswordGenerator";
 import PrivacyPolicyGenerator from "./pages/PrivacyPolicyGenerator";
@@ -73,6 +77,10 @@ const routeTitles: Record<string, string> = {
   "/image-exif-remover": "EXIF Remover",
   "/pdf-tools": "PDF Tools",
   "/pdf-to-image": "PDF to Image",
+  "/pdf-merge": "PDF Merge",
+  "/pdf-compress": "PDF Compress",
+  "/pdf-password": "PDF Password",
+  "/pdf-to-word": "PDF to Word",
   "/json-tools": "JSON Tools",
   "/csv-to-json-converter": "CSV to JSON",
   "/password-generator": "Password Generator",
@@ -129,6 +137,10 @@ const AppContent = () => {
           <Route path="/image-exif-remover" element={<ImageEXIFRemover />} />
           <Route path="/pdf-tools" element={<PDFTools />} />
           <Route path="/pdf-to-image" element={<PDFToImage />} />
+          <Route path="/pdf-merge" element={<PDFMerge />} />
+          <Route path="/pdf-compress" element={<PDFCompress />} />
+          <Route path="/pdf-password" element={<PDFPassword />} />
+          <Route path="/pdf-to-word" element={<PDFToWord />} />
           <Route path="/json-tools" element={<JSONTools />} />
           <Route path="/csv-to-json-converter" element={<CSVToJSONConverter />} />
           <Route path="/password-generator" element={<PasswordGenerator />} />
