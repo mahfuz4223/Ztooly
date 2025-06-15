@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import Ads, { openDirectAdLink } from "@/components/Ads";
 
 const JSONTools = () => {
   const [inputJson, setInputJson] = useState("");
@@ -240,6 +241,10 @@ const JSONTools = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+      {/* Inserted ads at top */}
+      <div className="mb-4">
+        <Ads variant="banner1" />
+      </div>
       {/* Removed local header/nav - use global nav only */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
@@ -514,6 +519,10 @@ const JSONTools = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+        {/* Insert ad at bottom */}
+        <div className="my-8 flex justify-center">
+          <Ads variant="banner2" />
         </div>
       </div>
     </div>
