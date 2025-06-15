@@ -240,33 +240,7 @@ const JSONTools = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
-      {/* Header */}
-      {/* Removed local nav/back btn - use global nav only */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Tools
-              </Link>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileJson className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                    JSON Tools
-                  </h1>
-                  <p className="text-sm text-muted-foreground">Format, validate, and convert JSON data</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      {/* Removed local header/nav - use global nav only */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Main Tool Interface */}
