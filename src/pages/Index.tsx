@@ -49,7 +49,9 @@ import {
   Youtube,
   Instagram,
   Tag,
-  Barcode
+  Barcode,
+  Menu,
+  X
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -566,7 +568,7 @@ export default function Index() {
         <div className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-l from-purple-500/15 via-pink-500/10 to-transparent rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-t from-green-500/15 via-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse delay-2000" />
         
-        {/* Interactive Mouse Following Gradient - Enhanced */}
+        {/* Enhanced Interactive Mouse Following Gradient - Enhanced */}
         <div 
           className="absolute w-[600px] h-[600px] rounded-full blur-3xl transition-all duration-700 ease-out opacity-60"
           style={{
