@@ -1,11 +1,10 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Download, Copy, Code } from "lucide-react";
+import { Download, Copy, Code, Zap } from "lucide-react";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
 
@@ -41,6 +40,90 @@ greetUser(user);`);
     { value: 'monokai', label: 'Monokai' },
     { value: 'github', label: 'GitHub' }
   ];
+
+  // Auto language detection function
+  const detectLanguage = (codeText: string): string => {
+    const trimmedCode = codeText.trim().toLowerCase();
+    
+    // JavaScript/TypeScript patterns
+    if (trimmedCode.includes('function') || trimmedCode.includes('=>') || 
+        trimmedCode.includes('const ') || trimmedCode.includes('let ') ||
+        trimmedCode.includes('var ') || trimmedCode.includes('console.log')) {
+      if (trimmedCode.includes(': string') || trimmedCode.includes(': number') ||
+          trimmedCode.includes('interface ') || trimmedCode.includes('type ')) {
+        return 'typescript';
+      }
+      return 'javascript';
+    }
+    
+    // Python patterns
+    if (trimmedCode.includes('def ') || trimmedCode.includes('import ') ||
+        trimmedCode.includes('print(') || trimmedCode.includes('if __name__') ||
+        trimmedCode.includes('class ') && trimmedCode.includes(':')) {
+      return 'python';
+    }
+    
+    // Java patterns
+    if (trimmedCode.includes('public class') || trimmedCode.includes('public static void main') ||
+        trimmedCode.includes('system.out.print') || trimmedCode.includes('import java.')) {
+      return 'java';
+    }
+    
+    // C++ patterns
+    if (trimmedCode.includes('#include') || trimmedCode.includes('std::') ||
+        trimmedCode.includes('cout <<') || trimmedCode.includes('int main()')) {
+      return 'cpp';
+    }
+    
+    // HTML patterns
+    if (trimmedCode.includes('<html') || trimmedCode.includes('<!doctype') ||
+        trimmedCode.includes('<div') || trimmedCode.includes('<body')) {
+      return 'html';
+    }
+    
+    // CSS patterns
+    if (trimmedCode.includes('{') && trimmedCode.includes('}') &&
+        (trimmedCode.includes('color:') || trimmedCode.includes('margin:') ||
+         trimmedCode.includes('padding:') || trimmedCode.includes('font-'))) {
+      return 'css';
+    }
+    
+    // JSON patterns
+    if ((trimmedCode.startsWith('{') && trimmedCode.endsWith('}')) ||
+        (trimmedCode.startsWith('[') && trimmedCode.endsWith(']'))) {
+      try {
+        JSON.parse(codeText);
+        return 'json';
+      } catch (e) {
+        // Not valid JSON
+      }
+    }
+    
+    // SQL patterns
+    if (trimmedCode.includes('select ') || trimmedCode.includes('insert into') ||
+        trimmedCode.includes('update ') || trimmedCode.includes('delete from') ||
+        trimmedCode.includes('create table')) {
+      return 'sql';
+    }
+    
+    // Bash patterns
+    if (trimmedCode.includes('#!/bin/bash') || trimmedCode.includes('echo ') ||
+        trimmedCode.includes('chmod ') || trimmedCode.includes('grep ')) {
+      return 'bash';
+    }
+    
+    return language; // Return current language if no pattern matches
+  };
+
+  const autoDetectLanguage = () => {
+    const detectedLang = detectLanguage(code);
+    setLanguage(detectedLang);
+    toast.success(`Language detected: ${languages.find(l => l.value === detectedLang)?.label}`);
+  };
+
+  const handleCodeChange = (value: string) => {
+    setCode(value);
+  };
 
   const getThemeStyles = () => {
     switch (theme) {
@@ -212,11 +295,22 @@ greetUser(user);`);
               </div>
 
               <div>
-                <Label htmlFor="code">Code</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="code">Code</Label>
+                  <Button 
+                    onClick={autoDetectLanguage}
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs"
+                  >
+                    <Zap className="h-3 w-3 mr-1" />
+                    Auto Detect
+                  </Button>
+                </div>
                 <Textarea
                   id="code"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => handleCodeChange(e.target.value)}
                   placeholder="Paste your code here..."
                   className="min-h-[300px] font-mono text-sm mt-1"
                 />
