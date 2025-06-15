@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { toast } from '@/hooks/use-toast';
 import { Upload, Download, Eye, EyeOff, Trash2, Camera, MapPin, Calendar, Settings, ChevronDown, Shield, Plus, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import EXIF from 'exif-js';
 
 interface EXIFData {
   [key: string]: any;
@@ -46,56 +46,127 @@ const ImageEXIFRemover = () => {
 
   const extractEXIFData = (file: File): Promise<EXIFData> => {
     return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        EXIF.getData(img, function() {
+          const allMetaData = EXIF.getAllTags(this);
+          const exifData: EXIFData = {};
+          
+          // Basic file information
+          exifData['File Name'] = file.name;
+          exifData['File Size'] = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+          exifData['MIME Type'] = file.type;
+          exifData['Last Modified'] = new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19);
+          
+          // Extract real EXIF data
+          if (Object.keys(allMetaData).length > 0) {
+            // Camera information
+            if (allMetaData.Make) exifData['Camera Make'] = allMetaData.Make;
+            if (allMetaData.Model) exifData['Camera Model'] = allMetaData.Model;
+            if (allMetaData.Software) exifData['Software'] = allMetaData.Software;
+            
+            // Date and time
+            if (allMetaData.DateTime) exifData['Date Created'] = allMetaData.DateTime;
+            if (allMetaData.DateTimeOriginal) exifData['Date Original'] = allMetaData.DateTimeOriginal;
+            if (allMetaData.DateTimeDigitized) exifData['Date Digitized'] = allMetaData.DateTimeDigitized;
+            
+            // Camera settings
+            if (allMetaData.ExposureTime) {
+              const exposure = allMetaData.ExposureTime;
+              exifData['Exposure Time'] = exposure < 1 ? `1/${Math.round(1/exposure)}` : `${exposure}s`;
+            }
+            if (allMetaData.FNumber) exifData['F-Number'] = `f/${allMetaData.FNumber}`;
+            if (allMetaData.ISO || allMetaData.ISOSpeedRatings) {
+              exifData['ISO Speed'] = allMetaData.ISO || allMetaData.ISOSpeedRatings;
+            }
+            if (allMetaData.FocalLength) exifData['Focal Length'] = `${allMetaData.FocalLength}mm`;
+            if (allMetaData.WhiteBalance) {
+              exifData['White Balance'] = allMetaData.WhiteBalance === 0 ? 'Auto' : 'Manual';
+            }
+            if (allMetaData.Flash !== undefined) {
+              const flashValue = allMetaData.Flash;
+              if (flashValue === 0) exifData['Flash'] = 'No Flash';
+              else if (flashValue === 1) exifData['Flash'] = 'Flash fired';
+              else if (flashValue === 16) exifData['Flash'] = 'Flash off, compulsory';
+              else if (flashValue === 24) exifData['Flash'] = 'Flash auto, did not fire';
+              else if (flashValue === 25) exifData['Flash'] = 'Flash auto, fired';
+              else exifData['Flash'] = `Flash mode: ${flashValue}`;
+            }
+            
+            // GPS information
+            if (allMetaData.GPSLatitude && allMetaData.GPSLongitude) {
+              const lat = allMetaData.GPSLatitude;
+              const lon = allMetaData.GPSLongitude;
+              const latRef = allMetaData.GPSLatitudeRef || 'N';
+              const lonRef = allMetaData.GPSLongitudeRef || 'E';
+              
+              if (Array.isArray(lat) && Array.isArray(lon)) {
+                const latDecimal = lat[0] + lat[1]/60 + lat[2]/3600;
+                const lonDecimal = lon[0] + lon[1]/60 + lon[2]/3600;
+                exifData['GPS Latitude'] = `${latDecimal.toFixed(6)}° ${latRef}`;
+                exifData['GPS Longitude'] = `${lonDecimal.toFixed(6)}° ${lonRef}`;
+              }
+            }
+            
+            // Image dimensions
+            if (allMetaData.PixelXDimension) exifData['Image Width'] = `${allMetaData.PixelXDimension}px`;
+            if (allMetaData.PixelYDimension) exifData['Image Height'] = `${allMetaData.PixelYDimension}px`;
+            if (allMetaData.XResolution) exifData['X Resolution'] = `${allMetaData.XResolution} dpi`;
+            if (allMetaData.YResolution) exifData['Y Resolution'] = `${allMetaData.YResolution} dpi`;
+            
+            // Other metadata
+            if (allMetaData.Artist) exifData['Artist'] = allMetaData.Artist;
+            if (allMetaData.Copyright) exifData['Copyright'] = allMetaData.Copyright;
+            if (allMetaData.ImageDescription) exifData['Description'] = allMetaData.ImageDescription;
+            if (allMetaData.Orientation) {
+              const orientations = {
+                1: 'Normal',
+                2: 'Horizontal flip',
+                3: '180° rotation',
+                4: 'Vertical flip',
+                5: '90° CCW + horizontal flip',
+                6: '90° CW',
+                7: '90° CW + horizontal flip',
+                8: '90° CCW'
+              };
+              exifData['Orientation'] = orientations[allMetaData.Orientation as keyof typeof orientations] || `Unknown (${allMetaData.Orientation})`;
+            }
+            
+            // Color space
+            if (allMetaData.ColorSpace) {
+              exifData['Color Space'] = allMetaData.ColorSpace === 1 ? 'sRGB' : 'Adobe RGB';
+            }
+            
+            // Lens information
+            if (allMetaData.LensModel) exifData['Lens Model'] = allMetaData.LensModel;
+            if (allMetaData.LensMake) exifData['Lens Make'] = allMetaData.LensMake;
+            
+            console.log('Raw EXIF data:', allMetaData);
+            console.log('Processed EXIF data:', exifData);
+          } else {
+            console.log('No EXIF data found in image');
+          }
+          
+          resolve(exifData);
+        });
+      };
+      
+      img.onerror = () => {
+        console.error('Failed to load image for EXIF extraction');
+        resolve({
+          'File Name': file.name,
+          'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          'MIME Type': file.type,
+          'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
+          'Error': 'Could not extract EXIF data'
+        });
+      };
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        const arrayBuffer = e.target?.result as ArrayBuffer;
-        const dataView = new DataView(arrayBuffer);
-        
-        // Simple EXIF extraction simulation
-        const exifData: EXIFData = {};
-        
-        // Check for EXIF marker (0xFFE1)
-        let offset = 2;
-        while (offset < dataView.byteLength - 1) {
-          const marker = dataView.getUint16(offset, false);
-          if (marker === 0xFFE1) {
-            // Found EXIF data
-            const length = dataView.getUint16(offset + 2, false);
-            const exifIdentifier = String.fromCharCode(
-              dataView.getUint8(offset + 4),
-              dataView.getUint8(offset + 5),
-              dataView.getUint8(offset + 6),
-              dataView.getUint8(offset + 7)
-            );
-            
-            if (exifIdentifier === 'Exif') {
-              // Simulate realistic EXIF data based on file
-              exifData['File Name'] = file.name;
-              exifData['File Size'] = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-              exifData['MIME Type'] = file.type;
-              exifData['Camera Make'] = 'Apple';
-              exifData['Camera Model'] = 'iPhone 14 Pro';
-              exifData['Date Created'] = new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19);
-              exifData['GPS Latitude'] = '37.7749° N';
-              exifData['GPS Longitude'] = '122.4194° W';
-              exifData['Exposure Time'] = '1/120';
-              exifData['F-Number'] = 'f/1.78';
-              exifData['ISO Speed'] = '640';
-              exifData['Focal Length'] = '6.86mm';
-              exifData['White Balance'] = 'Auto';
-              exifData['Flash'] = 'Auto, Did not fire';
-              exifData['Software'] = 'iOS 17.1.1';
-              exifData['Artist'] = 'John Doe';
-              exifData['Copyright'] = '© 2024 John Doe';
-              break;
-            }
-          }
-          offset += 2;
-        }
-        
-        resolve(exifData);
+        img.src = e.target?.result as string;
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsDataURL(file);
     });
   };
 
@@ -120,7 +191,7 @@ const ImageEXIFRemover = () => {
     setProcessingMode(null);
     
     try {
-      // Extract EXIF data
+      // Extract real EXIF data
       const exifData = await extractEXIFData(file);
       setOriginalEXIF(exifData);
       
@@ -131,11 +202,14 @@ const ImageEXIFRemover = () => {
       };
       reader.readAsDataURL(file);
 
+      const exifCount = Object.keys(exifData).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length;
+      
       toast({
         title: "Image loaded successfully",
-        description: `Found ${Object.keys(exifData).length} EXIF properties`,
+        description: exifCount > 0 ? `Found ${exifCount} EXIF properties` : "No EXIF metadata found in this image",
       });
     } catch (error) {
+      console.error('Error loading image:', error);
       toast({
         title: "Error loading image",
         description: "Failed to extract EXIF data",
@@ -354,7 +428,11 @@ const ImageEXIFRemover = () => {
                     </div>
                     <div>
                       <div className="text-lg">Original Image</div>
-                      <div className="text-sm text-gray-500 font-normal">Contains metadata</div>
+                      <div className="text-sm text-gray-500 font-normal">
+                        {Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0 
+                          ? 'Contains metadata' 
+                          : 'No EXIF data found'}
+                      </div>
                     </div>
                   </CardTitle>
                 </CardHeader>
@@ -375,9 +453,22 @@ const ImageEXIFRemover = () => {
                         {originalFile.type} • {(originalFile.size / 1024 / 1024).toFixed(2)} MB
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Has EXIF
+                    <Badge variant="outline" className={cn(
+                      Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0
+                        ? "bg-red-50 text-red-700 border-red-200"
+                        : "bg-green-50 text-green-700 border-green-200"
+                    )}>
+                      {Object.keys(originalEXIF).filter(key => !['File Name', 'File Size', 'MIME Type', 'Last Modified', 'Error'].includes(key)).length > 0 ? (
+                        <>
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Has EXIF
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          No EXIF
+                        </>
+                      )}
                     </Badge>
                   </div>
                 </CardContent>
@@ -545,6 +636,12 @@ const ImageEXIFRemover = () => {
                             </span>
                           </div>
                         ))}
+                        {Object.keys(originalEXIF).length === 0 && (
+                          <div className="text-center py-8 text-gray-500">
+                            <Camera className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>No EXIF data found</p>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </CollapsibleContent>
