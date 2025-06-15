@@ -739,7 +739,7 @@ export default function Index() {
                 const Icon = stat.icon;
                 return (
                   <div key={stat.label} className="text-center group cursor-pointer" style={{ animationDelay: `${600 + index * 100}ms` }}>
-                    <div className="w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                       <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                     </div>
                     <div className="text-2xl md:text-3xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{stat.value}</div>
@@ -922,7 +922,15 @@ export default function Index() {
 
       {/* Enhanced About Section */}
       <section id="about" className="py-20 bg-muted/20 relative z-10">
-        {/* ... keep existing code (about section) the same ... */}
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">About ToolKit</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+            ToolKit is your all-in-one platform for professional-grade digital utilities. We focus on speed, privacy, and ease of use, providing a wide range of tools that run entirely in your browser.
+          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Whether you need to generate QR codes, remove image backgrounds, create strong passwords, or leverage AI-powered content generators, ToolKit has you covered. No sign-ups, no data collection, just powerful tools at your fingertips.
+          </p>
+        </div>
       </section>
 
       {/* Render the correct single footer only */}
