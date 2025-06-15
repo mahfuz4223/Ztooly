@@ -59,6 +59,26 @@ const FakeTweetGenerator = () => {
     toast.success("Random engagement metrics generated!");
   };
 
+  const renderTweetText = (text: string, isDark: boolean = false) => {
+    const parts = text.split(/(\s+)/);
+    return parts.map((part, index) => {
+      if (part.startsWith('#')) {
+        return (
+          <span key={index} className="text-blue-500 hover:underline">
+            {part}
+          </span>
+        );
+      } else if (part.startsWith('@')) {
+        return (
+          <span key={index} className="text-blue-500 hover:underline">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   const downloadTweet = () => {
     setIsGenerating(true);
     const tweetElement = document.getElementById('fake-tweet');
@@ -68,16 +88,26 @@ const FakeTweetGenerator = () => {
       import('html2canvas').then(html2canvas => {
         html2canvas.default(tweetElement, {
           backgroundColor: tweetData.theme === 'dark' ? '#000000' : '#ffffff',
-          scale: 2,
-          useCORS: true
+          scale: 3,
+          useCORS: true,
+          allowTaint: false,
+          foreignObjectRendering: false,
+          logging: false,
+          width: tweetElement.scrollWidth,
+          height: tweetElement.scrollHeight,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: tweetElement.scrollWidth,
+          windowHeight: tweetElement.scrollHeight
         }).then(canvas => {
           const link = document.createElement('a');
           link.download = `fake-tweet-${Date.now()}.png`;
-          link.href = canvas.toDataURL();
+          link.href = canvas.toDataURL('image/png', 1.0);
           link.click();
           toast.success("Tweet image downloaded!");
           setIsGenerating(false);
-        }).catch(() => {
+        }).catch((error) => {
+          console.error('Error generating image:', error);
           toast.error("Failed to download tweet image");
           setIsGenerating(false);
         });
@@ -337,45 +367,50 @@ const FakeTweetGenerator = () => {
                 {/* Fake Tweet */}
                 <div 
                   id="fake-tweet"
-                  className={`border rounded-xl p-4 ${
+                  className={`border rounded-xl p-6 ${
                     tweetData.theme === 'dark' 
                       ? 'bg-black text-white border-gray-800' 
                       : 'bg-white text-black border-gray-200'
-                  } max-w-lg mx-auto`}
+                  } max-w-lg mx-auto shadow-lg`}
+                  style={{
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                  }}
                 >
                   {/* Tweet Header */}
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-bold text-lg">
                         {tweetData.displayName.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
-                        <span className="font-bold truncate">{tweetData.displayName}</span>
+                        <span className="font-bold truncate text-base">{tweetData.displayName}</span>
                         {tweetData.isVerified && (
-                          <Verified className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                          <Verified className="h-5 w-5 text-blue-500 flex-shrink-0" fill="currentColor" />
                         )}
                       </div>
                       <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         @{tweetData.username}
                       </span>
                     </div>
-                    <MoreHorizontal className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                    <MoreHorizontal className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} flex-shrink-0`} />
                   </div>
 
                   {/* Tweet Content */}
-                  <div className="mb-3">
-                    <p className="text-base leading-relaxed whitespace-pre-wrap">{tweetData.tweetText}</p>
+                  <div className="mb-4">
+                    <p className="text-base leading-relaxed whitespace-pre-wrap">
+                      {renderTweetText(tweetData.tweetText, tweetData.theme === 'dark')}
+                    </p>
                   </div>
 
                   {/* Tweet Timestamp */}
-                  <div className={`text-sm mb-3 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <div className={`text-sm mb-4 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                     {tweetData.timestamp} · {tweetData.date}
                   </div>
 
                   {/* Tweet Actions */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
+                  <div className={`flex items-center justify-between pt-3 border-t ${tweetData.theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
                     <div className="flex items-center gap-1">
                       <MessageCircle className={`h-5 w-5 ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                       <span className={`text-sm ${tweetData.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
