@@ -31,6 +31,7 @@ import CaseConverter from "./pages/CaseConverter";
 import HashtagGenerator from "./pages/HashtagGenerator";
 import ReadingTimeEstimator from "./pages/ReadingTimeEstimator";
 import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
+import CSVToJSONConverter from "./pages/CSVToJSONConverter";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const AppContent = () => (
       <Route path="/pdf-tools" element={<PDFTools />} />
       <Route path="/pdf-to-image" element={<PDFToImage />} />
       <Route path="/json-tools" element={<JSONTools />} />
+      <Route path="/csv-to-json-converter" element={<CSVToJSONConverter />} />
       <Route path="/password-generator" element={<PasswordGenerator />} />
       <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
       <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
