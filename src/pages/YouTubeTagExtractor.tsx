@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Copy, Download, Tag, Youtube, Search, Loader2 } from 'lucide-react';
+import { Copy, Download, Tag, Youtube, Search, Loader2, ExternalLink, Image } from 'lucide-react';
+import { YouTubeService } from '@/services/youtubeService';
 
 interface VideoData {
   title: string;
@@ -18,6 +19,8 @@ interface VideoData {
   viewCount: string;
   likeCount: string;
   duration: string;
+  thumbnailUrl: string;
+  videoId: string;
 }
 
 const YouTubeTagExtractor = () => {
@@ -27,28 +30,9 @@ const YouTubeTagExtractor = () => {
   const [error, setError] = useState('');
   const { toast } = useToast();
 
-  const extractVideoId = (url: string): string | null => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-      /youtube\.com\/watch\?.*v=([^&\n?#]+)/
-    ];
-    
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
-  };
-
   const fetchVideoData = async () => {
     if (!url.trim()) {
       setError('Please enter a YouTube URL');
-      return;
-    }
-
-    const videoId = extractVideoId(url);
-    if (!videoId) {
-      setError('Invalid YouTube URL. Please enter a valid YouTube video URL.');
       return;
     }
 
@@ -56,36 +40,25 @@ const YouTubeTagExtractor = () => {
     setError('');
     
     try {
-      // Note: In a real application, you'd need a YouTube API key and make the request through a backend
-      // This is a mock implementation showing the structure
+      console.log('Fetching video data for URL:', url);
+      const data = await YouTubeService.fetchVideoData(url);
+      console.log('Video data fetched successfully:', data);
       
-      // Mock data for demonstration - replace with actual API call
-      setTimeout(() => {
-        const mockData: VideoData = {
-          title: "Sample YouTube Video Title",
-          tags: [
-            "youtube", "tutorial", "web development", "javascript", "react", 
-            "programming", "coding", "tech", "educational", "beginners",
-            "frontend", "backend", "full stack", "software engineering"
-          ],
-          description: "This is a sample video description that would contain the actual video description from YouTube.",
-          channelTitle: "Sample Channel",
-          publishedAt: "2024-01-15",
-          viewCount: "10,500",
-          likeCount: "850",
-          duration: "15:30"
-        };
-        
-        setVideoData(mockData);
-        setLoading(false);
-        toast({
-          title: "Success!",
-          description: "Video tags extracted successfully",
-        });
-      }, 2000);
-      
+      setVideoData(data);
+      toast({
+        title: "Success!",
+        description: "Video data extracted successfully",
+      });
     } catch (err) {
-      setError('Failed to extract video data. Please try again.');
+      console.error('Error fetching video data:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to extract video data. Please try again.';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
     }
   };
@@ -101,14 +74,45 @@ const YouTubeTagExtractor = () => {
     }
   };
 
+  const copyTitle = () => {
+    if (videoData?.title) {
+      navigator.clipboard.writeText(videoData.title);
+      toast({
+        title: "Copied!",
+        description: "Title copied to clipboard",
+      });
+    }
+  };
+
+  const copyDescription = () => {
+    if (videoData?.description) {
+      navigator.clipboard.writeText(videoData.description);
+      toast({
+        title: "Copied!",
+        description: "Description copied to clipboard",
+      });
+    }
+  };
+
   const downloadTags = () => {
     if (videoData?.tags) {
-      const content = `Video Title: ${videoData.title}\nChannel: ${videoData.channelTitle}\nTags: ${videoData.tags.join(', ')}\n\nDescription:\n${videoData.description}`;
+      const content = `Video Title: ${videoData.title}
+Channel: ${videoData.channelTitle}
+Published: ${videoData.publishedAt}
+Views: ${videoData.viewCount}
+Duration: ${videoData.duration}
+URL: https://www.youtube.com/watch?v=${videoData.videoId}
+
+Tags: ${videoData.tags.join(', ')}
+
+Description:
+${videoData.description}`;
+      
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'youtube-tags.txt';
+      a.download = `youtube-tags-${videoData.videoId}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -116,8 +120,14 @@ const YouTubeTagExtractor = () => {
       
       toast({
         title: "Downloaded!",
-        description: "Tags saved as text file",
+        description: "Video data saved as text file",
       });
+    }
+  };
+
+  const openVideoInNewTab = () => {
+    if (videoData?.videoId) {
+      window.open(`https://www.youtube.com/watch?v=${videoData.videoId}`, '_blank');
     }
   };
 
@@ -129,7 +139,7 @@ const YouTubeTagExtractor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 p-4">
-      <div className="container mx-auto max-w-4xl">
+      <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-3 bg-red-100 rounded-full">
@@ -138,7 +148,7 @@ const YouTubeTagExtractor = () => {
             <h1 className="text-4xl font-bold text-gray-900">YouTube Tag Extractor</h1>
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Extract tags, title, and metadata from any YouTube video. Perfect for content creators, marketers, and researchers.
+            Extract real tags, metadata, and information from any YouTube video. Perfect for content creators, marketers, and researchers.
           </p>
         </div>
 
@@ -146,10 +156,10 @@ const YouTubeTagExtractor = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Search className="h-5 w-5" />
-              Extract Video Tags
+              Extract Video Data
             </CardTitle>
             <CardDescription>
-              Enter a YouTube video URL to extract its tags and metadata
+              Enter a YouTube video URL to extract its tags, title, description, and metadata
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -158,34 +168,35 @@ const YouTubeTagExtractor = () => {
               <Input
                 id="youtube-url"
                 type="url"
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="text-base"
+                onKeyPress={(e) => e.key === 'Enter' && fetchVideoData()}
               />
             </div>
             
             {error && (
-              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md">
-                {error}
+              <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
+                <strong>Error:</strong> {error}
               </div>
             )}
             
             <div className="flex gap-3">
               <Button 
                 onClick={fetchVideoData} 
-                disabled={loading}
+                disabled={loading || !url.trim()}
                 className="flex-1"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Extracting...
+                    Extracting Data...
                   </>
                 ) : (
                   <>
                     <Tag className="h-4 w-4 mr-2" />
-                    Extract Tags
+                    Extract Video Data
                   </>
                 )}
               </Button>
@@ -201,88 +212,144 @@ const YouTubeTagExtractor = () => {
 
         {videoData && (
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Video Information</span>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={copyTags}>
-                      <Copy className="h-4 w-4 mr-1" />
-                      Copy Tags
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={downloadTags}>
-                      <Download className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Title</Label>
-                  <p className="text-lg font-semibold">{videoData.title}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Video Thumbnail */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image className="h-5 w-5" />
+                    Video Thumbnail
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {videoData.thumbnailUrl && (
+                    <div className="space-y-3">
+                      <img 
+                        src={videoData.thumbnailUrl} 
+                        alt="Video thumbnail" 
+                        className="w-full rounded-lg shadow-md"
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={openVideoInNewTab}
+                        className="w-full"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Open on YouTube
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Video Information */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Video Information</span>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={copyTitle}>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy Title
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={downloadTags}>
+                        <Download className="h-4 w-4 mr-1" />
+                        Download All
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div>
-                    <Label className="text-gray-700">Channel</Label>
-                    <p className="font-medium">{videoData.channelTitle}</p>
+                    <Label className="text-sm font-medium text-gray-700">Title</Label>
+                    <p className="text-lg font-semibold break-words">{videoData.title}</p>
                   </div>
-                  <div>
-                    <Label className="text-gray-700">Views</Label>
-                    <p className="font-medium">{videoData.viewCount}</p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <Label className="text-gray-700">Channel</Label>
+                      <p className="font-medium">{videoData.channelTitle}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-700">Views</Label>
+                      <p className="font-medium">{videoData.viewCount}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-700">Published</Label>
+                      <p className="font-medium">{videoData.publishedAt}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-700">Duration</Label>
+                      <p className="font-medium">{videoData.duration}</p>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-gray-700">Likes</Label>
-                    <p className="font-medium">{videoData.likeCount}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-700">Duration</Label>
-                    <p className="font-medium">{videoData.duration}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card>
               <CardHeader>
-                <CardTitle>Tags ({videoData.tags.length})</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Tags ({videoData.tags.length})</span>
+                  <Button size="sm" variant="outline" onClick={copyTags}>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy Tags
+                  </Button>
+                </CardTitle>
                 <CardDescription>
                   Video tags that can be used for SEO and content discovery
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {videoData.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="tags-textarea">Tags as Text (comma-separated)</Label>
-                  <Textarea
-                    id="tags-textarea"
-                    value={videoData.tags.join(', ')}
-                    readOnly
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
+                {videoData.tags.length > 0 ? (
+                  <>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {videoData.tags.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-sm">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="tags-textarea">Tags as Text (comma-separated)</Label>
+                      <Textarea
+                        id="tags-textarea"
+                        value={videoData.tags.join(', ')}
+                        readOnly
+                        rows={3}
+                        className="resize-none"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Tag className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No tags found for this video</p>
+                    <p className="text-sm">This might be due to privacy settings or the video being unlisted</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Video Description</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Video Description</span>
+                  <Button size="sm" variant="outline" onClick={copyDescription}>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy Description
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
                   value={videoData.description}
                   readOnly
-                  rows={6}
+                  rows={8}
                   className="resize-none"
+                  placeholder="No description available"
                 />
               </CardContent>
             </Card>
@@ -291,7 +358,7 @@ const YouTubeTagExtractor = () => {
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>How to Use</CardTitle>
+            <CardTitle>How to Use & Features</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
@@ -301,17 +368,25 @@ const YouTubeTagExtractor = () => {
                   <li>• https://www.youtube.com/watch?v=VIDEO_ID</li>
                   <li>• https://youtu.be/VIDEO_ID</li>
                   <li>• https://www.youtube.com/embed/VIDEO_ID</li>
+                  <li>• Mobile YouTube links</li>
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Features:</h3>
+                <h3 className="font-semibold mb-2">What You Get:</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Extract video tags and metadata</li>
-                  <li>• Copy tags to clipboard</li>
-                  <li>• Download as text file</li>
-                  <li>• View video statistics</li>
+                  <li>• Real video tags and metadata</li>
+                  <li>• Video thumbnail preview</li>
+                  <li>• Title, description, and channel info</li>
+                  <li>• View count and publish date</li>
+                  <li>• Copy and download functionality</li>
+                  <li>• Direct links to YouTube</li>
                 </ul>
               </div>
+            </div>
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This tool extracts publicly available information. Some data might be limited for private or restricted videos.
+              </p>
             </div>
           </CardContent>
         </Card>
