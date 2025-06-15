@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -582,7 +581,7 @@ Generated using Google Gemini AI`;
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Too Long</span>
-                    <Badge className="bg-red-100 text-red-700">> 70</Badge>
+                    <Badge className="bg-red-100 text-red-700">&gt; 70</Badge>
                   </div>
                 </div>
               </CardContent>
