@@ -2,8 +2,8 @@
 import { ArrowLeft, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-// This is based closely on the home landing nav. Adapted for tool pages.
 
+// Centralized menu links for navigation (for Home and Tool pages)
 const menuLinks = [
   { href: "#features", label: "Features" },
   { href: "#about", label: "About" },
@@ -14,7 +14,7 @@ export default function SiteNav() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Only show back button
+  // Handle the back navigation
   const handleBack = () => {
     if (window.history.length > 2) {
       navigate(-1);
@@ -27,8 +27,9 @@ export default function SiteNav() {
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-b border-border/30">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Left: Only Back Button */}
+          {/* Back Button and Logo */}
           <div className="flex items-center space-x-3">
+            {/* Back Button (always show on tool pages) */}
             <button
               aria-label="Back"
               onClick={handleBack}
@@ -37,15 +38,21 @@ export default function SiteNav() {
               <ArrowLeft className="h-5 w-5" />
               <span className="hidden sm:inline text-base font-medium">Back</span>
             </button>
-            {/* Logo */}
-            <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg">
-              <svg width="24" height="24" viewBox="0 0 24 24" className="h-6 w-6 text-primary-foreground">
+            {/* Logo (EXACT home nav style) */}
+            <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                className="h-6 w-6 text-primary-foreground relative z-10"
+                aria-hidden="true"
+              >
                 <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.7" />
                 <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.5" />
               </svg>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl z-0" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent select-none">
               ToolKit
             </span>
           </div>
@@ -62,11 +69,11 @@ export default function SiteNav() {
               </a>
             ))}
           </div>
-          {/* Mobile menu button */}
+          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
             onClick={() => setMobileMenuOpen((v) => !v)}
-            aria-label="Open main menu"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open main menu"}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
