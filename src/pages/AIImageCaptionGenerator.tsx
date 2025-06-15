@@ -1,11 +1,11 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, Image as ImageIcon, Loader2, Copy, AlertCircle, Info } from 'lucide-react';
+import { Upload, Image as ImageIcon, Loader2, Copy, AlertCircle, Info, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { pipeline } from '@huggingface/transformers';
+import { modelManager } from '@/utils/modelManager';
+import { useModelPreloader } from '@/hooks/useModelPreloader';
 
 const AIImageCaptionGenerator = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -13,8 +13,8 @@ const AIImageCaptionGenerator = () => {
   const [caption, setCaption] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string>('');
-  const [loadingMessage, setLoadingMessage] = useState<string>('');
   const { toast } = useToast();
+  const { isPreloading, isPreloaded, preloadError } = useModelPreloader();
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,30 +51,7 @@ const AIImageCaptionGenerator = () => {
     setError('');
 
     try {
-      // Show model loading message
-      setLoadingMessage('Loading AI model...');
-      
-      // Create image-to-text pipeline using Hugging Face model
-      const captioner = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning');
-      
-      setLoadingMessage('Analyzing image...');
-
-      // Generate caption from the image
-      const result = await captioner(imagePreview);
-      
-      // Handle the result properly with better type checking
-      let generatedCaption = '';
-      
-      if (Array.isArray(result) && result.length > 0) {
-        // If it's an array, get the first result
-        const firstResult = result[0];
-        if (firstResult && typeof firstResult === 'object' && firstResult !== null) {
-          generatedCaption = (firstResult as Record<string, any>).generated_text || '';
-        }
-      } else if (result && typeof result === 'object' && result !== null) {
-        // If it's a single object
-        generatedCaption = (result as Record<string, any>).generated_text || '';
-      }
+      const generatedCaption = await modelManager.generateCaption(imagePreview);
       
       if (generatedCaption) {
         setCaption(generatedCaption);
@@ -91,7 +68,6 @@ const AIImageCaptionGenerator = () => {
       setError('Failed to generate caption. Please try again or check your internet connection.');
     } finally {
       setIsGenerating(false);
-      setLoadingMessage('');
     }
   };
 
@@ -110,7 +86,6 @@ const AIImageCaptionGenerator = () => {
     setImagePreview('');
     setCaption('');
     setError('');
-    setLoadingMessage('');
   };
 
   return (
@@ -118,15 +93,27 @@ const AIImageCaptionGenerator = () => {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4">AI Image Caption Generator</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Upload an image and let AI generate descriptive captions using free Hugging Face models
+          Upload an image and let AI generate descriptive captions using optimized models
         </p>
       </div>
 
-      <Alert className="mb-6 border-blue-200 bg-blue-50">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-blue-800">
-          <strong>Free AI Model:</strong> This tool uses Hugging Face's Vision Transformer + GPT-2 model that runs directly in your browser. 
-          The model will download automatically on first use (may take a moment).
+      {/* Model Status Alert */}
+      <Alert className={`mb-6 ${isPreloaded ? 'border-green-200 bg-green-50' : isPreloading ? 'border-yellow-200 bg-yellow-50' : 'border-blue-200 bg-blue-50'}`}>
+        {isPreloaded ? (
+          <Zap className="h-4 w-4 text-green-600" />
+        ) : (
+          <Info className="h-4 w-4 text-blue-600" />
+        )}
+        <AlertDescription className={isPreloaded ? 'text-green-800' : 'text-blue-800'}>
+          {isPreloaded ? (
+            <><strong>Ready!</strong> AI model is loaded and ready for fast caption generation.</>
+          ) : isPreloading ? (
+            <><strong>Loading...</strong> AI model is being prepared for faster performance.</>
+          ) : preloadError ? (
+            <><strong>Error:</strong> {preloadError}</>
+          ) : (
+            <><strong>Optimized AI:</strong> This tool uses a cached AI model for faster performance.</>
+          )}
         </AlertDescription>
       </Alert>
 
@@ -181,16 +168,19 @@ const AIImageCaptionGenerator = () => {
                 <div className="flex gap-2">
                   <Button
                     onClick={generateCaption}
-                    disabled={isGenerating}
+                    disabled={isGenerating || (!isPreloaded && !preloadError)}
                     className="flex-1"
                   >
                     {isGenerating ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {loadingMessage || 'Generating...'}
+                        Analyzing...
                       </>
                     ) : (
-                      'Generate Caption'
+                      <>
+                        {isPreloaded && <Zap className="h-4 w-4 mr-2" />}
+                        Generate Caption
+                      </>
                     )}
                   </Button>
                   <Button variant="outline" onClick={clearAll}>
@@ -215,7 +205,7 @@ const AIImageCaptionGenerator = () => {
               Generated Caption
             </CardTitle>
             <CardDescription>
-              AI-generated description powered by Hugging Face
+              AI-generated description with optimized performance
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -248,8 +238,17 @@ const AIImageCaptionGenerator = () => {
 
       {/* Features Section */}
       <div className="mt-12">
-        <h2 className="text-2xl font-semibold mb-6 text-center">How It Works</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+        <h2 className="text-2xl font-semibold mb-6 text-center">Performance Features</h2>
+        <div className="grid gap-6 md:grid-cols-4">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Zap className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="font-semibold mb-2">Fast Loading</h3>
+            <p className="text-sm text-muted-foreground">
+              Model preloads for instant generation
+            </p>
+          </div>
           <div className="text-center">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
               <Upload className="h-6 w-6 text-primary" />
@@ -265,7 +264,7 @@ const AIImageCaptionGenerator = () => {
             </div>
             <h3 className="font-semibold mb-2">Analyze</h3>
             <p className="text-sm text-muted-foreground">
-              Free AI model analyzes your image
+              Optimized AI analyzes quickly
             </p>
           </div>
           <div className="text-center">
@@ -274,7 +273,7 @@ const AIImageCaptionGenerator = () => {
             </div>
             <h3 className="font-semibold mb-2">Generate</h3>
             <p className="text-sm text-muted-foreground">
-              Get descriptive captions instantly
+              Get captions in seconds
             </p>
           </div>
         </div>
