@@ -304,14 +304,14 @@ const BackgroundRemover = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-12 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-6">
+      <section className="py-8 md:py-12 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
+        <div className="container mx-auto px-2 sm:px-4 text-center">
+          <div className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
             <Sparkles className="h-4 w-4 mr-2" />
             Professional AI Background Removal
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
             Remove Backgrounds
             <br />
             <span className="bg-gradient-to-r from-purple-500 via-purple-600 to-blue-600 bg-clip-text text-transparent">
@@ -319,16 +319,15 @@ const BackgroundRemover = () => {
             </span>
           </h1>
           
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-base md:text-xl text-muted-foreground mb-5 sm:mb-8 max-w-xl sm:max-w-3xl mx-auto">
             Advanced AI technology removes backgrounds instantly with pixel-perfect precision. 
             Perfect for portraits, products, and professional photography.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-12">
             <Button 
               size="lg" 
               onClick={() => fileInputRef.current?.click()}
-              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg w-full sm:w-auto"
             >
               <Upload className="h-5 w-5 mr-2" />
               Upload Images
@@ -337,69 +336,68 @@ const BackgroundRemover = () => {
               size="lg" 
               variant="outline"
               onClick={tryDemo}
-              className="border-purple-200 hover:bg-purple-50 dark:border-purple-800 dark:hover:bg-purple-950"
+              className="border-purple-200 hover:bg-purple-50 dark:border-purple-800 dark:hover:bg-purple-950 w-full sm:w-auto"
             >
               <Play className="h-5 w-5 mr-2" />
               Try Demo
             </Button>
           </div>
-
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-xs sm:max-w-2xl mx-auto">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">99.9%</div>
-              <div className="text-sm text-muted-foreground">Accuracy</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">99.9%</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Accuracy</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">5s</div>
-              <div className="text-sm text-muted-foreground">Avg. Speed</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">5s</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Avg. Speed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">4K</div>
-              <div className="text-sm text-muted-foreground">Max Quality</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">4K</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Max Quality</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">12MB</div>
-              <div className="text-sm text-muted-foreground">Max Size</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">12MB</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Max Size</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
+      <section className="py-6 sm:py-12">
+        <div className="container mx-auto px-1 xs:px-2 sm:px-4 max-w-full sm:max-w-7xl">
           {originalImages.length === 0 ? (
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {/* Upload Area */}
               <Card className={`border-2 border-dashed transition-all duration-300 ${
                 isDragging 
                   ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/20 scale-105' 
                   : 'border-muted-foreground/25 hover:border-purple-300'
               }`}>
-                <CardContent className="p-12">
+                <CardContent className="p-6 sm:p-12">
                   <div
-                    className="text-center space-y-6 transition-transform"
+                    className="text-center space-y-4 sm:space-y-6 transition-transform"
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                   >
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <Upload className="h-12 w-12 text-white" />
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                      <Upload className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
                     </div>
                     
                     <div>
-                      <h3 className="text-3xl font-bold mb-3">Upload Your Images</h3>
-                      <p className="text-muted-foreground text-lg mb-6">
-                        Drag and drop images or click to browse. Supports JPG, PNG, WEBP up to 12MB each
+                      <h3 className="text-xl sm:text-3xl font-bold mb-1 sm:mb-3">Upload Your Images</h3>
+                      <p className="text-sm sm:text-lg text-muted-foreground mb-2 sm:mb-6">
+                        Drag and drop images or click to browse.<br className="hidden sm:block" /> Supports JPG, PNG, WEBP up to 12MB each
                       </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                       <Button 
                         size="lg" 
                         onClick={() => fileInputRef.current?.click()}
-                        className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg"
+                        className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg w-full sm:w-auto"
                       >
                         <Upload className="h-5 w-5 mr-2" />
                         Choose Images
@@ -408,6 +406,7 @@ const BackgroundRemover = () => {
                         size="lg" 
                         variant="outline"
                         onClick={tryDemo}
+                        className="w-full sm:w-auto"
                       >
                         <Eye className="h-5 w-5 mr-2" />
                         View Examples
@@ -439,13 +438,13 @@ const BackgroundRemover = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {dummyImages.map((demo) => (
-                        <div key={demo.id} className="space-y-4">
+                        <div key={demo.id} className="space-y-3 sm:space-y-4">
                           <h4 className="font-semibold text-center">{demo.name}</h4>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-2 sm:gap-4">
                             <div>
-                              <Label className="text-sm font-medium mb-2 block">Original</Label>
+                              <Label className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">Original</Label>
                               <div 
                                 className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all"
                                 onClick={() => openImageView(demo.id, 'original', demo.original)}
@@ -458,7 +457,7 @@ const BackgroundRemover = () => {
                               </div>
                             </div>
                             <div>
-                              <Label className="text-sm font-medium mb-2 block">Background Removed</Label>
+                              <Label className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 block">Background Removed</Label>
                               <div 
                                 className="aspect-square bg-checkerboard rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all"
                                 onClick={() => openImageView(demo.id, 'processed', demo.processed)}
@@ -490,45 +489,45 @@ const BackgroundRemover = () => {
               )}
 
               {/* Features Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Layers className="h-6 w-6 text-white" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+                <Card className="text-center p-3 sm:p-6 hover:shadow-lg transition-shadow">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <h3 className="font-semibold mb-2">Batch Processing</h3>
-                  <p className="text-sm text-muted-foreground">Process multiple images at once</p>
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Batch Processing</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Process multiple images at once</p>
                 </Card>
                 
-                <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Wand2 className="h-6 w-6 text-white" />
+                <Card className="text-center p-3 sm:p-6 hover:shadow-lg transition-shadow">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Wand2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <h3 className="font-semibold mb-2">AI Precision</h3>
-                  <p className="text-sm text-muted-foreground">Advanced AI for perfect edges</p>
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">AI Precision</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Advanced AI for perfect edges</p>
                 </Card>
                 
-                <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Settings className="h-6 w-6 text-white" />
+                <Card className="text-center p-3 sm:p-6 hover:shadow-lg transition-shadow">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <h3 className="font-semibold mb-2">Pro Controls</h3>
-                  <p className="text-sm text-muted-foreground">Fine-tune every detail</p>
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">Pro Controls</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Fine-tune every detail</p>
                 </Card>
                 
-                <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Download className="h-6 w-6 text-white" />
+                <Card className="text-center p-3 sm:p-6 hover:shadow-lg transition-shadow">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Download className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <h3 className="font-semibold mb-2">HD Output</h3>
-                  <p className="text-sm text-muted-foreground">Download in 4K quality</p>
+                  <h3 className="font-semibold mb-2 text-sm sm:text-base">HD Output</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Download in 4K quality</p>
                 </Card>
               </div>
             </div>
           ) : (
             /* Processing Interface */
-            <div className="grid lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-6">
               {/* Settings Panel */}
-              <Card className="lg:col-span-1 h-fit">
+              <Card className="lg:col-span-1 h-fit mb-3 sm:mb-0">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Settings className="h-5 w-5 mr-2 text-purple-500" />
@@ -642,7 +641,6 @@ const BackgroundRemover = () => {
                       </div>
                     </TabsContent>
                   </Tabs>
-
                   <div className="pt-4 border-t space-y-3">
                     <Button 
                       onClick={processAllImages}
@@ -677,29 +675,29 @@ const BackgroundRemover = () => {
               </Card>
 
               {/* Main Processing Area */}
-              <div className="lg:col-span-3 space-y-6">
+              <div className="lg:col-span-3 space-y-4 sm:space-y-6">
                 {/* Progress Bar */}
                 {isProcessing && (
                   <Card className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
                           <RefreshCw className="h-6 w-6 text-white animate-spin" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold mb-2 text-purple-900 dark:text-purple-100">
+                          <p className="font-semibold mb-1 sm:mb-2 text-purple-900 dark:text-purple-100">
                             ✨ Processing with AI Magic...
                           </p>
-                          <Progress value={progress} className="h-3" />
+                          <Progress value={progress} className="h-2 sm:h-3" />
                         </div>
-                        <span className="text-lg font-bold text-purple-600">{Math.round(progress)}%</span>
+                        <span className="text-base sm:text-lg font-bold text-purple-600">{Math.round(progress)}%</span>
                       </div>
                     </CardContent>
                   </Card>
                 )}
 
                 {/* Image Grid */}
-                <div className="space-y-6">
+                <div className="space-y-3 sm:space-y-6">
                   {originalImages.map((image) => {
                     const processed = processedImages.find(p => p.id === image.id);
                     return (
@@ -709,10 +707,10 @@ const BackgroundRemover = () => {
                           currentImageId === image.id ? 'ring-2 ring-purple-500 shadow-lg' : 'hover:shadow-md'
                         }`}
                       >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
+                        <CardHeader className="pb-2 sm:pb-3">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                             <div>
-                              <CardTitle className="text-lg flex items-center">
+                              <CardTitle className="text-base sm:text-lg flex items-center">
                                 <FileImage className="h-5 w-5 mr-2 text-purple-500" />
                                 {image.name}
                               </CardTitle>
@@ -720,7 +718,7 @@ const BackgroundRemover = () => {
                                 {(image.file.size / 1024 / 1024).toFixed(1)}MB • {image.file.type}
                               </CardDescription>
                             </div>
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-2 mt-2 sm:mt-0">
                               {!processed ? (
                                 <Button 
                                   size="sm"
@@ -759,10 +757,10 @@ const BackgroundRemover = () => {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid md:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
                             {/* Original */}
                             <div>
-                              <Label className="text-sm font-medium mb-3 block flex items-center">
+                              <Label className="text-sm font-medium mb-2 sm:mb-3 block flex items-center">
                                 <ImageIcon className="h-4 w-4 mr-2" />
                                 Original
                               </Label>
@@ -785,7 +783,7 @@ const BackgroundRemover = () => {
 
                             {/* Processed */}
                             <div>
-                              <Label className="text-sm font-medium mb-3 block flex items-center">
+                              <Label className="text-sm font-medium mb-2 sm:mb-3 block flex items-center">
                                 <Sparkles className="h-4 w-4 mr-2 text-purple-500" />
                                 Background Removed
                               </Label>
@@ -832,17 +830,17 @@ const BackgroundRemover = () => {
 
                 {/* Add More Images */}
                 <Card className="border-dashed border-2 hover:border-purple-300 transition-colors">
-                  <CardContent className="p-8">
+                  <CardContent className="p-4 sm:p-8">
                     <div className="text-center">
                       <Button 
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
-                        className="mb-4 hover:bg-purple-50 hover:border-purple-200"
+                        className="mb-2 sm:mb-4 hover:bg-purple-50 hover:border-purple-200 w-full sm:w-auto"
                       >
                         <Upload className="h-4 w-4 mr-2" />
                         Add More Images
                       </Button>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         or drag and drop more images here
                       </p>
                     </div>
@@ -856,8 +854,8 @@ const BackgroundRemover = () => {
 
       {/* Image View Dialog */}
       <Dialog open={!!selectedImageView} onOpenChange={() => setSelectedImageView(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-          <DialogHeader className="p-6 pb-2">
+        <DialogContent className="max-w-full sm:max-w-4xl max-h-[90vh] p-0">
+          <DialogHeader className="p-4 sm:p-6 pb-2">
             <DialogTitle className="flex items-center">
               {selectedImageView?.type === 'original' ? (
                 <>
@@ -872,7 +870,7 @@ const BackgroundRemover = () => {
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="p-6 pt-2">
+          <div className="p-2 sm:p-6 pt-2">
             {selectedImageView && (
               <div className={selectedImageView.type === 'processed' ? 'bg-checkerboard rounded-lg' : ''}>
                 <img
