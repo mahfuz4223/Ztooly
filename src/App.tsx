@@ -25,6 +25,7 @@ import PercentageCalculator from "./pages/PercentageCalculator";
 import LoanRepaymentCalculator from "./pages/LoanRepaymentCalculator";
 import BMICalculator from "./pages/BMICalculator";
 import LoremIpsumGenerator from "./pages/LoremIpsumGenerator";
+import CaseConverter from "./pages/CaseConverter";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ const AppContent = () => (
       <Route path="/loan-repayment-calculator" element={<LoanRepaymentCalculator />} />
       <Route path="/bmi-calculator" element={<BMICalculator />} />
       <Route path="/lorem-ipsum-generator" element={<LoremIpsumGenerator />} />
+      <Route path="/case-converter" element={<CaseConverter />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
