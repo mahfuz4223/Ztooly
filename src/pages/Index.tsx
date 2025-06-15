@@ -49,16 +49,13 @@ import {
   Youtube,
   Instagram,
   Tag,
-  Barcode,
-  Menu,
-  X
+  Barcode
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import SiteFooter from "@/components/SiteFooter";
 
 export default function Index() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -613,65 +610,6 @@ export default function Index() {
           </svg>
         </div>
       </div>
-
-      {/* Enhanced Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 border-b border-border/30">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg">
-                <Sparkles className="h-6 w-6 text-primary-foreground" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl"></div>
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent">
-                ToolKit
-              </span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#tools" className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group">
-                Tools
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <a href="#features" className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group">
-                Features
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <a href="#about" className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group">
-                About
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <Button className="shadow-lg hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 bg-gradient-to-r from-primary to-primary/80">
-                <Zap className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 space-y-4 animate-fade-in">
-              <a href="#tools" className="block text-muted-foreground hover:text-primary transition-colors font-medium">Tools</a>
-              <a href="#features" className="block text-muted-foreground hover:text-primary transition-colors font-medium">Features</a>
-              <a href="#about" className="block text-muted-foreground hover:text-primary transition-colors font-medium">About</a>
-              <Button className="w-full bg-gradient-to-r from-primary to-primary/80">
-                <Zap className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
-            </div>
-          )}
-        </div>
-      </nav>
 
       {/* Enhanced Hero Section */}
       <section className="relative py-24 lg:py-32 overflow-hidden">
