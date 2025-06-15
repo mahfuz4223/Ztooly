@@ -36,6 +36,7 @@ import BarcodeGenerator from "./pages/BarcodeGenerator";
 import FakeCreditCardGenerator from "./pages/FakeCreditCardGenerator";
 import FakeAddressGenerator from "./pages/FakeAddressGenerator";
 import RandomUserProfileGenerator from "./pages/RandomUserProfileGenerator";
+import AIImageCaptionGenerator from "./pages/AIImageCaptionGenerator";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const AppContent = () => (
       <Route path="/hashtag-generator" element={<HashtagGenerator />} />
       <Route path="/reading-time-estimator" element={<ReadingTimeEstimator />} />
       <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
+      <Route path="/ai-image-caption-generator" element={<AIImageCaptionGenerator />} />
       <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
       <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
       <Route path="/fake-address-generator" element={<FakeAddressGenerator />} />
