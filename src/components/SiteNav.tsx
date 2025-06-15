@@ -1,4 +1,4 @@
-import { ArrowLeft, Menu, X, Zap, Tools } from "lucide-react";
+import { ArrowLeft, Menu, X, Zap, Wrench } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,7 @@ export default function SiteNav() {
             {/* Logo and Brand Name linked to homepage */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <Tools 
+                <Wrench 
                   className="h-6 w-6 text-primary-foreground relative z-10"
                   aria-hidden="true"
                 />
