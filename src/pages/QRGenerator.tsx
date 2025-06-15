@@ -21,6 +21,7 @@ const QRGenerator = () => {
   const [frameStyle, setFrameStyle] = useState("none");
   const [frameColor, setFrameColor] = useState("#e2e8f0");
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [qrStyle, setQrStyle] = useState("squares"); // NEW - QR module style
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,7 +84,8 @@ const QRGenerator = () => {
     if (inputText) {
       generateQRCode();
     }
-  }, [inputText, qrColor, bgColor, size, errorLevel, logoType, customLogoFile, frameStyle, frameColor]);
+    // eslint-disable-next-line
+  }, [inputText, qrColor, bgColor, size, errorLevel, logoType, customLogoFile, frameStyle, frameColor, qrStyle]);
 
   const generateQRCode = async () => {
     try {
@@ -94,37 +96,87 @@ const QRGenerator = () => {
       if (!ctx) return;
 
       const qrSize = size[0];
-      const padding = frameStyle !== "none" ? 50 : 20;
+      const padding = frameStyle !== "none" ? 40 : 12;
       const totalSize = qrSize + padding * 2;
 
       canvas.width = totalSize;
       canvas.height = totalSize;
 
-      // Clear canvas with background
+      ctx.clearRect(0, 0, totalSize, totalSize);
       ctx.fillStyle = frameStyle !== "none" ? "#f8f9fa" : bgColor;
       ctx.fillRect(0, 0, totalSize, totalSize);
 
-      // Draw frame if selected
+      // Draw frame as before:
       if (frameStyle !== "none") {
         drawFrame(ctx, totalSize, frameStyle);
       }
 
-      // Generate QR code
-      const qrCanvas = document.createElement("canvas");
-      await QRCode.toCanvas(qrCanvas, inputText, {
-        width: qrSize,
-        color: {
-          dark: qrColor,
-          light: bgColor,
-        },
+      // Use QRCode to create matrix data
+      const qr = await QRCode.create(inputText, {
         errorCorrectionLevel: errorLevel as any,
-        margin: 0,
       });
 
-      // Draw QR code on main canvas
-      ctx.drawImage(qrCanvas, padding, padding, qrSize, qrSize);
+      // Draw modules according to qrStyle
+      const modules = qr.modules;
+      const numModules = modules.size;
+      const cell = qrSize / numModules;
 
-      // Add logo if selected
+      for (let row = 0; row < numModules; row++) {
+        for (let col = 0; col < numModules; col++) {
+          if (!modules.data[row * numModules + col]) continue;
+          const x = padding + col * cell;
+          const y = padding + row * cell;
+          ctx.fillStyle = qrColor;
+
+          // --- New Styles ---
+          if (qrStyle === "dots") {
+            ctx.beginPath();
+            ctx.arc(x + cell / 2, y + cell / 2, cell * 0.4, 0, 2 * Math.PI);
+            ctx.fill();
+          } else if (qrStyle === "rounded") {
+            ctx.beginPath();
+            ctx.moveTo(x + cell * 0.3, y);
+            ctx.lineTo(x + cell * 0.7, y);
+            ctx.quadraticCurveTo(x + cell, y, x + cell, y + cell * 0.3);
+            ctx.lineTo(x + cell, y + cell * 0.7);
+            ctx.quadraticCurveTo(x + cell, y + cell, x + cell * 0.7, y + cell);
+            ctx.lineTo(x + cell * 0.3, y + cell);
+            ctx.quadraticCurveTo(x, y + cell, x, y + cell * 0.7);
+            ctx.lineTo(x, y + cell * 0.3);
+            ctx.quadraticCurveTo(x, y, x + cell * 0.3, y);
+            ctx.fill();
+          } else {
+            // squares default
+            ctx.fillRect(x, y, cell, cell);
+          }
+        }
+      }
+
+      // Finder patterns (draw with solid squares so they're scannable):
+      function drawFinderPattern(cx: number, cy: number) {
+        ctx.save();
+        ctx.strokeStyle = qrColor;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(cx, cy, cell * 7, cell * 7);
+        ctx.strokeRect(cx, cy, cell * 7, cell * 7);
+
+        ctx.fillStyle = qrColor;
+        ctx.fillRect(cx + cell, cy + cell, cell * 5, cell * 5);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(cx + 2 * cell, cy + 2 * cell, cell * 3, cell * 3);
+        ctx.fillStyle = qrColor;
+        ctx.fillRect(cx + 3 * cell, cy + 3 * cell, cell, cell);
+        ctx.restore();
+      }
+      // Top left
+      drawFinderPattern(padding, padding);
+      // Top right
+      drawFinderPattern(padding + cell * (numModules - 7), padding);
+      // Bottom left
+      drawFinderPattern(padding, padding + cell * (numModules - 7));
+
+      // Add logo if needed (as before)
       if (logoType !== "none") {
         if (logoType === "custom" && customLogoFile && customLogoPreview) {
           await addCustomLogo(ctx, padding, qrSize);
@@ -133,7 +185,7 @@ const QRGenerator = () => {
         }
       }
 
-      // Convert to data URL
+      // Convert to data URL as usual
       const dataUrl = canvas.toDataURL("image/png");
       setQrDataUrl(dataUrl);
     } catch (error) {
@@ -320,56 +372,56 @@ const QRGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-10">
       {/* Header */}
-      <header className="border-b bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
+      <header className="border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
             <Link to="/">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Tools
               </Button>
             </Link>
-            <div className="flex items-center gap-3">
-              <QrCode className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">Professional QR Code Generator</h1>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <QrCode className="h-7 w-7 text-primary" />
+              <h1 className="text-xl sm:text-2xl font-bold">Professional QR Code Generator</h1>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-1 pt-4 sm:px-4 sm:py-8">
         <div className="max-w-7xl mx-auto">
-          
+
           {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <div className="text-center mb-8 sm:mb-12 px-1">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Create Professional QR Codes with Advanced Customization
             </h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Generate high-quality, customizable QR codes with prebuilt social media logos, custom branding, 
-              professional frames, and real-time preview. Perfect for business cards, marketing materials, or any professional application.
+            <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+              Generate high-quality QR codes with custom shapes and styles,
+              branded logos, professional frames, and real-time preview.
             </p>
           </div>
 
           {/* Quick Templates */}
-          <Card className="mb-8">
+          <Card className="mb-6 sm:mb-8">
             <CardHeader>
               <CardTitle>Quick Templates</CardTitle>
               <CardDescription>Start with a pre-configured template</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
                 {quickTemplates.map((template) => (
                   <Button
                     key={template.name}
                     variant="outline"
                     size="sm"
                     onClick={() => applyTemplate(template)}
-                    className="h-auto p-3 flex flex-col gap-2"
+                    className="h-auto p-2 sm:p-3 flex flex-col gap-1 sm:gap-2"
                   >
-                    {React.createElement(prebuiltLogos[template.logo as keyof typeof prebuiltLogos]?.icon || Globe, { 
+                    {React.createElement(prebuiltLogos[template.logo as keyof typeof prebuiltLogos]?.icon || Globe, {
                       className: "h-5 w-5",
                       style: { color: prebuiltLogos[template.logo as keyof typeof prebuiltLogos]?.color }
                     })}
@@ -381,11 +433,11 @@ const QRGenerator = () => {
           </Card>
 
           {/* Main Tool */}
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             
             {/* Controls Section */}
-            <div className="space-y-6">
-              
+            <div className="space-y-4 sm:space-y-6 flex-1 min-w-0">
+
               {/* Content Input */}
               <Card>
                 <CardHeader>
@@ -406,10 +458,10 @@ const QRGenerator = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Size (px)</Label>
-                      <div className="mt-2">
+                      <div className="mt-1 sm:mt-2">
                         <Slider
                           value={size}
                           onValueChange={setSize}
@@ -418,7 +470,7 @@ const QRGenerator = () => {
                           step={50}
                           className="w-full"
                         />
-                        <p className="text-sm text-muted-foreground mt-1">{size[0]}px</p>
+                        <p className="text-sm text-muted-foreground">{size[0]}px</p>
                       </div>
                     </div>
                     
@@ -449,7 +501,7 @@ const QRGenerator = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>QR Color</Label>
                       <div className="flex gap-2 mt-1">
@@ -457,7 +509,7 @@ const QRGenerator = () => {
                           type="color"
                           value={qrColor}
                           onChange={(e) => setQrColor(e.target.value)}
-                          className="w-12 h-10 rounded border cursor-pointer"
+                          className="w-10 h-10 rounded border cursor-pointer"
                         />
                         <Input
                           value={qrColor}
@@ -474,7 +526,7 @@ const QRGenerator = () => {
                           type="color"
                           value={bgColor}
                           onChange={(e) => setBgColor(e.target.value)}
-                          className="w-12 h-10 rounded border cursor-pointer"
+                          className="w-10 h-10 rounded border cursor-pointer"
                         />
                         <Input
                           value={bgColor}
@@ -483,6 +535,21 @@ const QRGenerator = () => {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  {/* Style selector */}
+                  <div>
+                    <Label>QR Style</Label>
+                    <Select value={qrStyle} onValueChange={setQrStyle}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="squares">Squares (Classic)</SelectItem>
+                        <SelectItem value="dots">Dots</SelectItem>
+                        <SelectItem value="rounded">Rounded</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
@@ -496,7 +563,7 @@ const QRGenerator = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label>Frame Style</Label>
                       <Select value={frameStyle} onValueChange={setFrameStyle}>
@@ -523,7 +590,7 @@ const QRGenerator = () => {
                             type="color"
                             value={frameColor}
                             onChange={(e) => setFrameColor(e.target.value)}
-                            className="w-12 h-10 rounded border cursor-pointer"
+                            className="w-10 h-10 rounded border cursor-pointer"
                           />
                           <Input
                             value={frameColor}
@@ -590,7 +657,7 @@ const QRGenerator = () => {
             </div>
 
             {/* Preview Section */}
-            <Card className="lg:sticky lg:top-8">
+            <Card className="mt-6 lg:mt-0 w-full max-w-md mx-auto lg:mx-0 lg:sticky lg:top-8">
               <CardHeader>
                 <CardTitle>Live Preview</CardTitle>
                 <CardDescription>
@@ -598,44 +665,40 @@ const QRGenerator = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-8 mb-6 border-2 border-dashed border-gray-200">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 sm:p-8 mb-4 sm:mb-6 border-2 border-dashed border-gray-200">
                   <canvas
                     ref={canvasRef}
-                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg bg-white"
-                    style={{ maxWidth: "350px" }}
+                    className="w-full h-auto mx-auto rounded-lg shadow-lg bg-white"
+                    style={{ maxWidth: 350, minWidth: 180, width: "100%" }}
                   />
                 </div>
-                
                 <div className="space-y-4">
                   <Button onClick={downloadQR} disabled={!qrDataUrl} className="w-full" size="lg">
                     <Download className="h-4 w-4 mr-2" />
                     Download High Quality PNG
                   </Button>
-                  
-                  <div className="text-sm text-muted-foreground space-y-1">
+                  <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
                     <p>• High resolution PNG format</p>
-                    <p>• Perfect for print and digital use</p>
                     <p>• Transparent background support</p>
                     <p>• Professional quality output</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           {/* Use Cases */}
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-center mb-8">Popular Use Cases</h2>
-            <div className="grid md:grid-cols-4 gap-6">
+          <div className="mt-10 sm:mt-16">
+            <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Popular Use Cases</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               
               <Card className="text-center">
                 <CardHeader>
-                  <Globe className="h-8 w-8 mx-auto text-primary mb-2" />
-                  <CardTitle className="text-lg">Website Links</CardTitle>
+                  <Globe className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Website Links</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     Perfect for marketing materials, business cards, or anywhere you want people to quickly visit your website.
                   </p>
                 </CardContent>
@@ -643,11 +706,11 @@ const QRGenerator = () => {
 
               <Card className="text-center">
                 <CardHeader>
-                  <Facebook className="h-8 w-8 mx-auto text-blue-600 mb-2" />
-                  <CardTitle className="text-lg">Social Media</CardTitle>
+                  <Facebook className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-blue-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Social Media</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     Link to your social media profiles with branded QR codes featuring platform-specific logos.
                   </p>
                 </CardContent>
@@ -655,11 +718,11 @@ const QRGenerator = () => {
 
               <Card className="text-center">
                 <CardHeader>
-                  <Wifi className="h-8 w-8 mx-auto text-green-600 mb-2" />
-                  <CardTitle className="text-lg">Wi-Fi Sharing</CardTitle>
+                  <Wifi className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-green-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Wi-Fi Sharing</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     Create QR codes for Wi-Fi passwords so guests can connect instantly without typing complex passwords.
                   </p>
                 </CardContent>
@@ -667,16 +730,15 @@ const QRGenerator = () => {
 
               <Card className="text-center">
                 <CardHeader>
-                  <Mail className="h-8 w-8 mx-auto text-purple-600 mb-2" />
-                  <CardTitle className="text-lg">Contact Info</CardTitle>
+                  <Mail className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-purple-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Contact Info</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs sm:text-sm">
                     Share your contact details as vCard or direct email/phone links with professional branding.
                   </p>
                 </CardContent>
               </Card>
-
             </div>
           </div>
 
