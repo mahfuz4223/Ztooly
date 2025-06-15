@@ -3,10 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useCallback } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import QRGenerator from "./pages/QRGenerator";
@@ -51,21 +51,108 @@ import YouTubeTagExtractor from "./pages/YouTubeTagExtractor";
 
 const queryClient = new QueryClient();
 
+/**
+ * Optionally, for demo routes,
+ * you might want to have more dynamic configuration here.
+ */
+const routeTitles: Record<string, string> = {
+  "/qr-generator": "QR Generator",
+  "/barcode-generator": "Barcode Generator",
+  "/code-snippet-to-image": "Code → Image",
+  "/youtube-thumbnail-grabber": "YouTube Thumbnail Grabber",
+  "/youtube-tag-extractor": "YouTube Tag Extractor",
+  "/instagram-profile-viewer": "Instagram Profile Viewer",
+  "/background-remover": "Background Remover",
+  "/image-resizer": "Image Resizer",
+  "/image-watermarker": "Image Watermarker",
+  "/image-exif-remover": "EXIF Remover",
+  "/pdf-tools": "PDF Tools",
+  "/pdf-to-image": "PDF to Image",
+  "/json-tools": "JSON Tools",
+  "/csv-to-json-converter": "CSV to JSON",
+  "/password-generator": "Password Generator",
+  "/privacy-policy-generator": "Privacy Policy Generator",
+  "/terms-conditions-generator": "Terms & Conditions Generator",
+  "/markdown-previewer": "Markdown Previewer",
+  "/color-palette-generator": "Palette Generator",
+  "/url-scanner": "URL Scanner",
+  "/percentage-calculator": "Percentage Calculator",
+  "/loan-repayment-calculator": "Loan Repayment",
+  "/bmi-calculator": "BMI Calculator",
+  "/lorem-ipsum-generator": "Lorem Ipsum",
+  "/case-converter": "Case Converter",
+  "/hashtag-generator": "Hashtag Generator",
+  "/reading-time-estimator": "Reading Time Estimator",
+  "/ai-headline-generator": "AI Headline Generator",
+  "/youtube-title-generator": "YouTube Title Generator",
+  "/social-media-bio-generator": "Social Bio Generator",
+  "/video-script-hook-generator": "Script Hook Generator",
+  "/ai-image-caption-generator": "AI Image Captioner",
+  "/fake-iban-generator": "Fake IBAN Generator",
+  "/fake-credit-card-generator": "Fake Credit Card Generator",
+  "/fake-address-generator": "Fake Address Generator",
+  "/random-user-profile-generator": "Random User Generator",
+  "/fake-tweet-generator": "Fake Tweet Generator",
+  "/fake-facebook-post-generator": "Fake Fb Post Generator",
+  "/tweet-to-image-converter": "Tweet to Image",
+};
+
 const AppHeader = () => {
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
-  // HIDE header on /qr-generator, since that page has its own.
-  if (isHomePage || location.pathname === '/qr-generator') return null;
+  const navigate = useNavigate();
+  // Show a back button except on home ('/')
+  const isHomePage = location.pathname === "/";
+  const pageTitle = routeTitles[location.pathname] || "";
+
+  // Handle true browser back (or fallback to home)
+  const handleBack = useCallback(() => {
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  }, [navigate]);
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Tools
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between h-16 gap-2">
+          <div className="flex items-center gap-2">
+            {/* Back btn (hidden on home) */}
+            {!isHomePage && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="mr-1"
+                aria-label="Back"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Back</span>
+              </Button>
+            )}
+            {/* Home btn (always visible) */}
+            <Link to="/" className="ml-0">
+              <Button variant="outline" size="sm" aria-label="Home">
+                Home
+              </Button>
+            </Link>
+            {/* Dynamic page title (hidden on home) */}
+            {!isHomePage && pageTitle && (
+              <span className="ml-2 font-semibold text-base sm:text-lg truncate max-w-xs sm:max-w-lg">{pageTitle}</span>
+            )}
+          </div>
+          {/* Add more global nav actions here if desired */}
+          <div className="flex items-center gap-1">
+            {/* Example navigation actions */}
+            <Link to="/about">
+              <Button variant="ghost" size="sm" className="hidden md:inline-flex">About</Button>
+            </Link>
+            <Link to="/">
+              <Button variant="secondary" size="sm" className="hidden md:inline-flex">All Tools</Button>
+            </Link>
+            {/* Add user/account/profile menu as needed */}
+          </div>
         </div>
       </div>
     </nav>
