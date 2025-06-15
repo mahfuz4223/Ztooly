@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +28,7 @@ const ImageWatermarker = () => {
   const [shadowColor, setShadowColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState([1]);
   const [strokeColor, setStrokeColor] = useState('#000000');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Tiled watermark settings
   const [isTiled, setIsTiled] = useState(false);
@@ -39,143 +39,258 @@ const ImageWatermarker = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (originalImage && originalImage.startsWith('data:')) {
+        URL.revokeObjectURL(originalImage);
+      }
+      if (watermarkedImage && watermarkedImage.startsWith('blob:')) {
+        URL.revokeObjectURL(watermarkedImage);
+      }
+    };
+  }, [originalImage, watermarkedImage]);
+
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+      toast.error('Please select a valid image file (PNG, JPG, JPEG, WebP)');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image file is too large. Please select a file smaller than 10MB');
       return;
     }
 
     const reader = new FileReader();
+    
     reader.onload = (e) => {
-      setOriginalImage(e.target?.result as string);
-      setWatermarkedImage(null);
-      toast.success('Image uploaded successfully!');
+      try {
+        const result = e.target?.result as string;
+        if (!result) {
+          toast.error('Failed to read the image file');
+          return;
+        }
+        
+        setOriginalImage(result);
+        setWatermarkedImage(null);
+        toast.success('Image uploaded successfully!');
+      } catch (error) {
+        console.error('Error reading file:', error);
+        toast.error('Failed to process the image file');
+      }
     };
+
+    reader.onerror = () => {
+      toast.error('Error reading the image file');
+    };
+
     reader.readAsDataURL(file);
+    
+    // Reset input to allow same file selection
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }, []);
 
   const getPositionCoordinates = (imgWidth: number, imgHeight: number, textWidth: number, textHeight: number) => {
-    const offsetXNum = offsetX[0];
-    const offsetYNum = offsetY[0];
+    const offsetXNum = Math.max(0, Math.min(offsetX[0], imgWidth - textWidth));
+    const offsetYNum = Math.max(0, Math.min(offsetY[0], imgHeight));
 
     switch (position) {
       case 'top-left':
         return { x: offsetXNum, y: offsetYNum + textHeight };
       case 'top-center':
-        return { x: imgWidth / 2 - textWidth / 2, y: offsetYNum + textHeight };
+        return { x: Math.max(0, imgWidth / 2 - textWidth / 2), y: offsetYNum + textHeight };
       case 'top-right':
-        return { x: imgWidth - textWidth - offsetXNum, y: offsetYNum + textHeight };
+        return { x: Math.max(0, imgWidth - textWidth - offsetXNum), y: offsetYNum + textHeight };
       case 'center-left':
         return { x: offsetXNum, y: imgHeight / 2 };
       case 'center':
-        return { x: imgWidth / 2 - textWidth / 2, y: imgHeight / 2 };
+        return { x: Math.max(0, imgWidth / 2 - textWidth / 2), y: imgHeight / 2 };
       case 'center-right':
-        return { x: imgWidth - textWidth - offsetXNum, y: imgHeight / 2 };
+        return { x: Math.max(0, imgWidth - textWidth - offsetXNum), y: imgHeight / 2 };
       case 'bottom-left':
-        return { x: offsetXNum, y: imgHeight - offsetYNum };
+        return { x: offsetXNum, y: Math.max(textHeight, imgHeight - offsetYNum) };
       case 'bottom-center':
-        return { x: imgWidth / 2 - textWidth / 2, y: imgHeight - offsetYNum };
+        return { x: Math.max(0, imgWidth / 2 - textWidth / 2), y: Math.max(textHeight, imgHeight - offsetYNum) };
       case 'bottom-right':
       default:
-        return { x: imgWidth - textWidth - offsetXNum, y: imgHeight - offsetYNum };
+        return { x: Math.max(0, imgWidth - textWidth - offsetXNum), y: Math.max(textHeight, imgHeight - offsetYNum) };
     }
   };
 
   const drawWatermarkText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, rotation: number) => {
-    ctx.save();
+    try {
+      ctx.save();
 
-    // Configure text style
-    ctx.font = `${fontSize[0]}px ${fontFamily}`;
-    ctx.fillStyle = fontColor;
-    ctx.globalAlpha = opacity[0] / 100;
-
-    // Configure effects
-    if (shadowBlur[0] > 0) {
-      ctx.shadowColor = shadowColor;
-      ctx.shadowBlur = shadowBlur[0];
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-    }
-
-    if (strokeWidth[0] > 0) {
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = strokeWidth[0];
-    }
-
-    // Apply rotation
-    if (rotation !== 0) {
-      const textMetrics = ctx.measureText(text);
-      const textWidth = textMetrics.width;
-      const textHeight = fontSize[0];
+      // Validate and set font
+      const validFontSize = Math.max(8, Math.min(fontSize[0], 200));
+      ctx.font = `${validFontSize}px ${fontFamily}`;
       
-      ctx.translate(x + textWidth / 2, y - textHeight / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.translate(-(textWidth / 2), textHeight / 2);
+      // Validate and set color
+      const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+      ctx.fillStyle = colorRegex.test(fontColor) ? fontColor : '#ffffff';
       
-      if (strokeWidth[0] > 0) {
-        ctx.strokeText(text, 0, 0);
-      }
-      ctx.fillText(text, 0, 0);
-    } else {
-      if (strokeWidth[0] > 0) {
-        ctx.strokeText(text, x, y);
-      }
-      ctx.fillText(text, x, y);
-    }
+      // Validate and set opacity
+      const validOpacity = Math.max(0.1, Math.min(opacity[0] / 100, 1));
+      ctx.globalAlpha = validOpacity;
 
-    ctx.restore();
+      // Configure shadow effects
+      if (shadowBlur[0] > 0) {
+        ctx.shadowColor = colorRegex.test(shadowColor) ? shadowColor : '#000000';
+        ctx.shadowBlur = Math.max(0, Math.min(shadowBlur[0], 50));
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+      }
+
+      // Configure stroke
+      if (strokeWidth[0] > 0) {
+        ctx.strokeStyle = colorRegex.test(strokeColor) ? strokeColor : '#000000';
+        ctx.lineWidth = Math.max(0, Math.min(strokeWidth[0], 20));
+      }
+
+      // Apply rotation with proper bounds checking
+      const validRotation = ((rotation % 360) + 360) % 360;
+      if (validRotation !== 0) {
+        const textMetrics = ctx.measureText(text);
+        const textWidth = textMetrics.width;
+        const textHeight = validFontSize;
+        
+        // Ensure rotation center is within bounds
+        const centerX = Math.max(0, Math.min(x + textWidth / 2, ctx.canvas.width));
+        const centerY = Math.max(0, Math.min(y - textHeight / 2, ctx.canvas.height));
+        
+        ctx.translate(centerX, centerY);
+        ctx.rotate((validRotation * Math.PI) / 180);
+        ctx.translate(-(textWidth / 2), textHeight / 2);
+        
+        if (strokeWidth[0] > 0) {
+          ctx.strokeText(text, 0, 0);
+        }
+        ctx.fillText(text, 0, 0);
+      } else {
+        if (strokeWidth[0] > 0) {
+          ctx.strokeText(text, x, y);
+        }
+        ctx.fillText(text, x, y);
+      }
+
+      ctx.restore();
+    } catch (error) {
+      console.error('Error drawing watermark text:', error);
+      toast.error('Failed to draw watermark text');
+    }
   };
 
   const applyWatermark = useCallback(() => {
-    if (!originalImage || !watermarkText.trim()) {
-      toast.error('Please upload an image and enter watermark text');
+    // Validate inputs
+    if (!originalImage) {
+      toast.error('Please upload an image first');
+      return;
+    }
+
+    if (!watermarkText.trim()) {
+      toast.error('Please enter watermark text');
+      return;
+    }
+
+    if (watermarkText.trim().length > 100) {
+      toast.error('Watermark text is too long (max 100 characters)');
       return;
     }
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      toast.error('Canvas not available');
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      toast.error('Cannot get canvas context');
+      return;
+    }
+
+    setIsProcessing(true);
 
     const img = new Image();
+    
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      // Draw the original image
-      ctx.drawImage(img, 0, 0);
-
-      // Measure text for positioning
-      ctx.font = `${fontSize[0]}px ${fontFamily}`;
-      const textMetrics = ctx.measureText(watermarkText);
-      const textWidth = textMetrics.width;
-      const textHeight = fontSize[0];
-
-      if (isTiled) {
-        // Apply tiled watermark pattern
-        const spacingX = tileSpacingX[0];
-        const spacingY = tileSpacingY[0];
-        const tileRot = tileRotation[0];
-
-        for (let x = 0; x < img.width + spacingX; x += spacingX) {
-          for (let y = textHeight; y < img.height + spacingY; y += spacingY) {
-            drawWatermarkText(ctx, watermarkText, x, y, tileRot);
-          }
+      try {
+        // Validate image dimensions
+        if (img.width <= 0 || img.height <= 0) {
+          throw new Error('Invalid image dimensions');
         }
-      } else {
-        // Apply single watermark
-        const { x, y } = getPositionCoordinates(img.width, img.height, textWidth, textHeight);
-        drawWatermarkText(ctx, watermarkText, x, y, rotation[0]);
-      }
 
-      // Convert to data URL
-      const watermarkedDataURL = canvas.toDataURL('image/png', 0.95);
-      setWatermarkedImage(watermarkedDataURL);
-      toast.success('Watermark applied successfully!');
+        // Set canvas size with reasonable limits
+        const maxDimension = 4096;
+        const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+        
+        canvas.width = Math.floor(img.width * scale);
+        canvas.height = Math.floor(img.height * scale);
+
+        // Clear canvas and draw image
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Measure text for positioning
+        const validFontSize = Math.max(8, Math.min(fontSize[0] * scale, 200));
+        ctx.font = `${validFontSize}px ${fontFamily}`;
+        const textMetrics = ctx.measureText(watermarkText.trim());
+        const textWidth = textMetrics.width;
+        const textHeight = validFontSize;
+
+        if (isTiled) {
+          // Apply tiled watermark pattern
+          const spacingX = Math.max(50, tileSpacingX[0] * scale);
+          const spacingY = Math.max(50, tileSpacingY[0] * scale);
+          const tileRot = tileRotation[0];
+
+          for (let x = 0; x < canvas.width + spacingX; x += spacingX) {
+            for (let y = textHeight; y < canvas.height + spacingY; y += spacingY) {
+              // Ensure position is within canvas bounds
+              if (x < canvas.width && y < canvas.height) {
+                drawWatermarkText(ctx, watermarkText.trim(), x, y, tileRot);
+              }
+            }
+          }
+        } else {
+          // Apply single watermark
+          const { x, y } = getPositionCoordinates(canvas.width, canvas.height, textWidth, textHeight);
+          drawWatermarkText(ctx, watermarkText.trim(), x, y, rotation[0]);
+        }
+
+        // Convert to data URL with error handling
+        try {
+          const watermarkedDataURL = canvas.toDataURL('image/png', 0.95);
+          if (!watermarkedDataURL || watermarkedDataURL === 'data:,') {
+            throw new Error('Failed to generate watermarked image');
+          }
+          
+          setWatermarkedImage(watermarkedDataURL);
+          toast.success('Watermark applied successfully!');
+        } catch (canvasError) {
+          console.error('Canvas toDataURL error:', canvasError);
+          toast.error('Failed to generate watermarked image');
+        }
+      } catch (error) {
+        console.error('Error applying watermark:', error);
+        toast.error('Failed to apply watermark. Please try again.');
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    img.onerror = () => {
+      console.error('Failed to load image');
+      toast.error('Failed to load the image. Please try uploading again.');
+      setIsProcessing(false);
     };
 
     img.src = originalImage;
@@ -187,34 +302,44 @@ const ImageWatermarker = () => {
       return;
     }
 
-    const link = document.createElement('a');
-    link.href = watermarkedImage;
-    link.download = `watermarked-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Image downloaded successfully!');
+    try {
+      const link = document.createElement('a');
+      link.href = watermarkedImage;
+      link.download = `watermarked-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Image downloaded successfully!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Failed to download image');
+    }
   }, [watermarkedImage]);
 
   const resetSettings = () => {
-    setWatermarkText('© Your Watermark');
-    setFontSize([32]);
-    setFontFamily('Arial');
-    setFontColor('#ffffff');
-    setOpacity([80]);
-    setPosition('bottom-right');
-    setRotation([0]);
-    setOffsetX([30]);
-    setOffsetY([30]);
-    setShadowBlur([4]);
-    setShadowColor('#000000');
-    setStrokeWidth([1]);
-    setStrokeColor('#000000');
-    setIsTiled(false);
-    setTileSpacingX([150]);
-    setTileSpacingY([120]);
-    setTileRotation([-35]);
-    toast.success('Settings reset to default');
+    try {
+      setWatermarkText('© Your Watermark');
+      setFontSize([32]);
+      setFontFamily('Arial');
+      setFontColor('#ffffff');
+      setOpacity([80]);
+      setPosition('bottom-right');
+      setRotation([0]);
+      setOffsetX([30]);
+      setOffsetY([30]);
+      setShadowBlur([4]);
+      setShadowColor('#000000');
+      setStrokeWidth([1]);
+      setStrokeColor('#000000');
+      setIsTiled(false);
+      setTileSpacingX([150]);
+      setTileSpacingY([120]);
+      setTileRotation([-35]);
+      toast.success('Settings reset to default');
+    } catch (error) {
+      console.error('Reset error:', error);
+      toast.error('Failed to reset settings');
+    }
   };
 
   return (
@@ -242,7 +367,7 @@ const ImageWatermarker = () => {
                   Upload Your Image
                 </CardTitle>
                 <CardDescription className="text-slate-600">
-                  Select a high-quality image to add your professional watermark
+                  Select a high-quality image to add your professional watermark (max 10MB)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -267,7 +392,7 @@ const ImageWatermarker = () => {
                         <p className="text-sm text-slate-500">or click to browse files</p>
                       </div>
                       <Badge variant="secondary" className="text-xs">
-                        PNG, JPG, JPEG supported
+                        PNG, JPG, JPEG, WebP supported
                       </Badge>
                     </div>
                   </div>
@@ -364,8 +489,12 @@ const ImageWatermarker = () => {
                     onChange={(e) => setWatermarkText(e.target.value)}
                     placeholder="Enter your watermark text..."
                     rows={2}
+                    maxLength={100}
                     className="resize-none border-slate-300 focus:border-blue-500"
                   />
+                  <div className="text-xs text-slate-500 text-right">
+                    {watermarkText.length}/100 characters
+                  </div>
                 </div>
 
                 <Separator />
@@ -419,6 +548,7 @@ const ImageWatermarker = () => {
                         value={fontColor}
                         onChange={(e) => setFontColor(e.target.value)}
                         placeholder="#ffffff"
+                        pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         className="flex-1 border-slate-300 focus:border-blue-500"
                       />
                     </div>
@@ -576,11 +706,12 @@ const ImageWatermarker = () => {
             <div className="flex gap-4">
               <Button 
                 onClick={applyWatermark} 
-                className="flex-1 h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg"
+                disabled={isProcessing || !originalImage || !watermarkText.trim()}
+                className="flex-1 h-14 text-lg bg-blue-600 hover:bg-blue-700 shadow-lg disabled:opacity-50"
                 size="lg"
               >
                 <Palette className="h-5 w-5 mr-2" />
-                Apply Watermark
+                {isProcessing ? 'Processing...' : 'Apply Watermark'}
               </Button>
               <Button 
                 onClick={resetSettings} 
@@ -617,6 +748,10 @@ const ImageWatermarker = () => {
                         src={originalImage}
                         alt="Original"
                         className="w-full h-auto max-h-48 object-contain"
+                        onError={() => {
+                          console.error('Failed to display original image');
+                          toast.error('Failed to display original image');
+                        }}
                       />
                       <Badge className="absolute top-2 left-2 bg-slate-900/80 text-white">
                         Original
@@ -633,6 +768,10 @@ const ImageWatermarker = () => {
                         src={watermarkedImage}
                         alt="Watermarked"
                         className="w-full h-auto max-h-48 object-contain"
+                        onError={() => {
+                          console.error('Failed to display watermarked image');
+                          toast.error('Failed to display watermarked image');
+                        }}
                       />
                       <Badge className="absolute top-2 left-2 bg-green-600 text-white">
                         Watermarked
