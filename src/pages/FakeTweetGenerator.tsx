@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ const FakeTweetGenerator = () => {
     displayName: "Neil deGrasse Tyson",
     isVerified: true,
     profileImage: "",
-    tweetText: "gaming #gg",
+    tweetText: "The good thing about Science is that it's true, whether or not you believe in it. #science #cosmos",
     timestamp: "2:30 PM",
     date: "Dec 15, 2024",
     likes: "3,300",
@@ -86,7 +85,12 @@ const FakeTweetGenerator = () => {
       width={size}
       height={size}
       fill="#1d9bf0"
-      style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '4px' }}
+      style={{ 
+        display: 'inline-block', 
+        verticalAlign: 'middle', 
+        marginLeft: '4px',
+        flexShrink: 0
+      }}
     >
       <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
     </svg>
@@ -100,31 +104,43 @@ const FakeTweetGenerator = () => {
       try {
         const html2canvas = (await import('html2canvas')).default;
         
-        // Create a clone of the element for rendering
-        const clonedElement = tweetElement.cloneNode(true) as HTMLElement;
-        clonedElement.style.position = 'absolute';
-        clonedElement.style.top = '-9999px';
-        clonedElement.style.left = '-9999px';
-        clonedElement.style.width = '598px';
-        clonedElement.style.minHeight = 'auto';
-        document.body.appendChild(clonedElement);
-
-        const canvas = await html2canvas(clonedElement, {
+        // Wait for fonts to load
+        await document.fonts.ready;
+        
+        const canvas = await html2canvas(tweetElement, {
           backgroundColor: tweetData.theme === 'dark' ? '#000000' : '#ffffff',
-          scale: 3,
+          scale: 2,
           useCORS: true,
           allowTaint: false,
-          width: 598,
-          height: clonedElement.offsetHeight,
           logging: false,
-          removeContainer: true,
-          ignoreElements: (element) => {
-            return element.tagName === 'BUTTON' || element.classList.contains('no-capture');
+          width: 598,
+          height: tweetElement.scrollHeight,
+          windowWidth: 598,
+          windowHeight: tweetElement.scrollHeight,
+          onclone: (clonedDoc) => {
+            const clonedElement = clonedDoc.getElementById('fake-tweet');
+            if (clonedElement) {
+              // Ensure proper styling in cloned element
+              clonedElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+              clonedElement.style.width = '598px';
+              clonedElement.style.boxSizing = 'border-box';
+              
+              // Force hashtag colors
+              const hashtags = clonedElement.querySelectorAll('span[style*="color: rgb(29, 155, 240)"]');
+              hashtags.forEach(tag => {
+                (tag as HTMLElement).style.color = '#1d9bf0';
+              });
+              
+              // Ensure verification badge positioning
+              const badges = clonedElement.querySelectorAll('svg');
+              badges.forEach(badge => {
+                (badge as HTMLElement).style.display = 'inline-block';
+                (badge as HTMLElement).style.verticalAlign = 'middle';
+                (badge as HTMLElement).style.marginLeft = '4px';
+              });
+            }
           }
         });
-
-        // Remove the cloned element
-        document.body.removeChild(clonedElement);
 
         const link = document.createElement('a');
         link.download = `fake-tweet-${Date.now()}.png`;
@@ -397,7 +413,8 @@ const FakeTweetGenerator = () => {
                   style={{
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                     width: '598px',
-                    minHeight: 'auto'
+                    minHeight: 'auto',
+                    boxSizing: 'border-box'
                   }}
                 >
                   {/* Tweet Header */}
@@ -412,7 +429,6 @@ const FakeTweetGenerator = () => {
                         <span 
                           className="font-bold text-base"
                           style={{ 
-                            maxWidth: '200px',
                             overflow: 'visible',
                             textOverflow: 'unset',
                             whiteSpace: 'nowrap'
