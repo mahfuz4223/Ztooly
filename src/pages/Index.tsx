@@ -838,26 +838,26 @@ export default function Index() {
             })}
           </div>
 
-          {/* Tools Grid */}
+          {/* Tools Grid - Fixed Layout */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {filteredTools.map((tool, index) => {
               const Icon = tool.icon;
               const ToolCard = (
-                <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-background/80 to-muted/50 hover:scale-105 group backdrop-blur-sm animate-fade-in h-full" style={{ animationDelay: `${index * 50}ms` }}>
-                  <CardHeader className="pb-3">
+                <Card className="hover:shadow-xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-background/80 to-muted/50 hover:scale-105 group backdrop-blur-sm animate-fade-in h-full flex flex-col" style={{ animationDelay: `${index * 50}ms` }}>
+                  <CardHeader className="pb-3 flex-shrink-0">
                     <div className="flex items-start gap-3">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${tool.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <div className={`w-12 h-12 bg-gradient-to-br ${tool.gradient} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
                         <Icon className="h-6 w-6 text-white" />
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <CardTitle className="group-hover:text-primary transition-colors text-base leading-tight">{tool.title}</CardTitle>
                       </div>
                     </div>
-                    <CardDescription className="text-sm leading-relaxed mt-2 line-clamp-3">
+                    <CardDescription className="text-sm leading-relaxed mt-2 flex-grow">
                       {tool.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0 mt-auto">
                     {/* If the tool's link is defined, render the button */}
                     {tool.link ? (
                       <RouterLink to={tool.link}>
@@ -877,11 +877,31 @@ export default function Index() {
               );
 
               // Always render ToolCard directly, link is within CardContent now
-              return <div key={tool.id}>{ToolCard}</div>;
+              return <div key={tool.id} className="h-full">{ToolCard}</div>;
             })}
 
-            {/* Coming Soon Card */}
-            {/* ... keep Coming Soon card the same ... */}
+            {/* Coming Soon Card with consistent height */}
+            <Card className="opacity-60 cursor-not-allowed h-full flex flex-col">
+              <CardHeader className="pb-3 flex-shrink-0">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Plus className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base leading-tight">More Coming Soon</CardTitle>
+                  </div>
+                </div>
+                <CardDescription className="text-sm leading-relaxed mt-2 flex-grow">
+                  OCR, eSign, Split PDF, and more exciting tools are on the way!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0 mt-auto">
+                <Button size="sm" variant="outline" className="w-full opacity-60 cursor-not-allowed" disabled>
+                  Coming Soon
+                  <ArrowRight className="h-3 w-3 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
           {/* No Tools Found State */}
