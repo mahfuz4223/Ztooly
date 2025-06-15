@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -186,7 +187,9 @@ greetUser(user);`);
         backgroundColor: null,
         scale: 2,
         logging: false,
-        useCORS: true
+        useCORS: true,
+        height: codeRef.current.scrollHeight,
+        width: codeRef.current.scrollWidth
       });
 
       const link = document.createElement('a');
@@ -209,7 +212,9 @@ greetUser(user);`);
         backgroundColor: null,
         scale: 2,
         logging: false,
-        useCORS: true
+        useCORS: true,
+        height: codeRef.current.scrollHeight,
+        width: codeRef.current.scrollWidth
       });
 
       canvas.toBlob(async (blob) => {
@@ -336,10 +341,10 @@ greetUser(user);`);
             <CardHeader>
               <CardTitle>Preview</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="overflow-hidden">
               <div 
                 ref={codeRef}
-                className="p-8 rounded-xl shadow-2xl"
+                className="p-8 rounded-xl shadow-2xl min-w-[600px] max-w-[800px]"
                 style={{ background: themeStyles.background }}
               >
                 {/* Header */}
@@ -359,7 +364,7 @@ greetUser(user);`);
 
                 {/* Code Block */}
                 <div 
-                  className="rounded-lg p-6 border"
+                  className="rounded-lg p-6 border min-h-[200px]"
                   style={{ 
                     backgroundColor: themeStyles.codeBackground,
                     borderColor: themeStyles.borderColor
@@ -374,10 +379,12 @@ greetUser(user);`);
                     </span>
                   </div>
                   <pre 
-                    className="text-sm leading-relaxed overflow-x-auto"
+                    className="text-sm leading-relaxed whitespace-pre-wrap break-words"
                     style={{ 
                       color: themeStyles.textColor,
-                      fontFamily: '"Fira Code", "Monaco", "Consolas", monospace'
+                      fontFamily: '"Fira Code", "Monaco", "Consolas", monospace',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word'
                     }}
                   >
                     {code}
