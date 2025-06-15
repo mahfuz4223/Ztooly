@@ -44,14 +44,15 @@ export const mergePDFs = async (files: File[]): Promise<Blob> => {
   try {
     console.log('Starting PDF merge...');
     const mergedPdf = await PDFDocument.create();
-    
+
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await PDFDocument.load(arrayBuffer);
+      // FIX: Allow merging encrypted PDFs
+      const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
-    
+
     const pdfBytes = await mergedPdf.save();
     console.log('PDF merge completed successfully');
     return new Blob([pdfBytes], { type: 'application/pdf' });

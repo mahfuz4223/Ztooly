@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Merge, Loader2, Download, Upload } from "lucide-react";
@@ -54,44 +55,77 @@ const PDFMerge = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-200 dark:from-neutral-900 dark:to-neutral-800">
       {/* No local nav/header. Global nav only. */}
-      <div className="container mx-auto px-4 py-10 flex flex-col items-center max-w-2xl">
-        <Card className="w-full">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Merge className="h-7 w-7 text-purple-500 mr-1" />
+      <div className="container mx-auto px-2 sm:px-4 py-6 sm:py-10 flex flex-col items-center max-w-2xl">
+        <Card className="w-full shadow-md rounded-xl border-0">
+          <CardHeader className="pb-4 px-4 sm:px-6">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-400 rounded-xl shadow-md">
+                <Merge className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <CardTitle className="text-xl">Merge PDF Files</CardTitle>
-                <CardDescription>Combine multiple PDFs into one document</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Merge PDF Files</CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground">
+                  Combine multiple PDFs into one document
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <FileUpload multiple={true} onFileSelect={handleFileSelect} maxSize={50} />
+          <CardContent className="space-y-5 px-2 sm:px-6 pb-6">
+            {/* File Upload Section */}
+            <div>
+              <FileUpload 
+                multiple={true}
+                onFileSelect={handleFileSelect}
+                maxSize={50}
+                className="mb-1"
+              />
+            </div>
+            {/* Preview + Info */}
             {files.length > 0 && (
               <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">Preview of first 2 files:</div>
-                <div className="flex gap-3">
+                <div className="text-xs text-muted-foreground mb-1">Preview of first 2 files:</div>
+                <div className="flex flex-col xs:flex-row gap-2">
                   {files.slice(0, 2).map((file, i) => (
                     <PDFPreview key={i} file={file} isProcessing={isProcessing} />
                   ))}
                 </div>
-                {files.length > 2 && <div className="text-xs italic text-muted-foreground">{files.length - 2} more files...</div>}
+                {files.length > 2 && (
+                  <div className="text-xs italic text-muted-foreground mt-1">
+                    +{files.length - 2} more file(s) selected...
+                  </div>
+                )}
               </div>
             )}
-            <div className="flex gap-4">
-              <Button onClick={handleMerge} disabled={files.length < 2 || isProcessing}>
-                {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Merge className="mr-2 h-4 w-4" />}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={handleMerge}
+                disabled={files.length < 2 || isProcessing}
+                className="w-full sm:w-auto flex-1 h-12 text-base"
+              >
+                {isProcessing ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Merge className="mr-2 h-5 w-5" />}
                 Merge PDFs
               </Button>
               {merged && (
-                <Button onClick={handleDownload} variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
+                <Button
+                  onClick={handleDownload}
+                  variant="outline"
+                  className="w-full sm:w-auto flex-1 h-12 text-base border-2 border-green-200"
+                >
+                  <Download className="mr-2 h-5 w-5" />
                   Download
                 </Button>
               )}
             </div>
           </CardContent>
         </Card>
+        {/* Add spacing for mobile */}
+        <div className="h-5" />
+        {/* Optional - link to PDF tools for easier navigation */}
+        <Link to="/pdf-tools" className="mt-2 text-xs text-primary underline underline-offset-4 hover:no-underline">
+          ← Back to PDF Tools
+        </Link>
       </div>
     </div>
   );
