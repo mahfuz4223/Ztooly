@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -53,9 +54,8 @@ const queryClient = new QueryClient();
 const AppHeader = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
-  
-  if (isHomePage) return null;
-  
+  // HIDE header on /qr-generator, since that page has its own.
+  if (isHomePage || location.pathname === '/qr-generator') return null;
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container mx-auto px-4">
@@ -135,3 +135,4 @@ const App = () => (
 );
 
 export default App;
+
