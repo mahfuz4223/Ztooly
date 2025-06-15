@@ -35,6 +35,7 @@ import FakeIBANGenerator from "./pages/FakeIBANGenerator";
 import BarcodeGenerator from "./pages/BarcodeGenerator";
 import FakeCreditCardGenerator from "./pages/FakeCreditCardGenerator";
 import FakeAddressGenerator from "./pages/FakeAddressGenerator";
+import RandomUserProfileGenerator from "./pages/RandomUserProfileGenerator";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const AppContent = () => (
       <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
       <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
       <Route path="/fake-address-generator" element={<FakeAddressGenerator />} />
+      <Route path="/random-user-profile-generator" element={<RandomUserProfileGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
