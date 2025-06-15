@@ -1,25 +1,25 @@
 
-import { ArrowLeft, Menu, X, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Menu, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-// Centralized menu links for navigation (for Home and Tool pages)
+// Updated and more relevant menu links for tool pages
 const menuLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#about", label: "About" },
   { href: "/", label: "All Tools" },
+  { href: "/help-center", label: "Help Center" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function SiteNav() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Handle the back navigation (send to /pdf-tools if not enough history)
+  // Handle the back navigation, fallback to homepage for a more consistent experience
   const handleBack = () => {
     if (window.history.length > 2) {
       navigate(-1);
     } else {
-      navigate("/pdf-tools");
+      navigate("/");
     }
   };
 
@@ -38,35 +38,37 @@ export default function SiteNav() {
               <ArrowLeft className="h-5 w-5" />
               <span className="hidden sm:inline text-base font-medium">Back</span>
             </button>
-            {/* Logo (EXACT home nav style) */}
-            <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-              <svg 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                className="h-6 w-6 text-primary-foreground relative z-10"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.7" />
-                <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.5" />
-              </svg>
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl z-0" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent select-none">
-              ToolKit
-            </span>
+            {/* Logo and Brand Name linked to homepage */}
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  className="h-6 w-6 text-primary-foreground relative z-10"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.7" />
+                  <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.5" />
+                </svg>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl z-0" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent select-none">
+                ToolKit
+              </span>
+            </Link>
           </div>
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {menuLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group"
               >
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              </Link>
             ))}
           </div>
           {/* Mobile Menu Button */}
@@ -82,13 +84,14 @@ export default function SiteNav() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-4 animate-fade-in">
             {menuLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
+                onClick={() => setMobileMenuOpen(false)}
                 className="block text-muted-foreground hover:text-primary transition-colors font-medium"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
         )}
