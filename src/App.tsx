@@ -17,6 +17,7 @@ import TermsConditionsGenerator from "./pages/TermsConditionsGenerator";
 import MarkdownPreviewer from "./pages/MarkdownPreviewer";
 import ColorPaletteGenerator from "./pages/ColorPaletteGenerator";
 import URLScanner from "./pages/URLScanner";
+import PercentageCalculator from "./pages/PercentageCalculator";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
           <Route path="/color-palette-generator" element={<ColorPaletteGenerator />} />
           <Route path="/url-scanner" element={<URLScanner />} />
+          <Route path="/percentage-calculator" element={<PercentageCalculator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
