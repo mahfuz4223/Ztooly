@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Copy, RefreshCw, Download, User, Settings, FileText, Code, FileSpreadsheet, Users, Globe } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Copy, RefreshCw, Download, User, Settings, FileText, Code, FileSpreadsheet, Users, Globe, TriangleAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfile {
@@ -321,37 +323,46 @@ Avatar: ${profile.avatar}
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl mb-6 shadow-xl">
             <Users className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Random User Profile Generator
           </h1>
-          <p className="text-gray-600 text-xl max-w-3xl mx-auto leading-relaxed">
-            Generate realistic user profiles with comprehensive details for testing, development, and design purposes
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Generate realistic user profiles for testing, development, and design purposes
           </p>
         </div>
+
+        {/* Warning Alert */}
+        <Alert className="mb-8 border-amber-200 bg-amber-50">
+          <TriangleAlert className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            <span className="font-semibold">Important:</span> All generated profiles are completely fictional and created for testing purposes only. 
+            Do not use this data for any real-world applications, fraud, or illegal activities. Please use responsibly.
+          </AlertDescription>
+        </Alert>
 
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Settings Panel */}
           <div className="lg:col-span-4">
-            <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
-              <CardHeader className="pb-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-t-lg">
+            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+              <CardHeader className="pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
                 <div className="flex items-center space-x-3">
-                  <Settings className="w-6 h-6 text-purple-600" />
+                  <Settings className="w-5 h-5 text-blue-600" />
                   <div>
-                    <CardTitle className="text-2xl text-gray-800">Configuration</CardTitle>
-                    <CardDescription className="text-gray-600">Customize your profile generation</CardDescription>
+                    <CardTitle className="text-xl text-gray-800">Configuration</CardTitle>
+                    <CardDescription className="text-gray-600">Customize profile generation</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 <div className="space-y-3">
-                  <Label htmlFor="quantity" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="quantity" className="text-sm font-medium text-gray-700">
                     Quantity (1-25)
                   </Label>
                   <Input
@@ -361,19 +372,19 @@ Avatar: ${profile.avatar}
                     onChange={(e) => setQuantity(Math.max(1, Math.min(25, Number(e.target.value))))}
                     min="1"
                     max="25"
-                    className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-purple-300 transition-colors"
+                    className="h-11 bg-gray-50 border-gray-200 focus:border-blue-400 focus:ring-blue-400"
                   />
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="gender" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
                     Gender Preference
                   </Label>
                   <Select value={selectedGender} onValueChange={setSelectedGender}>
-                    <SelectTrigger className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-purple-300 transition-colors">
+                    <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:border-blue-400">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
+                    <SelectContent className="bg-white border shadow-lg z-50">
                       <SelectItem value="random">
                         <div className="flex items-center space-x-2">
                           <Globe className="w-4 h-4" />
@@ -390,14 +401,14 @@ Avatar: ${profile.avatar}
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="nationality" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="nationality" className="text-sm font-medium text-gray-700">
                     Nationality
                   </Label>
                   <Select value={selectedNationality} onValueChange={setSelectedNationality}>
-                    <SelectTrigger className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-purple-300 transition-colors">
+                    <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:border-blue-400">
                       <SelectValue placeholder="Select nationality" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white z-50 max-h-60">
+                    <SelectContent className="bg-white border shadow-lg z-50 max-h-60">
                       <SelectItem value="random">
                         <div className="flex items-center space-x-2">
                           <Globe className="w-4 h-4" />
@@ -415,7 +426,7 @@ Avatar: ${profile.avatar}
 
                 {/* Manual Overrides */}
                 <div className="space-y-4 pt-4 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-800">Manual Overrides (Optional)</h4>
+                  <h4 className="font-medium text-gray-800">Manual Overrides</h4>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -424,7 +435,7 @@ Avatar: ${profile.avatar}
                         placeholder="Auto-generate"
                         value={manualOverrides.firstName}
                         onChange={(e) => setManualOverrides(prev => ({ ...prev, firstName: e.target.value }))}
-                        className="h-10 text-sm"
+                        className="h-9 text-sm bg-gray-50"
                       />
                     </div>
                     <div className="space-y-2">
@@ -433,7 +444,7 @@ Avatar: ${profile.avatar}
                         placeholder="Auto-generate"
                         value={manualOverrides.lastName}
                         onChange={(e) => setManualOverrides(prev => ({ ...prev, lastName: e.target.value }))}
-                        className="h-10 text-sm"
+                        className="h-9 text-sm bg-gray-50"
                       />
                     </div>
                   </div>
@@ -444,7 +455,7 @@ Avatar: ${profile.avatar}
                       placeholder="Auto-generate"
                       value={manualOverrides.email}
                       onChange={(e) => setManualOverrides(prev => ({ ...prev, email: e.target.value }))}
-                      className="h-10 text-sm"
+                      className="h-9 text-sm bg-gray-50"
                     />
                   </div>
 
@@ -454,7 +465,7 @@ Avatar: ${profile.avatar}
                       placeholder="Auto-generate"
                       value={manualOverrides.occupation}
                       onChange={(e) => setManualOverrides(prev => ({ ...prev, occupation: e.target.value }))}
-                      className="h-10 text-sm"
+                      className="h-9 text-sm bg-gray-50"
                     />
                   </div>
 
@@ -464,20 +475,20 @@ Avatar: ${profile.avatar}
                       placeholder="Auto-generate"
                       value={manualOverrides.company}
                       onChange={(e) => setManualOverrides(prev => ({ ...prev, company: e.target.value }))}
-                      className="h-10 text-sm"
+                      className="h-9 text-sm bg-gray-50"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="outputFormat" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="outputFormat" className="text-sm font-medium text-gray-700">
                     Output Format
                   </Label>
                   <Select value={outputFormat} onValueChange={setOutputFormat}>
-                    <SelectTrigger className="h-12 bg-gray-50 border-2 border-gray-200 hover:border-purple-300 transition-colors">
+                    <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:border-blue-400">
                       <SelectValue placeholder="Select format" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white z-50">
+                    <SelectContent className="bg-white border shadow-lg z-50">
                       {outputFormats.map((format) => (
                         <SelectItem key={format.value} value={format.value}>
                           <div className="flex items-center space-x-3">
@@ -497,12 +508,12 @@ Avatar: ${profile.avatar}
                   <Button
                     onClick={generateProfiles}
                     disabled={isGenerating}
-                    className="w-full h-14 bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="w-full h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     {isGenerating ? (
                       <>
                         <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
-                        Generating Profiles...
+                        Generating...
                       </>
                     ) : (
                       <>
@@ -513,27 +524,30 @@ Avatar: ${profile.avatar}
                   </Button>
 
                   {profiles.length > 0 && (
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                       <Button
                         onClick={copyOutputData}
                         variant="outline"
-                        className="h-12 border-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300 text-blue-700"
+                        size="sm"
+                        className="h-10 border-blue-200 hover:bg-blue-50 text-blue-600"
                       >
-                        <Copy className="w-4 h-4 mr-2" />
+                        <Copy className="w-4 h-4 mr-1" />
                         Copy
                       </Button>
                       <Button
                         onClick={downloadData}
                         variant="outline"
-                        className="h-12 border-2 border-green-200 hover:bg-green-50 hover:border-green-300 text-green-700"
+                        size="sm"
+                        className="h-10 border-green-200 hover:bg-green-50 text-green-600"
                       >
-                        <Download className="w-4 h-4 mr-2" />
+                        <Download className="w-4 h-4 mr-1" />
                         Download
                       </Button>
                       <Button
                         onClick={clearProfiles}
                         variant="outline"
-                        className="h-12 border-2 border-red-200 hover:bg-red-50 hover:border-red-300 text-red-700"
+                        size="sm"
+                        className="h-10 border-red-200 hover:bg-red-50 text-red-600"
                       >
                         Clear
                       </Button>
@@ -546,34 +560,34 @@ Avatar: ${profile.avatar}
 
           {/* Output Display */}
           <div className="lg:col-span-8">
-            <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
-              <CardHeader className="pb-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-lg">
+            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+              <CardHeader className="pb-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl text-gray-800">Generated Output</CardTitle>
+                    <CardTitle className="text-xl text-gray-800">Generated Output</CardTitle>
                     <CardDescription className="text-gray-600">
-                      {profiles.length > 0 ? `${profiles.length} profile${profiles.length > 1 ? 's' : ''} in ${outputFormat.toUpperCase()} format` : 'No profiles generated yet'}
+                      {profiles.length > 0 ? `${profiles.length} profile${profiles.length > 1 ? 's' : ''} in ${outputFormat.toUpperCase()} format` : 'Configure settings and generate profiles'}
                     </CardDescription>
                   </div>
                   {profiles.length > 0 && (
                     <div className="text-right">
                       <div className="text-sm text-gray-500">Format: {outputFormat.toUpperCase()}</div>
-                      <div className="text-2xl font-bold text-purple-600">{profiles.length}</div>
+                      <div className="text-2xl font-bold text-blue-600">{profiles.length}</div>
                     </div>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="p-6">
                 {profiles.length === 0 ? (
-                  <div className="bg-gradient-to-br from-gray-50 to-purple-50 rounded-2xl border-2 border-dashed border-gray-300 p-16 text-center">
-                    <Users className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                    <h3 className="text-xl font-semibold text-gray-600 mb-2">No Profiles Generated</h3>
+                  <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Profiles Generated</h3>
                     <p className="text-gray-500">Configure your settings and click generate to create user profiles</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800">
+                      <h3 className="text-lg font-medium text-gray-800">
                         Output ({outputFormat.toUpperCase()})
                       </h3>
                       <div className="flex space-x-2">
@@ -591,7 +605,7 @@ Avatar: ${profile.avatar}
                         ))}
                       </div>
                     </div>
-                    <div className="bg-gray-900 rounded-lg p-6 overflow-auto max-h-96">
+                    <div className="bg-gray-900 rounded-lg p-4 overflow-auto max-h-96">
                       <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
                         {generateOutputData(outputFormat)}
                       </pre>
@@ -603,28 +617,27 @@ Avatar: ${profile.avatar}
 
             {/* Profile Preview Cards */}
             {profiles.length > 0 && (
-              <div className="mt-8 grid gap-6">
-                <h3 className="text-2xl font-bold text-gray-800">Profile Preview</h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="mt-8 space-y-6">
+                <h3 className="text-xl font-bold text-gray-800">Profile Preview</h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {profiles.slice(0, 6).map((profile, index) => (
-                    <Card key={index} className="shadow-lg border-0 bg-white/95 backdrop-blur-sm hover:shadow-xl transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-center space-x-4 mb-4">
-                          <Avatar className="w-16 h-16">
+                    <Card key={index} className="shadow-lg border-0 bg-white hover:shadow-xl transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <Avatar className="w-12 h-12">
                             <AvatarImage src={profile.avatar} alt={`${profile.firstName} ${profile.lastName}`} />
-                            <AvatarFallback>{profile.firstName[0]}{profile.lastName[0]}</AvatarFallback>
+                            <AvatarFallback className="bg-blue-100 text-blue-600">{profile.firstName[0]}{profile.lastName[0]}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <h4 className="text-lg font-bold text-gray-800">{profile.firstName} {profile.lastName}</h4>
+                            <h4 className="font-semibold text-gray-800">{profile.firstName} {profile.lastName}</h4>
                             <p className="text-sm text-gray-600">{profile.occupation}</p>
                             <p className="text-xs text-gray-500">{profile.company}</p>
                           </div>
                         </div>
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-1 text-sm">
                           <p><span className="font-medium">Email:</span> {profile.email}</p>
                           <p><span className="font-medium">Phone:</span> {profile.phone}</p>
                           <p><span className="font-medium">Location:</span> {profile.address.city}, {profile.address.state}</p>
-                          <p><span className="font-medium">Nationality:</span> {profile.nationality}</p>
                           <p><span className="font-medium">Salary:</span> {profile.salary}</p>
                         </div>
                       </CardContent>
@@ -642,40 +655,43 @@ Avatar: ${profile.avatar}
         </div>
 
         {/* Usage Info */}
-        <Card className="mt-8 shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
+        <Card className="mt-8 shadow-xl border-0 bg-white/95 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-2xl text-gray-800">👥 Realistic User Profile Generation</CardTitle>
+            <CardTitle className="text-xl text-gray-800 flex items-center space-x-2">
+              <Users className="w-5 h-5" />
+              <span>Complete User Profile Generation</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-gray-800">🎯 Complete Profiles</h4>
-                <ul className="text-gray-600 space-y-2">
-                  <li>• Personal information</li>
-                  <li>• Contact details</li>
-                  <li>• Address & location</li>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold text-gray-800">🎯 Comprehensive Data</h4>
+                <ul className="text-gray-600 space-y-1 text-sm">
+                  <li>• Personal & contact information</li>
+                  <li>• Complete address details</li>
                   <li>• Professional background</li>
                   <li>• Social media profiles</li>
+                  <li>• Biographical information</li>
                 </ul>
               </div>
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-gray-800">⚙️ Customization Options</h4>
-                <ul className="text-gray-600 space-y-2">
-                  <li>• Gender preferences</li>
-                  <li>• Nationality selection</li>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-gray-800">⚙️ Flexible Options</h4>
+                <ul className="text-gray-600 space-y-1 text-sm">
+                  <li>• Gender & nationality selection</li>
                   <li>• Manual field overrides</li>
-                  <li>• Bulk generation (1-25)</li>
+                  <li>• Bulk generation (1-25 profiles)</li>
                   <li>• Multiple export formats</li>
+                  <li>• Real-time preview</li>
                 </ul>
               </div>
-              <div className="space-y-4">
-                <h4 className="text-lg font-bold text-gray-800">🔒 Use Cases</h4>
-                <ul className="text-gray-600 space-y-2">
-                  <li>• UI/UX testing & design</li>
+              <div className="space-y-3">
+                <h4 className="font-semibold text-gray-800">🔧 Perfect For</h4>
+                <ul className="text-gray-600 space-y-1 text-sm">
+                  <li>• UI/UX testing & prototyping</li>
                   <li>• Database population</li>
                   <li>• Software development</li>
-                  <li>• Marketing personas</li>
-                  <li>• Educational purposes</li>
+                  <li>• Educational demonstrations</li>
+                  <li>• Design presentations</li>
                 </ul>
               </div>
             </div>
