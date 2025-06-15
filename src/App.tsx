@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -46,6 +45,7 @@ import FakeFacebookPostGenerator from "./pages/FakeFacebookPostGenerator";
 import TweetToImageConverter from "./pages/TweetToImageConverter";
 import CodeSnippetToImage from "./pages/CodeSnippetToImage";
 import YouTubeThumbnailGrabber from "./pages/YouTubeThumbnailGrabber";
+import InstagramProfileViewer from "./pages/InstagramProfileViewer";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +80,7 @@ const AppContent = () => (
       <Route path="/barcode-generator" element={<BarcodeGenerator />} />
       <Route path="/code-snippet-to-image" element={<CodeSnippetToImage />} />
       <Route path="/youtube-thumbnail-grabber" element={<YouTubeThumbnailGrabber />} />
+      <Route path="/instagram-profile-viewer" element={<InstagramProfileViewer />} />
       <Route path="/background-remover" element={<BackgroundRemover />} />
       <Route path="/image-resizer" element={<ImageResizer />} />
       <Route path="/image-watermarker" element={<ImageWatermarker />} />
