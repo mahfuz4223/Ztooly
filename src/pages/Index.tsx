@@ -129,7 +129,6 @@ export default function Index() {
     "youtube-tag-extractor": "/youtube-tag-extractor",
   };
 
-  // Refresh the tools array, update all "link" keys to actual route or "" (coming soon)
   const tools = [
     // Existing QR & Barcode Tools
     {
