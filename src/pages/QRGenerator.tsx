@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,9 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { QrCode, ArrowLeft, Download, Upload, Palette, Frame, Settings, Facebook, Github, X, Linkedin, Instagram, Youtube, Globe, Mail, Phone, Wifi } from "lucide-react";
-import { Link } from "react-router-dom";
-import QRCode from "qrcode";
+import { QrCode, Download, Upload, Palette, Frame, Settings, Facebook, Github, X, Linkedin, Instagram, Youtube, Globe, Mail, Phone, Wifi } from "lucide-react";
+import QRCodeStyling from "qr-code-styling";
 
 const QRGenerator = () => {
   const [inputText, setInputText] = useState("https://example.com");
@@ -18,314 +18,184 @@ const QRGenerator = () => {
   const [logoType, setLogoType] = useState("none");
   const [customLogoFile, setCustomLogoFile] = useState<File | null>(null);
   const [customLogoPreview, setCustomLogoPreview] = useState<string>("");
-  const [frameStyle, setFrameStyle] = useState("none");
-  const [frameColor, setFrameColor] = useState("#e2e8f0");
-  const [qrDataUrl, setQrDataUrl] = useState("");
-  const [qrStyle, setQrStyle] = useState("squares"); // NEW - QR module style
+  
+  // Enhanced styling options
+  const [dotsType, setDotsType] = useState("square");
+  const [cornersSquareType, setCornersSquareType] = useState("square");
+  const [cornersDotType, setCornersDotType] = useState("square");
+  const [gradientType, setGradientType] = useState("linear");
+  const [gradientColor1, setGradientColor1] = useState("#000000");
+  const [gradientColor2, setGradientColor2] = useState("#000000");
+  const [useGradient, setUseGradient] = useState(false);
+  const [cornersSquareColor, setCornersSquareColor] = useState("#000000");
+  const [cornersDotColor, setCornersDotColor] = useState("#000000");
+  
+  const qrCodeRef = useRef<QRCodeStyling | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Prebuilt logos with SVG paths
+  // Prebuilt logos with URLs
   const prebuiltLogos = {
     facebook: {
       name: "Facebook",
       color: "#1877F2",
-      icon: Facebook
+      icon: Facebook,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzE4NzdGMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE4IDJoLTNhNSA1IDAgMCAwLTUgNXYzSDd2NGgzdjhoNHYtOGgzbDEtNGgtNFY3YTEgMSAwIDAgMSAxLTFoM3oiLz4KPC9zdmc+"
     },
     github: {
       name: "GitHub", 
       color: "#181717",
-      icon: Github
+      icon: Github,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzE4MTcxNyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTkgMTljLTUgMS41LTUtMi41LTctM20xNCA2di0zLjg3YTMuMzcgMy4zNyAwIDAgMC0uOTQtMi42MWMzLjE0LS4zNSA2LjQ0LTEuNTQgNi40NC03QTUuNDQgNS40NCAwIDAgMCAyMCA0Ljc3IDUuMDcgNS4wNyAwIDAgMCAxOS45MSAxUzE4LjczLjY1IDE2IDIuNDhhMTMuMzggMTMuMzggMCAwIDAtNyAwQzYuMjcuNjUgNS4wOSAxIDUuMDkgMUE1LjA3IDUuMDcgMCAwIDAgNSA0Ljc3YTUuNDQgNS40NCAwIDAgMC0xLjUgMy43OGMwIDUuNDIgMy4zIDYuNjEgNi40NCA3QTMuMzcgMy4zNyAwIDAgMCA5IDE4LjEzVjIyIi8+Cjwvc3ZnPg=="
     },
     twitter: {
       name: "X (Twitter)",
       color: "#000000",
-      icon: X
+      icon: X,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzAwMDAwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyIDRzLS43IDIuMS0yIDMuNGMxLjYgMTAtOS40IDE3LjMtMTggMTEuNiAyLjIuMSA0LjQtLjYgNi0yQzMgMTUuNS41IDkuNiAzIDVjMi4yIDIuNiA1LjYgNC4xIDkgNC0uOS00LjIgNC02LjYgNy0zLjggMS4xIDAgMy0xLjIgMy0xLjJ6Ii8+Cjwvc3ZnPg=="
     },
     linkedin: {
       name: "LinkedIn",
       color: "#0A66C2", 
-      icon: Linkedin
+      icon: Linkedin,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzBBNjZDMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDhhNiA2IDAgMCAxIDYgNnY3aC00di03YTIgMiAwIDAgMC0yLTIgMiAyIDAgMCAwLTIgMnY3aC00di03YTYgNiAwIDAgMSA2LTZ6Ii8+CjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEyIiB4PSIyIiB5PSI5Ii8+CjxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSIyIi8+Cjwvc3ZnPg=="
     },
     instagram: {
       name: "Instagram",
       color: "#E4405F",
-      icon: Instagram
+      icon: Instagram,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0U0NDA1RiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB4PSIyIiB5PSIyIiByeD0iNSIgcnk9IjUiLz4KPHBhdGggZD0ibTE2IDExLjM3QTQgNCAwIDEgMSAxMi42MyA4IDQgNCAwIDAgMSAxNiAxMS4zN3oiLz4KPGxpbmUgeDE9IjE3LjUiIHgyPSIxNy41MSIgeTE9IjYuNSIgeTI9IjYuNSIvPgo8L3N2Zz4="
     },
     youtube: {
       name: "YouTube",
       color: "#FF0000",
-      icon: Youtube
+      icon: Youtube,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGMDAwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuNSAxN2EyNC4xMiAyNC4xMiAwIDAgMSAwLTEwIDIgMiAwIDAgMSAxLjQtMS40IDQ5LjU2IDQ5LjU2IDAgMCAxIDE2LjIgMEEyIDIgMCAwIDEgMjEuNSA3YTI0LjEyIDI0LjEyIDAgMCAxIDAgMTAgMiAyIDAgMCAxLTEuNCAxLjQgNDkuNTUgNDkuNTUgMCAwIDEtMTYuMiAwQTIgMiAwIDAgMSAyLjUgMTciLz4KPHBvbHlnb24gcG9pbnRzPSIxMCw4IDE2LDEyIDEwLDE2Ii8+Cjwvc3ZnPg=="
     },
     website: {
       name: "Website",
       color: "#6366F1",
-      icon: Globe
+      icon: Globe,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzYzNjZGMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz4KPHBhdGggZD0ibTIgMTIgMjAgMCIvPgo8cGF0aCBkPSJNMTIgMmExNS4zIDE1LjMgMCAwIDEgNCAxMCAxNS4zIDE1LjMgMCAwIDEtNCAxMCAxNS4zIDE1LjMgMCAwIDEtNC0xMCAxNS4zIDE1LjMgMCAwIDEgNC0xMHoiLz4KPC9zdmc+"
     },
     email: {
       name: "Email",
       color: "#059669",
-      icon: Mail
+      icon: Mail,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA1OTY2OSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNGgxNmMxLjEgMCAyIC45IDIgMnYxMmMwIDEuMS0uOSAyLTIgMkg0Yy0xLjEgMC0yLS45LTItMnoiLz4KPHBvbHlsaW5lIHBvaW50cz0iMjIsNiAxMiwxMyAyLDYiLz4KPC9zdmc+"
     },
     phone: {
       name: "Phone",
       color: "#7C3AED",
-      icon: Phone
+      icon: Phone,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzdDM0FFRCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyIDE2LjkydjNhMiAyIDAgMCAxLTIuMTggMiAxOS43OSAxOS43OSAwIDAgMS04LjYzLTMuMDcgMTkuNSAxOS41IDAgMCAxLTYtNiAxOS43OSAxOS43OSAwIDAgMS0zLjA3LTguNjdBMiAyIDAgMCAxIDQuMTEgMmgzYTIgMiAwIDAgMSAyIDEuNzIgMTIuODQgMTIuODQgMCAwIDAgLjcgMi44MSAyIDIgMCAwIDEtLjQ1IDIuMTFMOC4wOSA5LjkxYTE2IDE2IDAgMCAwIDYgNmwxLjI3LTEuMjdhMiAyIDAgMCAxIDIuMTEtLjQ1IDEyLjg0IDEyLjg0IDAgMCAwIDIuODEuN0EyIDIgMCAwIDEgMjIgMTYuOTJ6Ii8+Cjwvc3ZnPg=="
     },
     wifi: {
       name: "Wi-Fi",
       color: "#0891B2",
-      icon: Wifi
+      icon: Wifi,
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA4OTFCMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTEgOSAyMiAwIi8+CjxwYXRoIGQ9Ik05IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik0yMCA5YzAgMS4xNy0uNSAyLjItMS4zIDIuOWwtLjctLjdjLjQtLjQuNy0xIC43LTEuNiIvPgo8cGF0aCBkPSJNMTYgOWMwIDEuMTctLjUgMi4yLTEuMyAyLjlsLS43LS43Yy40LS40LjctMSAuNy0xLjYiLz4KPHBhdGggZD0iTTEyIDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik04IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik00IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+Cjwvc3ZnPg=="
     }
   };
 
-  // Auto-generate QR code when inputs change
+  // Initialize QR Code Styling
   useEffect(() => {
-    if (inputText) {
-      generateQRCode();
-    }
-    // eslint-disable-next-line
-  }, [inputText, qrColor, bgColor, size, errorLevel, logoType, customLogoFile, frameStyle, frameColor, qrStyle]);
-
-  const generateQRCode = async () => {
-    try {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const qrSize = size[0];
-      const padding = frameStyle !== "none" ? 40 : 12;
-      const totalSize = qrSize + padding * 2;
-
-      canvas.width = totalSize;
-      canvas.height = totalSize;
-
-      ctx.clearRect(0, 0, totalSize, totalSize);
-      ctx.fillStyle = frameStyle !== "none" ? "#f8f9fa" : bgColor;
-      ctx.fillRect(0, 0, totalSize, totalSize);
-
-      // Draw frame as before:
-      if (frameStyle !== "none") {
-        drawFrame(ctx, totalSize, frameStyle);
+    const qrCode = new QRCodeStyling({
+      width: size[0],
+      height: size[0],
+      type: "canvas",
+      data: inputText,
+      margin: 10,
+      qrOptions: {
+        typeNumber: 0,
+        mode: "Byte",
+        errorCorrectionLevel: errorLevel as any
+      },
+      imageOptions: {
+        hideBackgroundDots: true,
+        imageSize: 0.4,
+        margin: 5,
+        crossOrigin: "anonymous"
+      },
+      dotsOptions: {
+        color: useGradient ? undefined : qrColor,
+        gradient: useGradient ? {
+          type: gradientType as any,
+          rotation: 0,
+          colorStops: [
+            { offset: 0, color: gradientColor1 },
+            { offset: 1, color: gradientColor2 }
+          ]
+        } : undefined,
+        type: dotsType as any
+      },
+      backgroundOptions: {
+        color: bgColor
+      },
+      cornersSquareOptions: {
+        color: cornersSquareColor,
+        type: cornersSquareType as any
+      },
+      cornersDotOptions: {
+        color: cornersDotColor,
+        type: cornersDotType as any
       }
-
-      // Use QRCode to create matrix data
-      const qr = await QRCode.create(inputText, {
-        errorCorrectionLevel: errorLevel as any,
-      });
-
-      // Draw modules according to qrStyle
-      const modules = qr.modules;
-      const numModules = modules.size;
-      const cell = qrSize / numModules;
-
-      for (let row = 0; row < numModules; row++) {
-        for (let col = 0; col < numModules; col++) {
-          if (!modules.data[row * numModules + col]) continue;
-          const x = padding + col * cell;
-          const y = padding + row * cell;
-          ctx.fillStyle = qrColor;
-
-          // --- New Styles ---
-          if (qrStyle === "dots") {
-            ctx.beginPath();
-            ctx.arc(x + cell / 2, y + cell / 2, cell * 0.4, 0, 2 * Math.PI);
-            ctx.fill();
-          } else if (qrStyle === "rounded") {
-            ctx.beginPath();
-            ctx.moveTo(x + cell * 0.3, y);
-            ctx.lineTo(x + cell * 0.7, y);
-            ctx.quadraticCurveTo(x + cell, y, x + cell, y + cell * 0.3);
-            ctx.lineTo(x + cell, y + cell * 0.7);
-            ctx.quadraticCurveTo(x + cell, y + cell, x + cell * 0.7, y + cell);
-            ctx.lineTo(x + cell * 0.3, y + cell);
-            ctx.quadraticCurveTo(x, y + cell, x, y + cell * 0.7);
-            ctx.lineTo(x, y + cell * 0.3);
-            ctx.quadraticCurveTo(x, y, x + cell * 0.3, y);
-            ctx.fill();
-          } else {
-            // squares default
-            ctx.fillRect(x, y, cell, cell);
-          }
-        }
-      }
-
-      // Finder patterns (draw with solid squares so they're scannable):
-      function drawFinderPattern(cx: number, cy: number) {
-        ctx.save();
-        ctx.strokeStyle = qrColor;
-        ctx.lineWidth = 2;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(cx, cy, cell * 7, cell * 7);
-        ctx.strokeRect(cx, cy, cell * 7, cell * 7);
-
-        ctx.fillStyle = qrColor;
-        ctx.fillRect(cx + cell, cy + cell, cell * 5, cell * 5);
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(cx + 2 * cell, cy + 2 * cell, cell * 3, cell * 3);
-        ctx.fillStyle = qrColor;
-        ctx.fillRect(cx + 3 * cell, cy + 3 * cell, cell, cell);
-        ctx.restore();
-      }
-      // Top left
-      drawFinderPattern(padding, padding);
-      // Top right
-      drawFinderPattern(padding + cell * (numModules - 7), padding);
-      // Bottom left
-      drawFinderPattern(padding, padding + cell * (numModules - 7));
-
-      // Add logo if needed (as before)
-      if (logoType !== "none") {
-        if (logoType === "custom" && customLogoFile && customLogoPreview) {
-          await addCustomLogo(ctx, padding, qrSize);
-        } else if (prebuiltLogos[logoType as keyof typeof prebuiltLogos]) {
-          await addPrebuiltLogo(ctx, padding, qrSize, logoType);
-        }
-      }
-
-      // Convert to data URL as usual
-      const dataUrl = canvas.toDataURL("image/png");
-      setQrDataUrl(dataUrl);
-    } catch (error) {
-      console.error("Error generating QR code:", error);
-    }
-  };
-
-  const drawFrame = (ctx: CanvasRenderingContext2D, size: number, style: string) => {
-    ctx.strokeStyle = frameColor;
-    ctx.fillStyle = frameColor;
-    ctx.lineWidth = 3;
-
-    switch (style) {
-      case "modern":
-        // Modern gradient frame
-        const gradient = ctx.createLinearGradient(0, 0, size, size);
-        gradient.addColorStop(0, frameColor);
-        gradient.addColorStop(1, frameColor + "80");
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.roundRect(15, 15, size - 30, size - 30, 20);
-        ctx.stroke();
-        break;
-      case "rounded":
-        ctx.beginPath();
-        ctx.roundRect(12, 12, size - 24, size - 24, 15);
-        ctx.stroke();
-        break;
-      case "square":
-        ctx.strokeRect(12, 12, size - 24, size - 24);
-        break;
-      case "circle":
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2 - 20, 0, 2 * Math.PI);
-        ctx.stroke();
-        break;
-      case "elegant":
-        // Double border elegant frame
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, size - 20, size - 20);
-        ctx.strokeRect(15, 15, size - 30, size - 30);
-        break;
-      case "shadow":
-        // Shadow effect frame
-        ctx.fillStyle = frameColor + "40";
-        ctx.fillRect(18, 18, size - 26, size - 26);
-        ctx.strokeStyle = frameColor;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(12, 12, size - 24, size - 24);
-        break;
-    }
-  };
-
-  const addPrebuiltLogo = async (ctx: CanvasRenderingContext2D, padding: number, qrSize: number, logoKey: string) => {
-    return new Promise<void>((resolve) => {
-      const logoSize = Math.min(qrSize * 0.2, 60);
-      const logoX = padding + (qrSize - logoSize) / 2;
-      const logoY = padding + (qrSize - logoSize) / 2;
-
-      // Draw white background circle for logo
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Add subtle shadow
-      ctx.fillStyle = "#00000020";
-      ctx.beginPath();
-      ctx.arc(logoX + logoSize / 2 + 2, logoY + logoSize / 2 + 2, logoSize / 2 + 8, 0, 2 * Math.PI);
-      ctx.fill();
-
-      // Draw white circle again on top
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
-      ctx.fill();
-
-      // Create SVG for the icon
-      const logo = prebuiltLogos[logoKey as keyof typeof prebuiltLogos];
-      const IconComponent = logo.icon;
-      
-      // Create a temporary div to render the icon
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = `<svg width="${logoSize * 0.6}" height="${logoSize * 0.6}" viewBox="0 0 24 24" fill="${logo.color}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        ${getIconPath(logoKey)}
-      </svg>`;
-      
-      const svgData = new XMLSerializer().serializeToString(tempDiv.firstChild as Node);
-      const img = new Image();
-      
-      img.onload = () => {
-        const iconSize = logoSize * 0.6;
-        const iconX = logoX + (logoSize - iconSize) / 2;
-        const iconY = logoY + (logoSize - iconSize) / 2;
-        ctx.drawImage(img, iconX, iconY, iconSize, iconSize);
-        resolve();
-      };
-      
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     });
-  };
 
-  const getIconPath = (logoKey: string) => {
-    const paths = {
-      facebook: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
-      github: '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>',
-      twitter: '<path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>',
-      linkedin: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
-      instagram: '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
-      youtube: '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10,8 16,12 10,16"/>',
-      website: '<circle cx="12" cy="12" r="10"/><path d="m2 12 20 0"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
-      email: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2z"/><polyline points="22,6 12,13 2,6"/>',
-      phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
-      wifi: '<path d="m1 9 22 0"/><path d="M9 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M20 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M16 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M12 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M8 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/><path d="M4 9c0 1.17-.5 2.2-1.3 2.9l-.7-.7c.4-.4.7-1 .7-1.6"/>'
+    qrCodeRef.current = qrCode;
+    
+    if (canvasRef.current) {
+      qrCode.append(canvasRef.current);
+    }
+
+    return () => {
+      if (canvasRef.current) {
+        canvasRef.current.innerHTML = '';
+      }
     };
-    return paths[logoKey as keyof typeof paths] || '';
-  };
+  }, []);
 
-  const addCustomLogo = async (ctx: CanvasRenderingContext2D, padding: number, qrSize: number) => {
-    return new Promise<void>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const logoSize = Math.min(qrSize * 0.2, 60);
-        const logoX = padding + (qrSize - logoSize) / 2;
-        const logoY = padding + (qrSize - logoSize) / 2;
+  // Update QR code when options change
+  useEffect(() => {
+    if (qrCodeRef.current) {
+      const logoUrl = logoType === "custom" ? customLogoPreview : 
+                     logoType !== "none" ? prebuiltLogos[logoType as keyof typeof prebuiltLogos]?.url : 
+                     undefined;
 
-        // Draw white background circle for logo
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2 + 8, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Draw logo
-        ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
-        resolve();
-      };
-      img.src = customLogoPreview;
-    });
-  };
+      qrCodeRef.current.update({
+        width: size[0],
+        height: size[0],
+        data: inputText,
+        image: logoUrl,
+        qrOptions: {
+          errorCorrectionLevel: errorLevel as any
+        },
+        dotsOptions: {
+          color: useGradient ? undefined : qrColor,
+          gradient: useGradient ? {
+            type: gradientType as any,
+            rotation: 0,
+            colorStops: [
+              { offset: 0, color: gradientColor1 },
+              { offset: 1, color: gradientColor2 }
+            ]
+          } : undefined,
+          type: dotsType as any
+        },
+        backgroundOptions: {
+          color: bgColor
+        },
+        cornersSquareOptions: {
+          color: cornersSquareColor,
+          type: cornersSquareType as any
+        },
+        cornersDotOptions: {
+          color: cornersDotColor,
+          type: cornersDotType as any
+        }
+      });
+    }
+  }, [inputText, qrColor, bgColor, size, errorLevel, logoType, customLogoPreview, dotsType, cornersSquareType, cornersDotType, gradientType, gradientColor1, gradientColor2, useGradient, cornersSquareColor, cornersDotColor]);
 
   const handleCustomLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -340,11 +210,11 @@ const QRGenerator = () => {
   };
 
   const downloadQR = () => {
-    if (qrDataUrl) {
-      const link = document.createElement("a");
-      link.download = "qr-code.png";
-      link.href = qrDataUrl;
-      link.click();
+    if (qrCodeRef.current) {
+      qrCodeRef.current.download({
+        name: "qr-code",
+        extension: "png"
+      });
     }
   };
 
@@ -373,18 +243,16 @@ const QRGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background pb-10">
-      {/* Removed local Header - now use global AppHeader */}
-
       <div className="container mx-auto px-1 pt-4 sm:px-4 sm:py-8">
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-8 sm:mb-12 px-1">
             <h1 className="text-2xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Create Professional QR Codes with Advanced Customization
+              Advanced QR Code Generator with Professional Styling
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-              Generate high-quality QR codes with custom shapes and styles,
-              branded logos, professional frames, and real-time preview.
+              Create stunning QR codes with advanced customization options including gradients, 
+              custom shapes, professional logos, and unlimited styling possibilities.
             </p>
           </div>
 
@@ -475,16 +343,127 @@ const QRGenerator = () => {
                 </CardContent>
               </Card>
 
-              {/* Colors */}
+              {/* Advanced Styling */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Palette className="h-5 w-5" />
-                    Colors & Style
+                    Advanced Styling
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Dot Style */}
+                  <div>
+                    <Label>Dot Style</Label>
+                    <Select value={dotsType} onValueChange={setDotsType}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="square">Square</SelectItem>
+                        <SelectItem value="dots">Dots</SelectItem>
+                        <SelectItem value="rounded">Rounded</SelectItem>
+                        <SelectItem value="extra-rounded">Extra Rounded</SelectItem>
+                        <SelectItem value="classy">Classy</SelectItem>
+                        <SelectItem value="classy-rounded">Classy Rounded</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Corner Styles */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div>
+                      <Label>Corner Square Style</Label>
+                      <Select value={cornersSquareType} onValueChange={setCornersSquareType}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="square">Square</SelectItem>
+                          <SelectItem value="dot">Dot</SelectItem>
+                          <SelectItem value="extra-rounded">Extra Rounded</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Corner Dot Style</Label>
+                      <Select value={cornersDotType} onValueChange={setCornersDotType}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="square">Square</SelectItem>
+                          <SelectItem value="dot">Dot</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Gradient Toggle */}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="gradient-toggle"
+                      checked={useGradient}
+                      onChange={(e) => setUseGradient(e.target.checked)}
+                      className="rounded"
+                    />
+                    <Label htmlFor="gradient-toggle">Use Gradient Colors</Label>
+                  </div>
+
+                  {/* Color Options */}
+                  {useGradient ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Gradient Type</Label>
+                        <Select value={gradientType} onValueChange={setGradientType}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="linear">Linear</SelectItem>
+                            <SelectItem value="radial">Radial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                          <Label>Gradient Color 1</Label>
+                          <div className="flex gap-2 mt-1">
+                            <input
+                              type="color"
+                              value={gradientColor1}
+                              onChange={(e) => setGradientColor1(e.target.value)}
+                              className="w-10 h-10 rounded border cursor-pointer"
+                            />
+                            <Input
+                              value={gradientColor1}
+                              onChange={(e) => setGradientColor1(e.target.value)}
+                              placeholder="#000000"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label>Gradient Color 2</Label>
+                          <div className="flex gap-2 mt-1">
+                            <input
+                              type="color"
+                              value={gradientColor2}
+                              onChange={(e) => setGradientColor2(e.target.value)}
+                              className="w-10 h-10 rounded border cursor-pointer"
+                            />
+                            <Input
+                              value={gradientColor2}
+                              onChange={(e) => setGradientColor2(e.target.value)}
+                              placeholder="#000000"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                     <div>
                       <Label>QR Color</Label>
                       <div className="flex gap-2 mt-1">
@@ -501,7 +480,10 @@ const QRGenerator = () => {
                         />
                       </div>
                     </div>
-                    
+                  )}
+
+                  {/* Background and Corner Colors */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
                       <Label>Background Color</Label>
                       <div className="flex gap-2 mt-1">
@@ -518,73 +500,53 @@ const QRGenerator = () => {
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Style selector */}
-                  <div>
-                    <Label>QR Style</Label>
-                    <Select value={qrStyle} onValueChange={setQrStyle}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="squares">Squares (Classic)</SelectItem>
-                        <SelectItem value="dots">Dots</SelectItem>
-                        <SelectItem value="rounded">Rounded</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Label>Corner Square Color</Label>
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          type="color"
+                          value={cornersSquareColor}
+                          onChange={(e) => setCornersSquareColor(e.target.value)}
+                          className="w-10 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={cornersSquareColor}
+                          onChange={(e) => setCornersSquareColor(e.target.value)}
+                          placeholder="#000000"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Corner Dot Color</Label>
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          type="color"
+                          value={cornersDotColor}
+                          onChange={(e) => setCornersDotColor(e.target.value)}
+                          className="w-10 h-10 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={cornersDotColor}
+                          onChange={(e) => setCornersDotColor(e.target.value)}
+                          placeholder="#000000"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Frame & Logo */}
+              {/* Logo Options */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Frame className="h-5 w-5" />
-                    Frame & Logo
+                    Logo & Branding
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <Label>Frame Style</Label>
-                      <Select value={frameStyle} onValueChange={setFrameStyle}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Frame</SelectItem>
-                          <SelectItem value="modern">Modern</SelectItem>
-                          <SelectItem value="elegant">Elegant</SelectItem>
-                          <SelectItem value="rounded">Rounded</SelectItem>
-                          <SelectItem value="square">Square</SelectItem>
-                          <SelectItem value="circle">Circle</SelectItem>
-                          <SelectItem value="shadow">Shadow</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {frameStyle !== "none" && (
-                      <div>
-                        <Label>Frame Color</Label>
-                        <div className="flex gap-2 mt-1">
-                          <input
-                            type="color"
-                            value={frameColor}
-                            onChange={(e) => setFrameColor(e.target.value)}
-                            className="w-10 h-10 rounded border cursor-pointer"
-                          />
-                          <Input
-                            value={frameColor}
-                            onChange={(e) => setFrameColor(e.target.value)}
-                            placeholder="#e2e8f0"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
                   <div>
                     <Label>Logo</Label>
                     <Select value={logoType} onValueChange={setLogoType}>
@@ -644,81 +606,82 @@ const QRGenerator = () => {
               <CardHeader>
                 <CardTitle>Live Preview</CardTitle>
                 <CardDescription>
-                  Your QR code updates automatically as you make changes
+                  Your QR code updates automatically with advanced styling
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 sm:p-8 mb-4 sm:mb-6 border-2 border-dashed border-gray-200">
-                  <canvas
+                  <div
                     ref={canvasRef}
                     className="w-full h-auto mx-auto rounded-lg shadow-lg bg-white"
-                    style={{ maxWidth: 350, minWidth: 180, width: "100%" }}
+                    style={{ maxWidth: 350, minWidth: 180 }}
                   />
                 </div>
                 <div className="space-y-4">
-                  <Button onClick={downloadQR} disabled={!qrDataUrl} className="w-full" size="lg">
+                  <Button onClick={downloadQR} className="w-full" size="lg">
                     <Download className="h-4 w-4 mr-2" />
                     Download High Quality PNG
                   </Button>
                   <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
-                    <p>• High resolution PNG format</p>
-                    <p>• Transparent background support</p>
                     <p>• Professional quality output</p>
+                    <p>• Advanced styling options</p>
+                    <p>• Custom logo support</p>
+                    <p>• Gradient and shape customization</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Use Cases */}
+          {/* Advanced Features */}
           <div className="mt-10 sm:mt-16">
-            <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Popular Use Cases</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Advanced Features</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               
               <Card className="text-center">
                 <CardHeader>
-                  <Globe className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
-                  <CardTitle className="text-base sm:text-lg">Website Links</CardTitle>
+                  <Palette className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Gradient Colors</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    Perfect for marketing materials, business cards, or anywhere you want people to quickly visit your website.
+                    Create stunning QR codes with linear and radial gradients for eye-catching designs.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="text-center">
                 <CardHeader>
-                  <Facebook className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-blue-600 mb-2" />
-                  <CardTitle className="text-base sm:text-lg">Social Media</CardTitle>
+                  <Frame className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-blue-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Custom Shapes</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    Link to your social media profiles with branded QR codes featuring platform-specific logos.
+                    Choose from dots, rounded squares, classy styles, and more for unique QR codes.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="text-center">
                 <CardHeader>
-                  <Wifi className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-green-600 mb-2" />
-                  <CardTitle className="text-base sm:text-lg">Wi-Fi Sharing</CardTitle>
+                  <QrCode className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-green-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Corner Styling</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    Create QR codes for Wi-Fi passwords so guests can connect instantly without typing complex passwords.
+                    Customize corner squares and dots independently for professional branding.
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="text-center">
                 <CardHeader>
-                  <Mail className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-purple-600 mb-2" />
-                  <CardTitle className="text-base sm:text-lg">Contact Info</CardTitle>
+                  <Settings className="h-7 w-7 sm:h-8 sm:w-8 mx-auto text-purple-600 mb-2" />
+                  <CardTitle className="text-base sm:text-lg">Pro Quality</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    Share your contact details as vCard or direct email/phone links with professional branding.
+                    Professional-grade QR codes perfect for business cards, marketing, and branding.
                   </p>
                 </CardContent>
               </Card>
