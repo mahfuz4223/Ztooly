@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
-import { ColorPalette } from "lucide-react";
+import { Palette } from "lucide-react";
 import PaletteSwatch from "@/components/PaletteSwatch";
 
 // Utility Functions
@@ -108,7 +107,7 @@ export default function ColorPaletteGenerator() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <ColorPalette className="w-9 h-9 text-primary mr-2" />
+          <Palette className="w-9 h-9 text-primary mr-2" />
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-2 tracking-tight">
               Color Palette Generator
@@ -213,4 +212,3 @@ export default function ColorPaletteGenerator() {
     </div>
   );
 }
-
