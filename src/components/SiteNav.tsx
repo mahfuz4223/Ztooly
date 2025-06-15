@@ -1,5 +1,4 @@
-
-import { ArrowLeft, Menu, X, Zap } from "lucide-react";
+import { ArrowLeft, Menu, X, Zap, Tools } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -59,16 +58,10 @@ export default function SiteNav() {
             {/* Logo and Brand Name linked to homepage */}
             <Link to="/" className="flex items-center space-x-3">
               <div className="relative w-10 h-10 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <svg 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
+                <Tools 
                   className="h-6 w-6 text-primary-foreground relative z-10"
                   aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.7" />
-                  <circle cx="12" cy="12" r="5" fill="currentColor" opacity="0.5" />
-                </svg>
+                />
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl z-0" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-primary via-purple-600 to-primary/60 bg-clip-text text-transparent select-none">
