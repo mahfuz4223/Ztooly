@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Copy, RefreshCw, ArrowLeft, Download, Settings, Type, Code, FileText } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Copy, RefreshCw, Download, Settings, Type, Code, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 const LoremIpsumGenerator = () => {
@@ -195,26 +194,17 @@ const LoremIpsumGenerator = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      {/* Page Title Section */}
+      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/50">
+        <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="sm" className="gap-2 hover:bg-gray-100/80 transition-colors">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Tools
-                </Button>
-              </Link>
-              <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm">
-                  <FileText className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Lorem Ipsum Generator</h1>
-                  <p className="text-sm text-gray-600 hidden sm:block">Professional placeholder text generator</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Lorem Ipsum Generator</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">Professional placeholder text generator</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
