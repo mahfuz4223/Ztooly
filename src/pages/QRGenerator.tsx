@@ -373,27 +373,10 @@ const QRGenerator = () => {
 
   return (
     <div className="min-h-screen bg-background pb-10">
-      {/* Header */}
-      <header className="border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-6">
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Tools
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <QrCode className="h-7 w-7 text-primary" />
-              <h1 className="text-xl sm:text-2xl font-bold">Professional QR Code Generator</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Removed local Header - now use global AppHeader */}
 
       <div className="container mx-auto px-1 pt-4 sm:px-4 sm:py-8">
         <div className="max-w-7xl mx-auto">
-
           {/* Hero Section */}
           <div className="text-center mb-8 sm:mb-12 px-1">
             <h1 className="text-2xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
