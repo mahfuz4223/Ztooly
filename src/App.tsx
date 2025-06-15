@@ -46,6 +46,7 @@ import TweetToImageConverter from "./pages/TweetToImageConverter";
 import CodeSnippetToImage from "./pages/CodeSnippetToImage";
 import YouTubeThumbnailGrabber from "./pages/YouTubeThumbnailGrabber";
 import InstagramProfileViewer from "./pages/InstagramProfileViewer";
+import YouTubeTagExtractor from "./pages/YouTubeTagExtractor";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ const AppContent = () => (
       <Route path="/barcode-generator" element={<BarcodeGenerator />} />
       <Route path="/code-snippet-to-image" element={<CodeSnippetToImage />} />
       <Route path="/youtube-thumbnail-grabber" element={<YouTubeThumbnailGrabber />} />
+      <Route path="/youtube-tag-extractor" element={<YouTubeTagExtractor />} />
       <Route path="/instagram-profile-viewer" element={<InstagramProfileViewer />} />
       <Route path="/background-remover" element={<BackgroundRemover />} />
       <Route path="/image-resizer" element={<ImageResizer />} />
