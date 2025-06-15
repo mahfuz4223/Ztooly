@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Copy, RefreshCw, ArrowLeft, Download, Settings, Type, Code } from "lucide-react";
+import { Copy, RefreshCw, ArrowLeft, Download, Settings, Type, Code, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -26,7 +25,8 @@ const LoremIpsumGenerator = () => {
 
   const textTypes = {
     lorem: {
-      name: 'Lorem Ipsum',
+      name: 'Classic Lorem Ipsum',
+      description: 'Traditional Latin placeholder text',
       words: [
         'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit',
         'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore', 'et', 'dolore',
@@ -42,6 +42,7 @@ const LoremIpsumGenerator = () => {
     },
     tech: {
       name: 'Tech Lorem',
+      description: 'Technology and development focused text',
       words: [
         'algorithm', 'api', 'application', 'backend', 'binary', 'blockchain', 'boolean',
         'cache', 'cloud', 'compiler', 'database', 'deployment', 'framework', 'frontend',
@@ -55,6 +56,7 @@ const LoremIpsumGenerator = () => {
     },
     business: {
       name: 'Business Lorem',
+      description: 'Corporate and business terminology',
       words: [
         'strategy', 'revenue', 'profit', 'market', 'customer', 'service', 'product',
         'brand', 'sales', 'marketing', 'analytics', 'growth', 'innovation', 'partnership',
@@ -68,6 +70,7 @@ const LoremIpsumGenerator = () => {
     },
     creative: {
       name: 'Creative Lorem',
+      description: 'Artistic and design focused content',
       words: [
         'imagination', 'inspiration', 'creativity', 'artistic', 'design', 'aesthetic',
         'beautiful', 'elegant', 'innovative', 'unique', 'original', 'expressive',
@@ -102,7 +105,6 @@ const LoremIpsumGenerator = () => {
       sentence.push(randomWord);
     }
     
-    // Capitalize first word
     if (sentence.length > 0) {
       sentence[0] = sentence[0].charAt(0).toUpperCase() + sentence[0].slice(1);
     }
@@ -192,97 +194,121 @@ const LoremIpsumGenerator = () => {
   }, [paragraphs, wordsPerParagraph, textType, startWithLorem, includeHtml, htmlTags, sentenceLength, customWords]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Professional Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="sm" className="gap-2 hover:bg-gray-100">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Tools
-              </Button>
-            </Link>
-            <div className="flex-1">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to="/">
+                <Button variant="ghost" size="sm" className="gap-2 hover:bg-gray-100/80 transition-colors">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Tools
+                </Button>
+              </Link>
+              <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
-                  <Type className="h-6 w-6 text-white" />
+                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm">
+                  <FileText className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Lorem Ipsum Generator Pro</h1>
-                  <p className="text-gray-600 mt-1">Professional placeholder text generator with advanced customization</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Lorem Ipsum Generator</h1>
+                  <p className="text-sm text-gray-600 hidden sm:block">Professional placeholder text generator</p>
                 </div>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button onClick={generateText} variant="default" size="sm" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Generate</span>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-          {/* Advanced Controls */}
-          <div className="xl:col-span-1 space-y-6">
-            <Card className="border-0 shadow-lg">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Controls Sidebar */}
+          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
+            {/* Quick Settings */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">Generator Settings</CardTitle>
+                  <Settings className="h-4 w-4 text-blue-600" />
+                  <CardTitle className="text-lg">Quick Settings</CardTitle>
                 </div>
-                <CardDescription>
-                  Customize your text generation parameters
-                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="basic">Basic</TabsTrigger>
-                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
+              <CardContent className="space-y-5">
+                <div className="space-y-3">
+                  <Label htmlFor="textType" className="text-sm font-medium">Text Style</Label>
+                  <Select value={textType} onValueChange={setTextType}>
+                    <SelectTrigger className="bg-white/70">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white/95 backdrop-blur-sm">
+                      {Object.entries(textTypes).map(([key, type]) => (
+                        <SelectItem key={key} value={key}>
+                          <div>
+                            <div className="font-medium">{type.name}</div>
+                            <div className="text-xs text-gray-500">{type.description}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Paragraphs</Label>
+                    <div className="px-3 py-2 bg-gray-50 rounded-lg text-center font-semibold text-lg text-blue-600">
+                      {paragraphs}
+                    </div>
+                    <Slider
+                      value={[paragraphs]}
+                      onValueChange={(value) => setParagraphs(value[0])}
+                      max={10}
+                      min={1}
+                      step={1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Words/Para</Label>
+                    <div className="px-3 py-2 bg-gray-50 rounded-lg text-center font-semibold text-lg text-blue-600">
+                      {wordsPerParagraph[0]}
+                    </div>
+                    <Slider
+                      value={wordsPerParagraph}
+                      onValueChange={setWordsPerParagraph}
+                      max={200}
+                      min={10}
+                      step={5}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Advanced Options */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Advanced Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <Tabs defaultValue="formatting" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-100/70">
+                    <TabsTrigger value="formatting" className="text-xs">Format</TabsTrigger>
+                    <TabsTrigger value="custom" className="text-xs">Custom</TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="basic" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="textType">Text Type</Label>
-                      <Select value={textType} onValueChange={setTextType}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(textTypes).map(([key, type]) => (
-                            <SelectItem key={key} value={key}>{type.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="paragraphs">Paragraphs: {paragraphs}</Label>
-                      <Slider
-                        value={[paragraphs]}
-                        onValueChange={(value) => setParagraphs(value[0])}
-                        max={10}
-                        min={1}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="words">Words per Paragraph: {wordsPerParagraph[0]}</Label>
-                      <Slider
-                        value={wordsPerParagraph}
-                        onValueChange={setWordsPerParagraph}
-                        max={200}
-                        min={10}
-                        step={5}
-                        className="w-full"
-                      />
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="advanced" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="sentenceLength">Average Sentence Length: {sentenceLength[0]}</Label>
+                  <TabsContent value="formatting" className="space-y-4 mt-4">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Sentence Length: {sentenceLength[0]} words</Label>
                       <Slider
                         value={sentenceLength}
                         onValueChange={setSentenceLength}
@@ -293,108 +319,120 @@ const LoremIpsumGenerator = () => {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="startWithLorem">Start with "Lorem ipsum"</Label>
-                      <Switch
-                        id="startWithLorem"
-                        checked={startWithLorem}
-                        onCheckedChange={setStartWithLorem}
-                      />
-                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50/70 rounded-lg">
+                        <div>
+                          <Label htmlFor="startWithLorem" className="text-sm font-medium">Start with "Lorem ipsum"</Label>
+                          <p className="text-xs text-gray-500">Classic opening for traditional text</p>
+                        </div>
+                        <Switch
+                          id="startWithLorem"
+                          checked={startWithLorem}
+                          onCheckedChange={setStartWithLorem}
+                        />
+                      </div>
 
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="includeHtml">Include HTML tags</Label>
-                      <Switch
-                        id="includeHtml"
-                        checked={includeHtml}
-                        onCheckedChange={setIncludeHtml}
-                      />
+                      <div className="flex items-center justify-between p-3 bg-gray-50/70 rounded-lg">
+                        <div>
+                          <Label htmlFor="includeHtml" className="text-sm font-medium">HTML Tags</Label>
+                          <p className="text-xs text-gray-500">Wrap text in HTML elements</p>
+                        </div>
+                        <Switch
+                          id="includeHtml"
+                          checked={includeHtml}
+                          onCheckedChange={setIncludeHtml}
+                        />
+                      </div>
                     </div>
 
                     {includeHtml && (
-                      <div className="space-y-2">
-                        <Label htmlFor="htmlTags">HTML Tag</Label>
+                      <div className="space-y-3">
+                        <Label htmlFor="htmlTags" className="text-sm font-medium">HTML Element</Label>
                         <Select value={htmlTags} onValueChange={setHtmlTags}>
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-white/70">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="p">&lt;p&gt;</SelectItem>
-                            <SelectItem value="div">&lt;div&gt;</SelectItem>
-                            <SelectItem value="article">&lt;article&gt;</SelectItem>
-                            <SelectItem value="section">&lt;section&gt;</SelectItem>
+                          <SelectContent className="bg-white/95 backdrop-blur-sm">
+                            <SelectItem value="p">&lt;p&gt; - Paragraph</SelectItem>
+                            <SelectItem value="div">&lt;div&gt; - Division</SelectItem>
+                            <SelectItem value="article">&lt;article&gt; - Article</SelectItem>
+                            <SelectItem value="section">&lt;section&gt; - Section</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="customWords">Custom Words (comma-separated)</Label>
+                  </TabsContent>
+                  
+                  <TabsContent value="custom" className="space-y-4 mt-4">
+                    <div className="space-y-3">
+                      <Label htmlFor="customWords" className="text-sm font-medium">Custom Words</Label>
                       <Textarea
                         id="customWords"
                         placeholder="Enter custom words separated by commas..."
                         value={customWords}
                         onChange={(e) => setCustomWords(e.target.value)}
-                        className="h-20 resize-none"
+                        className="h-24 resize-none bg-white/70 text-sm"
                       />
+                      <p className="text-xs text-gray-500">Leave empty to use the selected text style</p>
                     </div>
                   </TabsContent>
                 </Tabs>
-
-                <Button onClick={generateText} className="w-full" size="lg">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Generate New Text
-                </Button>
               </CardContent>
             </Card>
 
-            {/* Statistics Card */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Statistics</CardTitle>
+            {/* Statistics */}
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-blue-900">Statistics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Paragraphs:</span>
-                  <span className="font-semibold">{paragraphs}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-white/70 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{paragraphs}</div>
+                    <div className="text-xs text-gray-600">Paragraphs</div>
+                  </div>
+                  <div className="text-center p-3 bg-white/70 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{getWordCount()}</div>
+                    <div className="text-xs text-gray-600">Words</div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Words:</span>
-                  <span className="font-semibold">{getWordCount()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Characters:</span>
-                  <span className="font-semibold">{getCharacterCount()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Type:</span>
-                  <span className="font-semibold">{textTypes[textType].name}</span>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-white/70 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{getCharacterCount()}</div>
+                    <div className="text-xs text-gray-600">Characters</div>
+                  </div>
+                  <div className="text-center p-3 bg-white/70 rounded-lg">
+                    <div className="text-sm font-semibold text-blue-600 truncate">{textTypes[textType].name.split(' ')[0]}</div>
+                    <div className="text-xs text-gray-600">Style</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Generated Text Output */}
-          <div className="xl:col-span-3">
-            <Card className="border-0 shadow-lg">
+          <div className="lg:col-span-8 xl:col-span-9">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Code className="h-5 w-5 text-blue-600" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
+                      <Code className="h-4 w-4 text-white" />
+                    </div>
                     <div>
                       <CardTitle className="text-lg">Generated Text</CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-sm">
                         {paragraphs} paragraph{paragraphs !== 1 ? 's' : ''} • {getWordCount()} words • {getCharacterCount()} characters
                       </CardDescription>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={copyToClipboard} variant="outline" size="sm">
-                      <Copy className="h-4 w-4 mr-2" />
+                    <Button onClick={copyToClipboard} variant="outline" size="sm" className="gap-2 bg-white/70 hover:bg-white">
+                      <Copy className="h-4 w-4" />
                       Copy
                     </Button>
-                    <Button onClick={downloadText} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
+                    <Button onClick={downloadText} variant="outline" size="sm" className="gap-2 bg-white/70 hover:bg-white">
+                      <Download className="h-4 w-4" />
                       Download
                     </Button>
                   </div>
@@ -404,7 +442,7 @@ const LoremIpsumGenerator = () => {
                 <Textarea
                   value={generatedText}
                   readOnly
-                  className="min-h-[500px] resize-none font-mono text-sm leading-relaxed"
+                  className="min-h-[400px] lg:min-h-[500xl] resize-none font-mono text-sm leading-relaxed bg-white/70 border-gray-200/50"
                   placeholder="Generated text will appear here..."
                 />
               </CardContent>
