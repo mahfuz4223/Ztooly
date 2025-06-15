@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import AdvancedPolicyOptions from "@/components/privacy/AdvancedPolicyOptions";
 import { Switch } from "@/components/ui/switch";
+import { Shield } from "lucide-react";
 
 type AdvancedOptions = {
   analytics: boolean;
@@ -14,6 +15,7 @@ type AdvancedOptions = {
   retention: boolean;
   cookies: boolean;
   userRights: boolean;
+  dataSecurity: boolean;
   dataTypes: {
     name: boolean;
     email: boolean;
@@ -31,6 +33,7 @@ const DEFAULT_ADVANCED: AdvancedOptions = {
   retention: false,
   cookies: true,
   userRights: false,
+  dataSecurity: true,
   dataTypes: { name: true, email: true, phone: false, address: false, payment: false },
   customSection: ""
 };
@@ -123,6 +126,13 @@ const getFormattedPolicy = (
     );
   }
 
+  if (options.dataSecurity) {
+    policy += section(
+      "Data Security",
+      "We value your trust in providing us your Personal Information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and we cannot guarantee its absolute security."
+    );
+  }
+
   // Tracking/remarketing
   if (options.tracking) {
     policy += section(
@@ -176,21 +186,21 @@ const PrivacyPolicyGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 flex justify-center items-start">
-      <Card className="w-full max-w-4xl mx-auto shadow-lg">
+    <div className="container mx-auto max-w-5xl py-12 px-4">
+      <Card className="w-full mx-auto shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold mb-2 flex items-center gap-2">
-            Advanced Privacy Policy Generator
-            <span className="inline-flex h-6 w-6 rounded-full bg-blue-100 items-center justify-center">
-              <span role="img" aria-label="lock" className="text-blue-500">🔒</span>
+          <CardTitle className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+            <span className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <Shield className="w-6 h-6" />
             </span>
+            Advanced Privacy Policy Generator
           </CardTitle>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground pt-2">
             Generate a highly customizable, GDPR-friendly privacy policy. Toggle sections below and edit as needed.
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-6">
+          <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-6 pt-4">
             <div className="space-y-4">
               <Input
                 placeholder="Your Name (optional)"
@@ -248,7 +258,7 @@ const PrivacyPolicyGenerator = () => {
                   />
                 )
               ) : (
-                <div className="p-8 text-muted-foreground text-center text-sm opacity-70">Your policy preview will appear here after generating.</div>
+                <div className="flex items-center justify-center p-8 text-muted-foreground text-center text-sm opacity-70 border rounded-md h-full min-h-[300px]">Your policy preview will appear here after generating.</div>
               )}
               {showPreview && (
                 <Button
@@ -271,4 +281,3 @@ const PrivacyPolicyGenerator = () => {
 };
 
 export default PrivacyPolicyGenerator;
-

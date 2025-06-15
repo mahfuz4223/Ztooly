@@ -11,6 +11,7 @@ type AdvancedTermsOptions = {
   cookies: boolean;
   termination: boolean;
   disclaimer: boolean;
+  ipRights: boolean;
   customSection: string;
 };
 
@@ -34,6 +35,10 @@ export default function AdvancedTermsOptions({ options, onChange }: Props) {
         <Label className="flex items-center gap-2">
           <Switch checked={options.liability} onCheckedChange={v => set("liability", v)} />
           Limitation of Liability
+        </Label>
+        <Label className="flex items-center gap-2">
+          <Switch checked={options.ipRights} onCheckedChange={v => set("ipRights", v)} />
+          Intellectual Property
         </Label>
         <Label className="flex items-center gap-2">
           <Switch checked={options.governingLaw} onCheckedChange={v => set("governingLaw", v)} />

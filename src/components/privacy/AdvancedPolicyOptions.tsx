@@ -1,4 +1,3 @@
-
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ type AdvancedOptions = {
   retention: boolean;
   cookies: boolean;
   userRights: boolean;
+  dataSecurity: boolean;
   dataTypes: {
     name: boolean;
     email: boolean;
@@ -76,6 +76,10 @@ export default function AdvancedPolicyOptions({ options, onChange }: Props) {
           User Data Rights
         </Label>
         <Label className="flex items-center gap-2">
+          <Switch checked={options.dataSecurity} onCheckedChange={v => set("dataSecurity", v)} />
+          Data Security
+        </Label>
+        <Label className="flex items-center gap-2">
           <Switch checked={options.cookies} onCheckedChange={v => set("cookies", v)} />
           Cookies Usage
         </Label>
@@ -95,4 +99,3 @@ export default function AdvancedPolicyOptions({ options, onChange }: Props) {
     </div>
   );
 }
-
