@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   FileImage, 
-  ArrowLeft,
   Settings,
   Zap,
   CheckCircle,
@@ -14,7 +13,6 @@ import {
   AlertCircle,
   RefreshCw
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import PDFPreview from "@/components/PDFPreview";
@@ -59,7 +57,6 @@ const PDFToImage = () => {
       console.log(`Converting PDF to ${imageFormat} at ${imageDPI} DPI`);
       const images = await pdfToImages(uploadedFile, imageFormat, imageDPI);
       setConvertedImages(images);
-      
       toast({
         title: "Conversion complete!",
         description: `Successfully converted ${images.length} pages to images`,
@@ -108,32 +105,7 @@ const PDFToImage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/pdf-tools" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                <ArrowLeft className="h-4 w-4" />
-                Back to PDF Tools
-              </Link>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileImage className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    PDF to Image Converter
-                  </h1>
-                  <p className="text-sm text-muted-foreground">Transform PDF pages into high-quality images</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      {/* No local nav/header -- only global nav will show */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Conversion Interface */}
@@ -271,6 +243,56 @@ const PDFToImage = () => {
                     </p>
                   </div>
                 )}
+
+                {/* All Images Preview for All Pages, showing count and details */}
+                {convertedImages.length > 0 && (
+                  <div>
+                    <Card className="shadow-lg mt-6">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileImage className="h-5 w-5 text-blue-500" />
+                          Converted Images: {convertedImages.length} pages
+                        </CardTitle>
+                        <CardDescription>
+                          Each page as a separate image file (format: {imageFormat.toUpperCase()}, {imageDPI} DPI)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                          {convertedImages.map((imageUrl, index) => (
+                            <Card key={index} className="p-4 border border-gray-100 flex items-start gap-6">
+                              <img 
+                                src={imageUrl} 
+                                alt={`Page ${index + 1}`}
+                                className="w-28 h-36 object-cover rounded-lg border shadow-sm"
+                              />
+                              <div className="flex flex-col justify-between flex-1 min-w-0">
+                                <div>
+                                  <div className="text-base font-medium text-gray-800 truncate">Page {index + 1}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Format: {imageFormat.toUpperCase()}, DPI: {imageDPI}
+                                  </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3 mt-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleDownloadSingle(imageUrl, index)}
+                                    className="text-xs"
+                                  >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    Download Page {index + 1}
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
               </CardContent>
             </Card>
           </div>
@@ -288,66 +310,28 @@ const PDFToImage = () => {
               </div>
             )}
 
-            {/* Converted Images Preview */}
-            {convertedImages.length > 0 && (
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileImage className="h-5 w-5 text-blue-500" />
-                    Converted Images ({convertedImages.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {convertedImages.map((imageUrl, index) => (
-                      <Card key={index} className="p-4 border border-gray-100">
-                        <div className="space-y-3">
-                          <img 
-                            src={imageUrl} 
-                            alt={`Page ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border shadow-sm"
-                          />
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700">
-                              Page {index + 1} • {imageFormat.toUpperCase()}
-                            </span>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleDownloadSingle(imageUrl, index)}
-                              className="text-xs"
-                            >
-                              <Download className="h-3 w-3 mr-1" />
-                              Download
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Features */}
             <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="text-lg">Key Features</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {[
-                  "High-quality image conversion",
-                  "Multiple output formats (PNG, JPG)",
-                  "Custom DPI settings (150-600)",
-                  "Batch download support",
-                  "Client-side processing (secure)",
-                  "No file size limits"
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{feature}</span>
-                  </div>
-                ))}
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">All PDF pages converted ({convertedImages.length > 0 ? convertedImages.length : "0"} pages)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Preview & download each page</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Custom output format & DPI</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700">Client-side, secure, fast</span>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -358,3 +342,4 @@ const PDFToImage = () => {
 };
 
 export default PDFToImage;
+

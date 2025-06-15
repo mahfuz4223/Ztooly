@@ -51,29 +51,7 @@ const PDFTools = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="border-b bg-background/90 sticky top-0 z-20 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Tools
-            </Link>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-                <Shield className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">PDF Tools Suite</h1>
-                <p className="text-sm text-muted-foreground">All-in-one professional PDF utilities</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
+      {/* Remove local header. Just show tool grid. */}
       <div className="container mx-auto px-4 py-10">
         <div className="mb-8 max-w-2xl">
           <h2 className="font-extrabold text-2xl md:text-3xl mb-2 bg-gradient-to-r from-fuchsia-500 to-blue-500 bg-clip-text text-transparent">Powerful PDF Tools — Free & Private</h2>
@@ -104,7 +82,6 @@ const PDFTools = () => {
               </Card>
             );
           })}
-          {/* Add more pdf tools here! */}
           <Card className="opacity-60 cursor-not-allowed">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">

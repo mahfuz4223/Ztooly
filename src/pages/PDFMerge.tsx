@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Merge, Loader2, Download, Upload } from "lucide-react";
@@ -54,14 +53,7 @@ const PDFMerge = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-200 dark:from-neutral-900 dark:to-neutral-800">
-      <header className="border-b bg-background/70 sticky top-0 z-20">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Link to="/pdf-tools" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-            ← PDF Tools
-          </Link>
-          <Merge className="h-5 w-5 ml-1 text-purple-600" />
-        </div>
-      </header>
+      {/* No local nav/header. Global nav only. */}
       <div className="container mx-auto px-4 py-10 flex flex-col items-center max-w-2xl">
         <Card className="w-full">
           <CardHeader>
