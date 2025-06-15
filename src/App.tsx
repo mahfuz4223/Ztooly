@@ -93,6 +93,7 @@ const AppContent = () => (
       <Route path="/hashtag-generator" element={<HashtagGenerator />} />
       <Route path="/reading-time-estimator" element={<ReadingTimeEstimator />} />
       <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
+      <Route path="/youtube-title-generator" element={<YouTubeTitleGenerator />} />
       <Route path="/ai-image-caption-generator" element={<AIImageCaptionGenerator />} />
       <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
       <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
