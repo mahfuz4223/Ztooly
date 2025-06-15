@@ -14,12 +14,12 @@ export default function SiteNav() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Handle the back navigation
+  // Handle the back navigation (send to /pdf-tools if not enough history)
   const handleBack = () => {
     if (window.history.length > 2) {
       navigate(-1);
     } else {
-      navigate("/");
+      navigate("/pdf-tools");
     }
   };
 
