@@ -1,6 +1,4 @@
-
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { marked } from "marked";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,28 +20,15 @@ Type some *Markdown* on the left and see the **HTML** preview on the right!
 export default function MarkdownPreviewer() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const [showRendered, setShowRendered] = useState(true);
-  const navigate = useNavigate();
-
   const html = marked.parse(markdown);
 
   return (
     <div>
-      {/* Header with Back button and page info */}
+      {/* Removed local nav/back btn - global nav is now used */}
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
-        <div className="flex items-center w-full md:w-auto mb-4 md:mb-0 gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-1"
-            onClick={() => navigate("/")}
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
-            📝 Markdown Previewer
-          </h1>
-        </div>
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          📝 Markdown Previewer
+        </h1>
         <div className="mt-4 md:mt-0 flex-shrink-0">
           <span className="inline-flex h-10 w-10 rounded-full bg-orange-100 items-center justify-center">
             <span role="img" aria-label="markdown" className="text-orange-500 text-2xl">🔥</span>

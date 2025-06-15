@@ -1,171 +1,101 @@
-
-import React, { useState } from "react";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 
-// Helper to extract all anchor links from raw HTML
-function extractLinksFromHtml(html: string, base: string) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const links = Array.from(doc.querySelectorAll("a"))
-    .map(a => {
-      let href = a.getAttribute("href") || "";
-      // Make relative URLs absolute
-      try {
-        href = new URL(href, base).href;
-      } catch {}
-      return {
-        href,
-        text: a.textContent?.trim() || href,
-      };
-    })
-    .filter(l => l.href.startsWith("http"));
-  return links;
-}
-
-const URLScanner: React.FC = () => {
+export default function URLScanner() {
   const [url, setUrl] = useState("");
-  const [status, setStatus] = useState<"idle" | "scanning" | "error" | "done">("idle");
-  const [error, setError] = useState("");
-  const [links, setLinks] = useState<{ href: string; text: string }[]>([]);
-  const [usedProxy, setUsedProxy] = useState(false);
-  const navigate = useNavigate();
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Try fetch, with fallback to CORS proxy
-  const handleScan = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setStatus("scanning");
-    setError("");
-    setLinks([]);
-    setUsedProxy(false);
-    // Basic format enforcement
-    let target = url.trim();
-    if (!/^https?:\/\//i.test(target)) target = "https://" + target;
+    setLoading(true);
+    setResult(null); // Clear previous result
 
-    // Helper to actually fetch (with/without proxy)
-    const fetchHtml = async (useProxy = false): Promise<{ html: string; asProxy: boolean }> => {
-      let finalUrl = useProxy ?
-        `https://corsproxy.io/?${encodeURIComponent(target)}` :
-        target;
-      // Always let fetch throw so we can handle fallback/error
-      const res = await fetch(finalUrl, {
-        mode: useProxy ? "cors" : "cors",
-        headers: useProxy
-          ? { "x-cors-headers": "1" } // Some proxies require but not all
-          : undefined,
-      });
-      if (!res.ok) throw new Error(`HTTP error (${res.status})`);
-      const html = await res.text();
-      return { html, asProxy: useProxy };
-    };
-
-    // First try direct, then fallback
     try {
-      let result;
-      try {
-        result = await fetchHtml(false);
-      } catch (err) {
-        // If this fails, try proxy
-        result = await fetchHtml(true);
-        setUsedProxy(true);
-      }
-      const found = extractLinksFromHtml(result.html, target);
-      setLinks(found);
-      setStatus("done");
-    } catch (err: any) {
-      setError("Could not fetch or parse this URL. This may be due to extra anti-bot/CORS protection, too many redirects, or the site blocking scanning altogether.");
-      setStatus("error");
-      setUsedProxy(false);
+      const response = await fetch(`/api/scan-url?url=${url}`);
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      setResult({ error: "Failed to scan URL." });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="max-w-2xl mx-auto px-4 py-8 flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mr-1"
-          onClick={() => navigate("/")}
-          aria-label="Back"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          URL Scanner <span className="text-primary">(Link Checker)</span>
+    <div>
+      {/* Removed header with back btn/local nav - use global nav only */}
+      <div className="max-w-2xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          🔎 URL Scanner
         </h1>
-      </header>
-      <main className="max-w-xl mx-auto w-full px-4">
-        <Card>
-          <CardContent>
-            <form onSubmit={handleScan} className="flex flex-col gap-4 py-6">
-              <label className="font-medium text-muted-foreground">
-                Enter website URL to scan for links:
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={url}
-                  onChange={e => setUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  type="url"
-                  className="flex-1"
-                  required
-                  pattern="^https?://.+"
-                  autoFocus
-                />
-                <Button type="submit" disabled={status === "scanning"}>
-                  {status === "scanning" ? "Scanning..." : "Scan"}
-                </Button>
-              </div>
-              {error && (
-                <div className="text-sm text-destructive">{error}</div>
-              )}
-            </form>
-            {status === "done" && (
-              <div className="py-2">
-                <div className="flex items-center mb-2 gap-2">
-                  <h2 className="font-semibold">Links found: {links.length}</h2>
-                  {usedProxy && (
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700 border border-yellow-300 font-medium" title="A CORS proxy was used to fetch the site, as direct scan was blocked by CORS.">
-                      Fetched via proxy
-                    </span>
-                  )}
-                </div>
-                <div className="rounded border bg-muted divide-y max-h-80 overflow-auto">
-                  {links.length === 0 && (
-                    <div className="text-muted-foreground p-3 text-center">
-                      No links were found on this page.
-                    </div>
-                  )}
-                  {links.map((link, i) => (
-                    <a
-                      key={i}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block px-4 py-2 text-sm hover:bg-accent transition truncate"
-                      title={link.href}
-                    >
-                      {link.text.length > 40 ? link.text.slice(0,40) + "…" : link.text}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        <div className="text-xs text-muted-foreground text-center mt-6">
-          Note: Most sites can be scanned.<br />
-          <span>
-            If your site still can't be scanned, it likely blocks all bots and proxies (anti-bot/CORS).<br />
-            For more stability, host your own proxy or use our <a href="https://docs.lovable.dev/integrations/supabase/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Supabase backend integration</a>.
+        <div className="mt-4 md:mt-0 flex-shrink-0">
+          <span className="inline-flex h-10 w-10 rounded-full bg-green-100 items-center justify-center">
+            <span role="img" aria-label="search" className="text-green-500 text-2xl">🌍</span>
           </span>
         </div>
-      </main>
+      </div>
+      <div className="max-w-2xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
+        Check URLs for safety, security, or status in seconds.
+      </div>
+      {/* Main content */}
+      <div className="min-h-screen bg-background py-6">
+        <div className="container max-w-2xl mx-auto space-y-6">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="space-y-4">
+              <form onSubmit={handleSubmit} className="flex space-x-3">
+                <Input
+                  type="url"
+                  placeholder="Enter URL to scan"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  required
+                  className="flex-1"
+                />
+                <Button type="submit" isLoading={loading}>
+                  Scan URL
+                </Button>
+              </form>
+
+              {result && (
+                <div className="space-y-2">
+                  {result.error ? (
+                    <div className="p-4 rounded-md bg-red-100 text-red-700 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      Error: {result.error}
+                    </div>
+                  ) : (
+                    <>
+                      {result.safe ? (
+                        <div className="p-4 rounded-md bg-green-100 text-green-700 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          This URL appears to be safe.
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-md bg-yellow-100 text-yellow-700 flex items-center gap-2">
+                          <Info className="h-4 w-4" />
+                          This URL may be potentially unsafe. Proceed with caution.
+                        </div>
+                      )}
+                      {result.details && (
+                        <div className="mt-4">
+                          <h3 className="text-lg font-semibold">Scan Details:</h3>
+                          <pre className="bg-gray-100 p-3 rounded-md overflow-x-auto">
+                            {JSON.stringify(result.details, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default URLScanner;
+}

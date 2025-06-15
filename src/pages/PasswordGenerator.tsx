@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -193,7 +192,21 @@ const PasswordGenerator = () => {
   const currentPassword = password || customPassword;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div>
+      {/* Removed local nav/back btn - only use global nav */}
+      <div className="max-w-2xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          🔐 Password Generator
+        </h1>
+        <div className="mt-4 md:mt-0 flex-shrink-0">
+          <span className="inline-flex h-10 w-10 rounded-full bg-indigo-100 items-center justify-center">
+            <span role="img" aria-label="lock" className="text-indigo-500 text-2xl">🔑</span>
+          </span>
+        </div>
+      </div>
+      <div className="max-w-2xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
+        Instantly create secure, random passwords for any use case.
+      </div>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">

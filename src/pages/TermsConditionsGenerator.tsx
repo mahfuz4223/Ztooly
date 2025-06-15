@@ -121,7 +121,7 @@ const getFormattedTerms = (
   return terms;
 };
 
-const TermsConditionsGenerator = () => {
+export default function TermsConditionsGenerator() {
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [options, setOptions] = useState<AdvancedTermsOptions>({ ...DEFAULT_ADVANCED });
@@ -148,31 +148,19 @@ const TermsConditionsGenerator = () => {
 
   return (
     <div>
-      {/* --- Header with Back btn, icon, and subtitle (like QR Generator) --- */}
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
-        <div className="flex items-center w-full md:w-auto mb-4 md:mb-0 gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-1"
-            onClick={() => navigate("/")}
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
-            <QrCode className="text-orange-500 w-8 h-8" />
-            Terms & Conditions Generator
-          </h1>
-        </div>
+      {/* Removed local nav/back btn - only show page branding and main content */}
+      <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          📄 Terms & Conditions Generator
+        </h1>
         <div className="mt-4 md:mt-0 flex-shrink-0">
-          <span className="inline-flex h-10 w-10 rounded-full bg-orange-100 items-center justify-center">
-            <span role="img" aria-label="scroll" className="text-orange-500 text-2xl">📜</span>
+          <span className="inline-flex h-10 w-10 rounded-full bg-blue-100 items-center justify-center">
+            <span role="img" aria-label="doc" className="text-blue-500 text-2xl">⚡</span>
           </span>
         </div>
       </div>
-      <div className="max-w-4xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
-        Instantly create professional Terms &amp; Conditions for your website or product, with advanced and customizable clauses.
+      <div className="max-w-3xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
+        Instantly create customizable Terms & Conditions for your website or product.
       </div>
 
       {/* --- Main content, moved below header --- */}
@@ -249,6 +237,4 @@ const TermsConditionsGenerator = () => {
       </div>
     </div>
   );
-};
-
-export default TermsConditionsGenerator;
+}

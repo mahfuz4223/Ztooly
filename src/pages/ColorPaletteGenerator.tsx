@@ -1,242 +1,109 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
-import { Palette } from "lucide-react";
-import PaletteSwatch from "@/components/PaletteSwatch";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Copy, RefreshCw } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-// Utility Functions
-function randomHexColor() {
-  return (
-    "#" +
-    Math.floor(Math.random() * 0xffffff)
-      .toString(16)
-      .padStart(6, "0")
-      .toUpperCase()
-  );
+function generateRandomColor() {
+  return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
 }
-function randomHSL() {
-  return `hsl(${Math.floor(Math.random() * 360)}, ${
-    40 + Math.round(Math.random() * 60)
-  }%, ${40 + Math.round(Math.random() * 20)}%)`;
-}
-function generateFlatPalette(n: number) {
-  return Array.from({ length: n }, () => randomHexColor());
-}
-function generateGradientPalette(n: number) {
-  // Each gradient will be an object: {from, to, direction}
-  const directions = [
-    "to right",
-    "to bottom",
-    "to top right",
-    "to left",
-    "135deg",
-    "90deg",
-  ];
-  return Array.from({ length: n }, () => {
-    return {
-      from: randomHexColor(),
-      to: randomHexColor(),
-      direction: directions[Math.floor(Math.random() * directions.length)],
-    };
-  });
-}
-function generateMonochromePalette(n: number) {
-  const baseHue = Math.floor(Math.random() * 360);
-  return Array.from({ length: n }, (_, i) =>
-    `hsl(${baseHue}, 60%, ${40 + i * (40 / n)}%)`
-  );
-}
-function generatePastelPalette(n: number) {
-  return Array.from({ length: n }, () => {
-    const h = Math.floor(Math.random() * 360);
-    return `hsl(${h}, 70%, 85%)`;
-  });
-}
-const paletteModes = [
-  { label: "Flat Colors", value: "flat" },
-  { label: "Gradient", value: "gradient" },
-  { label: "Monochrome", value: "mono" },
-  { label: "Pastel", value: "pastel" },
-];
-const formatOptions = [
-  { value: "hex", label: "HEX" },
-  { value: "rgb", label: "RGB" },
-  { value: "hsl", label: "HSL" },
-];
 
 export default function ColorPaletteGenerator() {
-  const navigate = useNavigate();
-  const [mode, setMode] = useState(paletteModes[0].value);
-  const [count, setCount] = useState(6);
-  const [flatPalette, setFlatPalette] = useState(generateFlatPalette(count));
-  const [gradientPalette, setGradientPalette] = useState(generateGradientPalette(count));
-  const [monoPalette, setMonoPalette] = useState(generateMonochromePalette(count));
-  const [pastelPalette, setPastelPalette] = useState(generatePastelPalette(count));
-  const [isFollowed, setIsFollowed] = useState(false);
-  const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
+  const [colors, setColors] = useState<string[]>([]);
+  const [numColors, setNumColors] = useState<number>(5);
 
-  // Regenerate palettes on demand or mode/count change
-  const regeneratePalette = () => {
-    setFlatPalette(generateFlatPalette(count));
-    setGradientPalette(generateGradientPalette(count));
-    setMonoPalette(generateMonochromePalette(count));
-    setPastelPalette(generatePastelPalette(count));
+  useEffect(() => {
+    generatePalette();
+  }, []);
+
+  const generatePalette = () => {
+    const newColors = Array.from({ length: numColors }, () => generateRandomColor());
+    setColors(newColors);
   };
 
-  const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = Math.max(2, Math.min(12, Number(e.target.value) || 6));
-    setCount(val);
-    setTimeout(regeneratePalette, 0);
+  const handleColorCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCount = parseInt(e.target.value, 10);
+    if (newCount > 0 && newCount <= 10) {
+      setNumColors(newCount);
+    }
   };
 
-  // Current palette
-  let current;
-  if (mode === "flat") current = flatPalette;
-  if (mode === "gradient") current = gradientPalette;
-  if (mode === "mono") current = monoPalette;
-  if (mode === "pastel") current = pastelPalette;
+  const copyToClipboard = async (color: string) => {
+    try {
+      await navigator.clipboard.writeText(color);
+      toast({
+        title: "Copied!",
+        description: `${color} copied to clipboard.`,
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy!",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <div className="bg-background min-h-screen pb-8">
-      {/* Professional Header */}
-      <header className="bg-gradient-to-r from-blue-100 to-pink-100 border-b border-border mb-6 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-6 flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-1"
-            onClick={() => navigate("/")}
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <Palette className="w-9 h-9 text-primary mr-2" />
-          <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-2 tracking-tight">
-              Color Palette Generator
-            </h1>
-            <span className="block text-muted-foreground text-[15px] leading-tight">
-              Marketplace for unique, ready-to-copy beautiful palettes and gradients.
-            </span>
-          </div>
-          <div className="ml-auto">
-            <Button
-              variant={isFollowed ? "default" : "secondary"}
-              className="rounded-full px-5 py-2 shadow"
-              onClick={() => setIsFollowed(f => !f)}
-              aria-pressed={isFollowed}
-            >
-              {isFollowed ? "Following" : "Follow"}
-            </Button>
+    <div>
+      {/* Removed local nav/back btn, use only global nav */}
+      <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
+        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          🎨 Color Palette Generator
+        </h1>
+        <div className="mt-4 md:mt-0 flex-shrink-0">
+          <span className="inline-flex h-10 w-10 rounded-full bg-purple-100 items-center justify-center">
+            <span role="img" aria-label="palette" className="text-purple-500 text-2xl">🌈</span>
+          </span>
+        </div>
+      </div>
+      <div className="max-w-3xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
+        Generate beautiful color palettes for your designs in seconds!
+      </div>
+      {/* Main content */}
+      <div className="min-h-screen bg-background py-6">
+        <div className="max-w-3xl mx-auto space-y-4">
+          <Card className="shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <label htmlFor="colorCount" className="text-sm font-medium text-muted-foreground">Number of Colors (1-10):</label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="number"
+                    id="colorCount"
+                    className="w-20 text-center"
+                    value={numColors}
+                    onChange={handleColorCountChange}
+                    min="1"
+                    max="10"
+                  />
+                  <Button variant="outline" size="sm" onClick={generatePalette}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {colors.map((color, index) => (
+              <Card key={index} className="shadow-md">
+                <div
+                  className="h-24"
+                  style={{ backgroundColor: color }}
+                />
+                <CardContent className="flex items-center justify-between p-3">
+                  <span className="text-sm font-mono text-muted-foreground">{color}</span>
+                  <Button variant="ghost" size="icon" onClick={() => copyToClipboard(color)}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
-      </header>
-      {/* Controls */}
-      <section className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pb-4">
-        <div className="flex items-center w-full md:w-auto gap-2 md:mb-0">
-          <div>
-            <label className="font-medium text-muted-foreground block mb-1">Palette Type</label>
-            <div className="flex gap-2 flex-wrap">
-              {paletteModes.map((modeOpt) => (
-                <Button
-                  key={modeOpt.value}
-                  type="button"
-                  variant={mode === modeOpt.value ? "default" : "secondary"}
-                  className="px-3 py-1 rounded-full"
-                  onClick={() => setMode(modeOpt.value)}
-                >
-                  {modeOpt.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-end gap-4">
-          <div>
-            <label className="font-medium text-muted-foreground block mb-1">Colors</label>
-            <Input
-              type="number"
-              min={2}
-              max={12}
-              value={count}
-              onChange={handleCountChange}
-              className="w-24 text-center"
-            />
-            <span className="text-xs text-muted-foreground block mt-1 text-center">
-              (2–12)
-            </span>
-          </div>
-          <div>
-            <label className="font-medium text-muted-foreground block mb-1">Format</label>
-            <Select value={format} onValueChange={v => setFormat(v as "hex" | "rgb" | "hsl")}>
-              <SelectTrigger className="w-24">
-                <SelectValue placeholder="Format" />
-              </SelectTrigger>
-              <SelectContent>
-                {formatOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="min-w-[100px]"
-            onClick={regeneratePalette}
-          >
-            Regenerate
-          </Button>
-        </div>
-      </section>
-      {/* Card "Marketplace" Showcase */}
-      <div className="max-w-4xl mx-auto px-4">
-        <Card className="w-full mx-auto shadow-lg animate-fade-in">
-          <CardContent>
-            <div className="mt-6 mb-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-5">
-              {mode === "gradient"
-                ? current.map(
-                    (
-                      grad: { from: string; to: string; direction: string },
-                      idx: number
-                    ) => (
-                      <PaletteSwatch
-                        key={idx}
-                        color=""
-                        gradient={grad}
-                        index={idx}
-                        mode="gradient"
-                        format={format}
-                      />
-                    )
-                  )
-                : current.map((color: string, idx: number) => (
-                    <PaletteSwatch
-                      key={idx}
-                      color={color}
-                      index={idx}
-                      mode={mode as any}
-                      format={format}
-                    />
-                  ))}
-            </div>
-            <div className="text-xs text-muted-foreground text-center mt-6">
-              Tap a swatch to copy. <br />
-              <span className="font-medium">Regenerate</span> for new palettes, <span className="font-medium">Follow</span> to explore more!
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
