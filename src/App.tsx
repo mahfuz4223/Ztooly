@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +34,7 @@ import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
 import CSVToJSONConverter from "./pages/CSVToJSONConverter";
 import FakeIBANGenerator from "./pages/FakeIBANGenerator";
 import BarcodeGenerator from "./pages/BarcodeGenerator";
+import FakeCreditCardGenerator from "./pages/FakeCreditCardGenerator";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +90,7 @@ const AppContent = () => (
       <Route path="/reading-time-estimator" element={<ReadingTimeEstimator />} />
       <Route path="/ai-headline-generator" element={<AIHeadlineGenerator />} />
       <Route path="/fake-iban-generator" element={<FakeIBANGenerator />} />
+      <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
