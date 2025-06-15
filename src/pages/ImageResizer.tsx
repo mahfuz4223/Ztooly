@@ -37,7 +37,7 @@ import {
   Layers
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import SiteNav from "@/components/SiteNav";
+// REMOVED: import SiteNav from "@/components/SiteNav";
 
 interface ImageFile extends File {
   id: string;
@@ -360,7 +360,6 @@ const ImageResizer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <SiteNav />
       <div className="container mx-auto px-4 py-8">
         {imageFiles.length === 0 ? (
           <div className="max-w-5xl mx-auto">
