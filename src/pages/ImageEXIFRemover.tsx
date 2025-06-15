@@ -46,127 +46,152 @@ const ImageEXIFRemover = () => {
 
   const extractEXIFData = (file: File): Promise<EXIFData> => {
     return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        EXIF.getData(img, function() {
-          const allMetaData = EXIF.getAllTags(this);
-          const exifData: EXIFData = {};
-          
-          // Basic file information
-          exifData['File Name'] = file.name;
-          exifData['File Size'] = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
-          exifData['MIME Type'] = file.type;
-          exifData['Last Modified'] = new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19);
-          
-          // Extract real EXIF data
-          if (Object.keys(allMetaData).length > 0) {
-            // Camera information
-            if (allMetaData.Make) exifData['Camera Make'] = allMetaData.Make;
-            if (allMetaData.Model) exifData['Camera Model'] = allMetaData.Model;
-            if (allMetaData.Software) exifData['Software'] = allMetaData.Software;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        if (!arrayBuffer) {
+          resolve({
+            'File Name': file.name,
+            'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            'MIME Type': file.type,
+            'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
+            'Error': 'Could not read file'
+          });
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          EXIF.getData(img as any, function() {
+            const allMetaData = EXIF.getAllTags(this);
+            const exifData: EXIFData = {};
             
-            // Date and time
-            if (allMetaData.DateTime) exifData['Date Created'] = allMetaData.DateTime;
-            if (allMetaData.DateTimeOriginal) exifData['Date Original'] = allMetaData.DateTimeOriginal;
-            if (allMetaData.DateTimeDigitized) exifData['Date Digitized'] = allMetaData.DateTimeDigitized;
+            // Basic file information
+            exifData['File Name'] = file.name;
+            exifData['File Size'] = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            exifData['MIME Type'] = file.type;
+            exifData['Last Modified'] = new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19);
             
-            // Camera settings
-            if (allMetaData.ExposureTime) {
-              const exposure = allMetaData.ExposureTime;
-              exifData['Exposure Time'] = exposure < 1 ? `1/${Math.round(1/exposure)}` : `${exposure}s`;
-            }
-            if (allMetaData.FNumber) exifData['F-Number'] = `f/${allMetaData.FNumber}`;
-            if (allMetaData.ISO || allMetaData.ISOSpeedRatings) {
-              exifData['ISO Speed'] = allMetaData.ISO || allMetaData.ISOSpeedRatings;
-            }
-            if (allMetaData.FocalLength) exifData['Focal Length'] = `${allMetaData.FocalLength}mm`;
-            if (allMetaData.WhiteBalance) {
-              exifData['White Balance'] = allMetaData.WhiteBalance === 0 ? 'Auto' : 'Manual';
-            }
-            if (allMetaData.Flash !== undefined) {
-              const flashValue = allMetaData.Flash;
-              if (flashValue === 0) exifData['Flash'] = 'No Flash';
-              else if (flashValue === 1) exifData['Flash'] = 'Flash fired';
-              else if (flashValue === 16) exifData['Flash'] = 'Flash off, compulsory';
-              else if (flashValue === 24) exifData['Flash'] = 'Flash auto, did not fire';
-              else if (flashValue === 25) exifData['Flash'] = 'Flash auto, fired';
-              else exifData['Flash'] = `Flash mode: ${flashValue}`;
-            }
-            
-            // GPS information
-            if (allMetaData.GPSLatitude && allMetaData.GPSLongitude) {
-              const lat = allMetaData.GPSLatitude;
-              const lon = allMetaData.GPSLongitude;
-              const latRef = allMetaData.GPSLatitudeRef || 'N';
-              const lonRef = allMetaData.GPSLongitudeRef || 'E';
+            // Extract real EXIF data
+            if (Object.keys(allMetaData).length > 0) {
+              // Camera information
+              if (allMetaData.Make) exifData['Camera Make'] = allMetaData.Make;
+              if (allMetaData.Model) exifData['Camera Model'] = allMetaData.Model;
+              if (allMetaData.Software) exifData['Software'] = allMetaData.Software;
               
-              if (Array.isArray(lat) && Array.isArray(lon)) {
-                const latDecimal = lat[0] + lat[1]/60 + lat[2]/3600;
-                const lonDecimal = lon[0] + lon[1]/60 + lon[2]/3600;
-                exifData['GPS Latitude'] = `${latDecimal.toFixed(6)}° ${latRef}`;
-                exifData['GPS Longitude'] = `${lonDecimal.toFixed(6)}° ${lonRef}`;
+              // Date and time
+              if (allMetaData.DateTime) exifData['Date Created'] = allMetaData.DateTime;
+              if (allMetaData.DateTimeOriginal) exifData['Date Original'] = allMetaData.DateTimeOriginal;
+              if (allMetaData.DateTimeDigitized) exifData['Date Digitized'] = allMetaData.DateTimeDigitized;
+              
+              // Camera settings
+              if (allMetaData.ExposureTime) {
+                const exposure = allMetaData.ExposureTime;
+                exifData['Exposure Time'] = exposure < 1 ? `1/${Math.round(1/exposure)}` : `${exposure}s`;
               }
+              if (allMetaData.FNumber) exifData['F-Number'] = `f/${allMetaData.FNumber}`;
+              if (allMetaData.ISO || allMetaData.ISOSpeedRatings) {
+                exifData['ISO Speed'] = allMetaData.ISO || allMetaData.ISOSpeedRatings;
+              }
+              if (allMetaData.FocalLength) exifData['Focal Length'] = `${allMetaData.FocalLength}mm`;
+              if (allMetaData.WhiteBalance) {
+                exifData['White Balance'] = allMetaData.WhiteBalance === 0 ? 'Auto' : 'Manual';
+              }
+              if (allMetaData.Flash !== undefined) {
+                const flashValue = allMetaData.Flash;
+                if (flashValue === 0) exifData['Flash'] = 'No Flash';
+                else if (flashValue === 1) exifData['Flash'] = 'Flash fired';
+                else if (flashValue === 16) exifData['Flash'] = 'Flash off, compulsory';
+                else if (flashValue === 24) exifData['Flash'] = 'Flash auto, did not fire';
+                else if (flashValue === 25) exifData['Flash'] = 'Flash auto, fired';
+                else exifData['Flash'] = `Flash mode: ${flashValue}`;
+              }
+              
+              // GPS information
+              if (allMetaData.GPSLatitude && allMetaData.GPSLongitude) {
+                const lat = allMetaData.GPSLatitude;
+                const lon = allMetaData.GPSLongitude;
+                const latRef = allMetaData.GPSLatitudeRef || 'N';
+                const lonRef = allMetaData.GPSLongitudeRef || 'E';
+                
+                if (Array.isArray(lat) && Array.isArray(lon)) {
+                  const latDecimal = lat[0] + lat[1]/60 + lat[2]/3600;
+                  const lonDecimal = lon[0] + lon[1]/60 + lon[2]/3600;
+                  exifData['GPS Latitude'] = `${latDecimal.toFixed(6)}° ${latRef}`;
+                  exifData['GPS Longitude'] = `${lonDecimal.toFixed(6)}° ${lonRef}`;
+                }
+              }
+              
+              // Image dimensions
+              if (allMetaData.PixelXDimension) exifData['Image Width'] = `${allMetaData.PixelXDimension}px`;
+              if (allMetaData.PixelYDimension) exifData['Image Height'] = `${allMetaData.PixelYDimension}px`;
+              if (allMetaData.XResolution) exifData['X Resolution'] = `${allMetaData.XResolution} dpi`;
+              if (allMetaData.YResolution) exifData['Y Resolution'] = `${allMetaData.YResolution} dpi`;
+              
+              // Other metadata
+              if (allMetaData.Artist) exifData['Artist'] = allMetaData.Artist;
+              if (allMetaData.Copyright) exifData['Copyright'] = allMetaData.Copyright;
+              if (allMetaData.ImageDescription) exifData['Description'] = allMetaData.ImageDescription;
+              if (allMetaData.Orientation) {
+                const orientations = {
+                  1: 'Normal',
+                  2: 'Horizontal flip',
+                  3: '180° rotation',
+                  4: 'Vertical flip',
+                  5: '90° CCW + horizontal flip',
+                  6: '90° CW',
+                  7: '90° CW + horizontal flip',
+                  8: '90° CCW'
+                };
+                exifData['Orientation'] = orientations[allMetaData.Orientation as keyof typeof orientations] || `Unknown (${allMetaData.Orientation})`;
+              }
+              
+              // Color space
+              if (allMetaData.ColorSpace) {
+                exifData['Color Space'] = allMetaData.ColorSpace === 1 ? 'sRGB' : 'Adobe RGB';
+              }
+              
+              // Lens information
+              if (allMetaData.LensModel) exifData['Lens Model'] = allMetaData.LensModel;
+              if (allMetaData.LensMake) exifData['Lens Make'] = allMetaData.LensMake;
+              
+              console.log('Raw EXIF data:', allMetaData);
+              console.log('Processed EXIF data:', exifData);
+            } else {
+              console.log('No EXIF data found in image');
             }
             
-            // Image dimensions
-            if (allMetaData.PixelXDimension) exifData['Image Width'] = `${allMetaData.PixelXDimension}px`;
-            if (allMetaData.PixelYDimension) exifData['Image Height'] = `${allMetaData.PixelYDimension}px`;
-            if (allMetaData.XResolution) exifData['X Resolution'] = `${allMetaData.XResolution} dpi`;
-            if (allMetaData.YResolution) exifData['Y Resolution'] = `${allMetaData.YResolution} dpi`;
-            
-            // Other metadata
-            if (allMetaData.Artist) exifData['Artist'] = allMetaData.Artist;
-            if (allMetaData.Copyright) exifData['Copyright'] = allMetaData.Copyright;
-            if (allMetaData.ImageDescription) exifData['Description'] = allMetaData.ImageDescription;
-            if (allMetaData.Orientation) {
-              const orientations = {
-                1: 'Normal',
-                2: 'Horizontal flip',
-                3: '180° rotation',
-                4: 'Vertical flip',
-                5: '90° CCW + horizontal flip',
-                6: '90° CW',
-                7: '90° CW + horizontal flip',
-                8: '90° CCW'
-              };
-              exifData['Orientation'] = orientations[allMetaData.Orientation as keyof typeof orientations] || `Unknown (${allMetaData.Orientation})`;
-            }
-            
-            // Color space
-            if (allMetaData.ColorSpace) {
-              exifData['Color Space'] = allMetaData.ColorSpace === 1 ? 'sRGB' : 'Adobe RGB';
-            }
-            
-            // Lens information
-            if (allMetaData.LensModel) exifData['Lens Model'] = allMetaData.LensModel;
-            if (allMetaData.LensMake) exifData['Lens Make'] = allMetaData.LensMake;
-            
-            console.log('Raw EXIF data:', allMetaData);
-            console.log('Processed EXIF data:', exifData);
-          } else {
-            console.log('No EXIF data found in image');
-          }
-          
-          resolve(exifData);
-        });
+            resolve(exifData);
+          });
+        };
+        
+        img.onerror = () => {
+          console.error('Failed to load image for EXIF extraction');
+          resolve({
+            'File Name': file.name,
+            'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+            'MIME Type': file.type,
+            'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
+            'Error': 'Could not extract EXIF data'
+          });
+        };
+        
+        // Create blob URL for the image
+        const blob = new Blob([arrayBuffer], { type: file.type });
+        img.src = URL.createObjectURL(blob);
       };
       
-      img.onerror = () => {
-        console.error('Failed to load image for EXIF extraction');
+      reader.onerror = () => {
         resolve({
           'File Name': file.name,
           'File Size': `${(file.size / 1024 / 1024).toFixed(2)} MB`,
           'MIME Type': file.type,
           'Last Modified': new Date(file.lastModified).toISOString().replace('T', ' ').substring(0, 19),
-          'Error': 'Could not extract EXIF data'
+          'Error': 'Could not read file'
         });
       };
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     });
   };
 
