@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import QRGenerator from "./pages/QRGenerator";
 import BackgroundRemover from "./pages/BackgroundRemover";
 import ImageResizer from "./pages/ImageResizer";
+import ImageWatermarker from "./pages/ImageWatermarker";
 import PDFTools from "./pages/PDFTools";
 import PDFToImage from "./pages/PDFToImage";
 import JSONTools from "./pages/JSONTools";
@@ -56,6 +58,7 @@ const AppContent = () => (
       <Route path="/qr-generator" element={<QRGenerator />} />
       <Route path="/background-remover" element={<BackgroundRemover />} />
       <Route path="/image-resizer" element={<ImageResizer />} />
+      <Route path="/image-watermarker" element={<ImageWatermarker />} />
       <Route path="/pdf-tools" element={<PDFTools />} />
       <Route path="/pdf-to-image" element={<PDFToImage />} />
       <Route path="/json-tools" element={<JSONTools />} />
