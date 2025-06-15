@@ -53,7 +53,6 @@ import {
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
-import SiteFooter from "@/components/SiteFooter";
 
 export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -869,9 +868,6 @@ export default function Index() {
           </p>
         </div>
       </section>
-
-      {/* Render the correct single footer only */}
-      <SiteFooter />
     </div>
   );
 }
