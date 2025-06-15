@@ -1,11 +1,6 @@
-
 import React from "react";
 import { toast } from "@/hooks/use-toast";
 import namelist from "color-name-list";
-// ---^ FIX: This should be a named import, so:
-// import namelist from "color-name-list";
-import * as namelistData from "color-name-list";
-// Now use namelistData.default or just namelistData if it's the list
 
 interface PaletteSwatchProps {
   color: string;
@@ -18,11 +13,8 @@ function getColorName(hex: string): string {
   // Find the closest match for the provided hex color
   let minDist = Number.MAX_VALUE;
   let name = "";
-  // Use Array.isArray to ensure we have the color list
-  const colorList = Array.isArray((namelistData as any).default)
-    ? (namelistData as any).default
-    : (namelistData as any);
-  for (const n of colorList) {
+  // 'namelist' is directly the array from the package
+  for (const n of namelist) {
     const dist = colorDistance(hex, n.hex);
     if (dist < minDist) {
       minDist = dist;
@@ -122,4 +114,3 @@ const PaletteSwatch: React.FC<PaletteSwatchProps> = ({
 };
 
 export default PaletteSwatch;
-
