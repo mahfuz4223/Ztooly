@@ -43,6 +43,7 @@ import SocialMediaBioGenerator from "./pages/SocialMediaBioGenerator";
 import VideoScriptHookGenerator from "./pages/VideoScriptHookGenerator";
 import FakeTweetGenerator from "./pages/FakeTweetGenerator";
 import FakeFacebookPostGenerator from "./pages/FakeFacebookPostGenerator";
+import TweetToImageConverter from "./pages/TweetToImageConverter";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,7 @@ const AppContent = () => (
       <Route path="/random-user-profile-generator" element={<RandomUserProfileGenerator />} />
       <Route path="/fake-tweet-generator" element={<FakeTweetGenerator />} />
       <Route path="/fake-facebook-post-generator" element={<FakeFacebookPostGenerator />} />
+      <Route path="/tweet-to-image-converter" element={<TweetToImageConverter />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
