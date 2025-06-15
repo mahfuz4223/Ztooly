@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,8 +61,15 @@ const AIImageCaptionGenerator = () => {
       // Generate caption from the image
       const result = await captioner(imagePreview);
       
-      if (result && result.length > 0) {
-        const generatedCaption = result[0].generated_text;
+      // Handle the result properly - it can be an array or single object
+      let generatedCaption = '';
+      if (Array.isArray(result)) {
+        generatedCaption = result[0]?.generated_text || '';
+      } else {
+        generatedCaption = (result as any).generated_text || '';
+      }
+      
+      if (generatedCaption) {
         setCaption(generatedCaption);
         
         toast({
