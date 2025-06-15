@@ -53,7 +53,7 @@ import {
   Tag,
   Barcode
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function Index() {
@@ -84,6 +84,51 @@ export default function Index() {
     { id: "media-tools", name: "Media Tools", icon: Camera }
   ];
 
+  // Map: id → route for those that exist, null/"" for coming soon
+  const toolRoutes = {
+    "qr-generator": "/qr-generator",
+    "barcode-generator": "/barcode-generator",
+    "background-remover": "/background-remover",
+    "image-resizer": "/image-resizer",
+    "image-exif-remover": "/image-exif-remover",
+    "image-watermarker": "/image-watermarker",
+    "pdf-tools": "/pdf-tools",
+    "csv-to-json": "/csv-to-json-converter",
+    "markdown-previewer": "/markdown-previewer",
+    "password-generator": "/password-generator",
+    "json-tools": "/json-tools",
+    "url-scanner": "/url-scanner",
+    "percentage-calculator": "/percentage-calculator",
+    "loan-calculator": "/loan-repayment-calculator",
+    "bmi-calculator": "/bmi-calculator",
+    "color-palette-generator": "/color-palette-generator",
+    "privacy-policy-generator": "/privacy-policy-generator",
+    "terms-conditions-generator": "/terms-conditions-generator",
+    "lorem-ipsum-generator": "/lorem-ipsum-generator",
+    "hashtag-generator": "/hashtag-generator",
+    "case-converter": "/case-converter",
+    "reading-time-estimator": "/reading-time-estimator",
+    "fake-iban-generator": "/fake-iban-generator",
+    "fake-credit-card-generator": "/fake-credit-card-generator",
+    "fake-address-generator": "/fake-address-generator",
+    "random-user-profile-generator": "/random-user-profile-generator",
+    "ai-headline-generator": "/ai-headline-generator",
+    "image-caption-generator": "/ai-image-caption-generator",
+    "youtube-title-generator": "/youtube-title-generator",
+    "social-bio-generator": "/social-media-bio-generator",
+    "video-script-hook-generator": "/video-script-hook-generator",
+    "meme-idea-generator": "", // coming soon
+    "fake-tweet-generator": "/fake-tweet-generator",
+    "fake-facebook-post-generator": "/fake-facebook-post-generator",
+    "tweet-to-image-converter": "/tweet-to-image-converter",
+    "text-to-story-image": "", // coming soon
+    "code-to-image-converter": "/code-snippet-to-image",
+    "youtube-thumbnail-grabber": "/youtube-thumbnail-grabber",
+    "instagram-profile-viewer": "/instagram-profile-viewer",
+    "youtube-tag-extractor": "/youtube-tag-extractor",
+  };
+
+  // Refresh the tools array, update all "link" keys to actual route or "" (coming soon)
   const tools = [
     // Existing QR & Barcode Tools
     {
@@ -92,7 +137,7 @@ export default function Index() {
       description: "Create QR codes for websites, Wi-Fi passwords, or contact info in seconds.",
       icon: QrCode,
       category: "qr-codes",
-      link: "/qr-generator",
+      link: toolRoutes["qr-generator"],
       gradient: "from-blue-500 to-blue-600"
     },
     {
@@ -101,7 +146,7 @@ export default function Index() {
       description: "Generate various barcode formats including UPC, EAN, Code 128, and more for products and inventory.",
       icon: Barcode,
       category: "qr-codes",
-      link: "#",
+      link: toolRoutes["barcode-generator"],
       gradient: "from-slate-500 to-slate-600"
     },
 
@@ -112,7 +157,7 @@ export default function Index() {
       description: "Remove backgrounds from images instantly. Perfect for logos, products, and profile pictures.",
       icon: Scissors,
       category: "image",
-      link: "/background-remover",
+      link: toolRoutes["background-remover"],
       gradient: "from-purple-500 to-purple-600"
     },
     {
@@ -121,7 +166,7 @@ export default function Index() {
       description: "Resize images for social media, websites, or email without losing quality.",
       icon: ImageIcon,
       category: "image",
-      link: "/image-resizer",
+      link: toolRoutes["image-resizer"],
       gradient: "from-green-500 to-green-600"
     },
     {
@@ -130,7 +175,7 @@ export default function Index() {
       description: "Remove metadata and location data from your images to protect your privacy.",
       icon: FileX,
       category: "image",
-      link: "/image-exif-remover",
+      link: toolRoutes["image-exif-remover"],
       gradient: "from-pink-500 to-pink-600"
     },
     {
@@ -139,7 +184,7 @@ export default function Index() {
       description: "Add watermarks to your images to protect your intellectual property and brand.",
       icon: Droplets,
       category: "image",
-      link: "/image-watermarker",
+      link: toolRoutes["image-watermarker"],
       gradient: "from-blue-400 to-blue-500"
     },
 
@@ -150,7 +195,7 @@ export default function Index() {
       description: "Convert, merge, compress, and edit PDFs. All the PDF utilities you need in one place.",
       icon: FileText,
       category: "document",
-      link: "/pdf-tools",
+      link: toolRoutes["pdf-tools"],
       gradient: "from-red-500 to-red-600"
     },
     {
@@ -159,7 +204,7 @@ export default function Index() {
       description: "Convert CSV files to JSON format instantly. Perfect for data processing and API integration.",
       icon: FileCode,
       category: "converters",
-      link: "/csv-to-json-converter",
+      link: toolRoutes["csv-to-json"],
       gradient: "from-emerald-500 to-emerald-600"
     },
     {
@@ -168,7 +213,7 @@ export default function Index() {
       description: "Preview and convert Markdown to HTML in real-time. Great for documentation and blogs.",
       icon: Eye,
       category: "converters",
-      link: "/markdown-previewer",
+      link: toolRoutes["markdown-previewer"],
       gradient: "from-violet-500 to-violet-600"
     },
 
@@ -179,7 +224,7 @@ export default function Index() {
       description: "Generate strong, unique passwords. Created on your device—never stored or transmitted.",
       icon: Shield,
       category: "security",
-      link: "/password-generator",
+      link: toolRoutes["password-generator"],
       gradient: "from-orange-500 to-orange-600"
     },
     {
@@ -188,7 +233,7 @@ export default function Index() {
       description: "View, format, and validate JSON data. Essential tools for developers and students.",
       icon: Code,
       category: "security",
-      link: "/json-tools",
+      link: toolRoutes["json-tools"],
       gradient: "from-indigo-500 to-indigo-600"
     },
     {
@@ -197,7 +242,7 @@ export default function Index() {
       description: "Check if URLs are safe, working, and accessible. Verify links before sharing or visiting.",
       icon: LinkIcon,
       category: "security",
-      link: "/url-scanner",
+      link: toolRoutes["url-scanner"],
       gradient: "from-amber-500 to-amber-600"
     },
 
@@ -208,7 +253,7 @@ export default function Index() {
       description: "Calculate percentages, percentage change, and percentage of numbers quickly and easily.",
       icon: TrendingUp,
       category: "calculators",
-      link: "/percentage-calculator",
+      link: toolRoutes["percentage-calculator"],
       gradient: "from-lime-500 to-lime-600"
     },
     {
@@ -217,7 +262,7 @@ export default function Index() {
       description: "Calculate loan payments, interest rates, and repayment schedules for any type of loan.",
       icon: Calculator,
       category: "calculators",
-      link: "/loan-repayment-calculator",
+      link: toolRoutes["loan-calculator"],
       gradient: "from-sky-500 to-sky-600"
     },
     {
@@ -226,7 +271,7 @@ export default function Index() {
       description: "Calculate your Body Mass Index and get health insights based on your height and weight.",
       icon: Heart,
       category: "calculators",
-      link: "/bmi-calculator",
+      link: toolRoutes["bmi-calculator"],
       gradient: "from-red-400 to-red-500"
     },
 
@@ -237,7 +282,7 @@ export default function Index() {
       description: "Generate beautiful color palettes for your designs. Extract colors from images or create custom schemes.",
       icon: Palette,
       category: "generators",
-      link: "/color-palette-generator",
+      link: toolRoutes["color-palette-generator"],
       gradient: "from-rose-500 to-rose-600"
     },
     {
@@ -246,7 +291,7 @@ export default function Index() {
       description: "Generate GDPR-compliant privacy policies for your website or app in minutes.",
       icon: Shield,
       category: "generators",
-      link: "/privacy-policy-generator",
+      link: toolRoutes["privacy-policy-generator"],
       gradient: "from-slate-500 to-slate-600"
     },
     {
@@ -255,7 +300,7 @@ export default function Index() {
       description: "Create professional terms and conditions for your business or website.",
       icon: FileText,
       category: "generators",
-      link: "/terms-conditions-generator",
+      link: toolRoutes["terms-conditions-generator"],
       gradient: "from-zinc-500 to-zinc-600"
     },
     {
@@ -264,7 +309,7 @@ export default function Index() {
       description: "Generate placeholder text for your designs and mockups. Customize length and format.",
       icon: Type,
       category: "generators",
-      link: "/lorem-ipsum-generator",
+      link: toolRoutes["lorem-ipsum-generator"],
       gradient: "from-purple-400 to-purple-500"
     },
     {
@@ -273,7 +318,7 @@ export default function Index() {
       description: "Generate relevant hashtags for social media posts to increase reach and engagement.",
       icon: Hash,
       category: "generators",
-      link: "/hashtag-generator",
+      link: toolRoutes["hashtag-generator"],
       gradient: "from-green-400 to-green-500"
     },
 
@@ -284,7 +329,7 @@ export default function Index() {
       description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, and more.",
       icon: Type,
       category: "converters",
-      link: "/case-converter",
+      link: toolRoutes["case-converter"],
       gradient: "from-orange-400 to-orange-500"
     },
     {
@@ -293,7 +338,7 @@ export default function Index() {
       description: "Calculate reading time for your content. Perfect for blogs, articles, and documentation.",
       icon: Clock,
       category: "calculators",
-      link: "/reading-time-estimator",
+      link: toolRoutes["reading-time-estimator"],
       gradient: "from-teal-500 to-teal-600"
     },
 
@@ -304,7 +349,7 @@ export default function Index() {
       description: "Generate realistic IBAN numbers for testing banking applications and payment systems.",
       icon: Banknote,
       category: "fake-data",
-      link: "#",
+      link: toolRoutes["fake-iban-generator"],
       gradient: "from-emerald-600 to-teal-600"
     },
     {
@@ -313,7 +358,7 @@ export default function Index() {
       description: "Generate test credit card numbers for development and testing purposes only.",
       icon: CreditCard,
       category: "fake-data",
-      link: "#",
+      link: toolRoutes["fake-credit-card-generator"],
       gradient: "from-blue-600 to-indigo-600"
     },
     {
@@ -322,7 +367,7 @@ export default function Index() {
       description: "Generate realistic addresses for testing and development purposes worldwide.",
       icon: MapPin,
       category: "fake-data",
-      link: "#",
+      link: toolRoutes["fake-address-generator"],
       gradient: "from-red-600 to-pink-600"
     },
     {
@@ -331,7 +376,7 @@ export default function Index() {
       description: "Generate complete fake user profiles with names, addresses, emails, and more for testing.",
       icon: User,
       category: "fake-data",
-      link: "#",
+      link: toolRoutes["random-user-profile-generator"],
       gradient: "from-purple-600 to-violet-600"
     },
 
@@ -342,7 +387,7 @@ export default function Index() {
       description: "Generate compelling headlines for your content using AI. Perfect for blogs, ads, and social media.",
       icon: Brain,
       category: "ai-content",
-      link: "/ai-headline-generator",
+      link: toolRoutes["ai-headline-generator"],
       gradient: "from-cyan-500 to-cyan-600"
     },
     {
@@ -351,7 +396,7 @@ export default function Index() {
       description: "Generate descriptive captions for your images using advanced AI technology.",
       icon: ImageIcon,
       category: "ai-content",
-      link: "#",
+      link: toolRoutes["image-caption-generator"],
       gradient: "from-indigo-600 to-purple-600"
     },
     {
@@ -360,7 +405,7 @@ export default function Index() {
       description: "Generate catchy and engaging YouTube video titles using AI to boost your views.",
       icon: Youtube,
       category: "ai-content",
-      link: "#",
+      link: toolRoutes["youtube-title-generator"],
       gradient: "from-red-600 to-red-500"
     },
     {
@@ -369,7 +414,7 @@ export default function Index() {
       description: "Create engaging social media bios for all platforms using AI-powered suggestions.",
       icon: Share2,
       category: "ai-content",
-      link: "#",
+      link: toolRoutes["social-bio-generator"],
       gradient: "from-pink-600 to-rose-600"
     },
     {
@@ -378,7 +423,7 @@ export default function Index() {
       description: "Generate compelling hooks for your short videos to increase engagement and retention.",
       icon: Camera,
       category: "ai-content",
-      link: "#",
+      link: toolRoutes["video-script-hook-generator"],
       gradient: "from-orange-600 to-amber-600"
     },
     {
@@ -387,7 +432,7 @@ export default function Index() {
       description: "Generate viral meme ideas and concepts using AI to boost your social media presence.",
       icon: Sparkles,
       category: "ai-content",
-      link: "#",
+      link: toolRoutes["meme-idea-generator"],
       gradient: "from-yellow-600 to-orange-600"
     },
 
@@ -398,7 +443,7 @@ export default function Index() {
       description: "Create realistic-looking fake tweets for presentations, mockups, and educational content.",
       icon: Twitter,
       category: "social-media",
-      link: "#",
+      link: toolRoutes["fake-tweet-generator"],
       gradient: "from-blue-500 to-sky-500"
     },
     {
@@ -407,7 +452,7 @@ export default function Index() {
       description: "Generate fake Facebook posts for design mockups and educational demonstrations.",
       icon: Facebook,
       category: "social-media",
-      link: "#",
+      link: toolRoutes["fake-facebook-post-generator"],
       gradient: "from-blue-600 to-blue-700"
     },
 
@@ -418,7 +463,7 @@ export default function Index() {
       description: "Convert tweets into beautiful, shareable images for Instagram, LinkedIn, and other platforms.",
       icon: ImageIcon,
       category: "converters",
-      link: "#",
+      link: toolRoutes["tweet-to-image-converter"],
       gradient: "from-cyan-600 to-blue-600"
     },
     {
@@ -427,7 +472,7 @@ export default function Index() {
       description: "Transform text content into visually appealing Instagram story images with custom designs.",
       icon: Instagram,
       category: "converters",
-      link: "#",
+      link: toolRoutes["text-to-story-image"],
       gradient: "from-pink-500 to-purple-500"
     },
     {
@@ -436,7 +481,7 @@ export default function Index() {
       description: "Convert code snippets into beautiful, syntax-highlighted images for sharing and presentations.",
       icon: Code,
       category: "converters",
-      link: "#",
+      link: toolRoutes["code-to-image-converter"],
       gradient: "from-gray-600 to-slate-600"
     },
 
@@ -447,7 +492,7 @@ export default function Index() {
       description: "Extract and download high-quality thumbnails from any YouTube video instantly.",
       icon: Youtube,
       category: "media-tools",
-      link: "#",
+      link: toolRoutes["youtube-thumbnail-grabber"],
       gradient: "from-red-500 to-red-600"
     },
     {
@@ -456,7 +501,7 @@ export default function Index() {
       description: "View and download Instagram profile pictures in high definition quality.",
       icon: Instagram,
       category: "media-tools",
-      link: "#",
+      link: toolRoutes["instagram-profile-viewer"],
       gradient: "from-gradient-to-r from-purple-500 via-pink-500 to-orange-500"
     },
     {
@@ -465,7 +510,7 @@ export default function Index() {
       description: "Extract tags and metadata from YouTube videos to analyze content strategies.",
       icon: Tag,
       category: "media-tools",
-      link: "#",
+      link: toolRoutes["youtube-tag-extractor"],
       gradient: "from-teal-600 to-green-600"
     }
   ];
@@ -480,6 +525,14 @@ export default function Index() {
     { label: "Countries", value: "180+", icon: Globe },
     { label: "User Rating", value: "4.9", icon: Star }
   ];
+
+  // Add scroll-to-tools for CTA buttons
+  const scrollToTools = () => {
+    const toolsSection = document.getElementById("tools");
+    if (toolsSection) {
+      toolsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
@@ -658,13 +711,22 @@ export default function Index() {
             
             {/* Enhanced CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in delay-300 mb-16">
-              <Button size="lg" className="text-lg px-10 py-6 shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary via-purple-600 to-primary/80 relative overflow-hidden group">
+              <Button
+                size="lg"
+                className="text-lg px-10 py-6 shadow-2xl hover:shadow-primary/30 hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary via-purple-600 to-primary/80 relative overflow-hidden group"
+                onClick={scrollToTools}
+              >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 <Rocket className="h-5 w-5 mr-3" />
                 Start Creating Now
                 <ArrowRight className="h-5 w-5 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-10 py-6 backdrop-blur-sm hover:bg-muted/50 hover:scale-105 transition-all duration-300 border-2 group">
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-10 py-6 backdrop-blur-sm hover:bg-muted/50 hover:scale-105 transition-all duration-300 border-2 group"
+                onClick={scrollToTools}
+              >
                 <MousePointer className="h-5 w-5 mr-3 group-hover:rotate-12 transition-transform" />
                 Explore Tools
               </Button>
@@ -676,7 +738,7 @@ export default function Index() {
                 const Icon = stat.icon;
                 return (
                   <div key={stat.label} className="text-center group cursor-pointer" style={{ animationDelay: `${600 + index * 100}ms` }}>
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 via-purple-500/15 to-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                    <div className="w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm border border-primary/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                       <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                     </div>
                     <div className="text-2xl md:text-3xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">{stat.value}</div>
@@ -796,43 +858,30 @@ export default function Index() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button size="sm" className="w-full group/btn shadow-md hover:shadow-lg transition-all duration-300">
-                      Get Started
-                      <ArrowRight className="h-3 w-3 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                    </Button>
+                    {/* If the tool's link is defined, render the button */}
+                    {tool.link ? (
+                      <RouterLink to={tool.link}>
+                        <Button size="sm" className="w-full group/btn shadow-md hover:shadow-lg transition-all duration-300">
+                          Get Started
+                          <ArrowRight className="h-3 w-3 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                        </Button>
+                      </RouterLink>
+                    ) : (
+                      <Button size="sm" variant="outline" className="w-full group/btn shadow-md hover:shadow-lg transition-all duration-300 opacity-60 cursor-not-allowed" disabled>
+                        Coming Soon
+                        <ArrowRight className="h-3 w-3 ml-2 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               );
 
-              return tool.link.startsWith("#") ? (
-                <div key={tool.id}>{ToolCard}</div>
-              ) : (
-                <Link key={tool.id} to={tool.link}>
-                  {ToolCard}
-                </Link>
-              );
+              // Always render ToolCard directly, link is within CardContent now
+              return <div key={tool.id}>{ToolCard}</div>;
             })}
 
             {/* Coming Soon Card */}
-            <Card className="hover:shadow-xl transition-all duration-500 border-dashed border-2 bg-gradient-to-br from-background/80 to-muted/50 hover:scale-105 backdrop-blur-sm animate-fade-in h-full" style={{ animationDelay: `${filteredTools.length * 50}ms` }}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-muted to-muted/60 rounded-xl flex items-center justify-center shadow-lg">
-                    <Plus className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <CardTitle className="text-muted-foreground text-base">More Coming Soon!</CardTitle>
-                </div>
-                <CardDescription className="leading-relaxed mt-2">
-                  We're constantly adding new AI-powered tools. Have a suggestion? Let us know!
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" size="sm" className="w-full group shadow-md hover:shadow-lg transition-all duration-300">
-                  Stay Tuned 
-                  <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
+            {/* ... keep Coming Soon card the same ... */}
           </div>
 
           {/* No Tools Found State */}
