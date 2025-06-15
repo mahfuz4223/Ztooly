@@ -25,11 +25,15 @@ export default function Ads({ variant = "banner1", className }: AdsProps) {
       script.src = "//pl26918936.profitableratecpm.com/3a601b714d111497b7c34a7a0199e13d/invoke.js";
       script.async = true;
       script.setAttribute("data-cfasync", "false");
-      document.getElementById("container-3a601b714d111497b7c34a7a0199e13d-root")?.appendChild(script);
+      const root = document.getElementById("container-3a601b714d111497b7c34a7a0199e13d-root");
+      if (root) {
+        root.appendChild(script);
+      }
 
       // Cleanup
       return () => {
-        document.getElementById("container-3a601b714d111497b7c34a7a0199e13d-root")?.innerHTML = "";
+        const el = document.getElementById("container-3a601b714d111497b7c34a7a0199e13d-root");
+        if (el) el.innerHTML = "";
       };
     }
     if (variant === "banner2") {
