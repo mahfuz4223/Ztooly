@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ const AIImageCaptionGenerator = () => {
   const [caption, setCaption] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string>('');
-  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState<string>('');
   const { toast } = useToast();
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,30 +51,29 @@ const AIImageCaptionGenerator = () => {
     setError('');
 
     try {
-      // Show model loading message on first use
-      setIsModelLoading(true);
+      // Show model loading message
+      setLoadingMessage('Loading AI model...');
       
       // Create image-to-text pipeline using Hugging Face model
       const captioner = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning');
       
-      setIsModelLoading(false);
+      setLoadingMessage('Analyzing image...');
 
       // Generate caption from the image
       const result = await captioner(imagePreview);
       
-      // Handle the result properly - the result can be various types
+      // Handle the result properly with better type checking
       let generatedCaption = '';
       
-      // Type guard to handle different result structures
-      if (Array.isArray(result)) {
+      if (Array.isArray(result) && result.length > 0) {
         // If it's an array, get the first result
         const firstResult = result[0];
-        if (firstResult && typeof firstResult === 'object' && 'generated_text' in firstResult) {
-          generatedCaption = (firstResult as any).generated_text || '';
+        if (firstResult && typeof firstResult === 'object' && firstResult !== null) {
+          generatedCaption = (firstResult as Record<string, any>).generated_text || '';
         }
-      } else if (result && typeof result === 'object' && 'generated_text' in result) {
-        // If it's a single object with generated_text
-        generatedCaption = (result as any).generated_text || '';
+      } else if (result && typeof result === 'object' && result !== null) {
+        // If it's a single object
+        generatedCaption = (result as Record<string, any>).generated_text || '';
       }
       
       if (generatedCaption) {
@@ -91,7 +91,7 @@ const AIImageCaptionGenerator = () => {
       setError('Failed to generate caption. Please try again or check your internet connection.');
     } finally {
       setIsGenerating(false);
-      setIsModelLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -110,6 +110,7 @@ const AIImageCaptionGenerator = () => {
     setImagePreview('');
     setCaption('');
     setError('');
+    setLoadingMessage('');
   };
 
   return (
@@ -180,18 +181,13 @@ const AIImageCaptionGenerator = () => {
                 <div className="flex gap-2">
                   <Button
                     onClick={generateCaption}
-                    disabled={isGenerating || isModelLoading}
+                    disabled={isGenerating}
                     className="flex-1"
                   >
-                    {isModelLoading ? (
+                    {isGenerating ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Loading AI Model...
-                      </>
-                    ) : isGenerating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating...
+                        {loadingMessage || 'Generating...'}
                       </>
                     ) : (
                       'Generate Caption'
@@ -201,6 +197,11 @@ const AIImageCaptionGenerator = () => {
                     Clear
                   </Button>
                 </div>
+                {isGenerating && loadingMessage && (
+                  <div className="text-sm text-muted-foreground text-center">
+                    {loadingMessage}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
