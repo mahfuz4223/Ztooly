@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import AdvancedTermsOptions from "@/components/terms/AdvancedTermsOptions";
 import { Switch } from "@/components/ui/switch";
-import { QrCode } from "lucide-react";
+import { QrCode, ArrowLeft } from "lucide-react";
 
 type AdvancedTermsOptions = {
   returns: boolean;
@@ -49,7 +50,6 @@ const getFormattedTerms = (
     terms += `Terms & Conditions for ${data.company || "[Your Company]"}\n\nPlease read these terms and conditions carefully before using the ${data.website || "[your-website.com]"} website or services operated by ${data.company || "[Your Company]" }.\n\n`;
   }
 
-  // Use of service
   terms += section(
     "Acceptance of Terms",
     "By accessing or using our website or services, you agree to be bound by these Terms & Conditions."
@@ -74,7 +74,6 @@ const getFormattedTerms = (
     "You must use the website and services in compliance with all applicable laws and regulations and must not misuse the service."
   );
 
-  // Returns/refund
   if (options.returns) {
     terms += section(
       "Returns and Refunds",
@@ -82,7 +81,6 @@ const getFormattedTerms = (
     );
   }
 
-  // Limitation of liability
   if (options.liability) {
     terms += section(
       "Limitation of Liability",
@@ -90,7 +88,6 @@ const getFormattedTerms = (
     );
   }
 
-  // Disclaimer
   if (options.disclaimer) {
     terms += section(
       "Disclaimer",
@@ -98,7 +95,6 @@ const getFormattedTerms = (
     );
   }
 
-  // Termination
   if (options.termination) {
     terms += section(
       "Termination",
@@ -106,7 +102,6 @@ const getFormattedTerms = (
     );
   }
 
-  // Governing law
   if (options.governingLaw) {
     terms += section(
       "Governing Law",
@@ -114,12 +109,10 @@ const getFormattedTerms = (
     );
   }
 
-  // Custom
   if (options.customSection && options.customSection.trim().length > 3) {
     terms += section("Additional Clause", options.customSection);
   }
 
-  // Final clause
   terms += section(
     "Contact Us",
     "If you have any questions about these Terms, please contact us through the website."
@@ -135,6 +128,7 @@ const TermsConditionsGenerator = () => {
   const [customTerms, setCustomTerms] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [viewMode, setViewMode] = useState<"text" | "html">("text");
+  const navigate = useNavigate();
 
   function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -154,22 +148,31 @@ const TermsConditionsGenerator = () => {
 
   return (
     <div>
-      {/* --- Header section, styled like QR Generator --- */}
+      {/* --- Header with Back btn, icon, and subtitle (like QR Generator) --- */}
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
-        <div>
+        <div className="flex items-center w-full md:w-auto mb-4 md:mb-0 gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-1"
+            onClick={() => navigate("/")}
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
           <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
             <QrCode className="text-orange-500 w-8 h-8" />
             Terms & Conditions Generator
           </h1>
-          <p className="text-muted-foreground mt-2 text-base max-w-2xl">
-            Instantly create professional Terms &amp; Conditions for your website or product, with advanced and customizable clauses.
-          </p>
         </div>
         <div className="mt-4 md:mt-0 flex-shrink-0">
           <span className="inline-flex h-10 w-10 rounded-full bg-orange-100 items-center justify-center">
             <span role="img" aria-label="scroll" className="text-orange-500 text-2xl">📜</span>
           </span>
         </div>
+      </div>
+      <div className="max-w-4xl mx-auto text-muted-foreground px-4 -mt-4 mb-3 text-base">
+        Instantly create professional Terms &amp; Conditions for your website or product, with advanced and customizable clauses.
       </div>
 
       {/* --- Main content, moved below header --- */}
