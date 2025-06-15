@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import AdvancedTermsOptions from "@/components/terms/AdvancedTermsOptions";
 import { Switch } from "@/components/ui/switch";
+import { QrCode } from "lucide-react";
 
 type AdvancedTermsOptions = {
   returns: boolean;
@@ -153,85 +153,97 @@ const TermsConditionsGenerator = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 flex justify-center items-start">
-      <Card className="w-full max-w-4xl mx-auto shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold mb-2 flex items-center gap-2">
-            Advanced Terms & Conditions Generator
-            <span className="inline-flex h-6 w-6 rounded-full bg-orange-100 items-center justify-center">
-              <span role="img" aria-label="scroll" className="text-orange-500">📜</span>
-            </span>
-          </CardTitle>
-          <p className="text-muted-foreground">
-            Instantly create professional Terms & Conditions for your website or product with advanced, customizable clauses.
+    <div>
+      {/* --- Header section, styled like QR Generator --- */}
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4 pt-8 pb-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+            <QrCode className="text-orange-500 w-8 h-8" />
+            Terms & Conditions Generator
+          </h1>
+          <p className="text-muted-foreground mt-2 text-base max-w-2xl">
+            Instantly create professional Terms &amp; Conditions for your website or product, with advanced and customizable clauses.
           </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Input
-                placeholder="Company/Website Name"
-                value={company}
-                onChange={e => setCompany(e.target.value)}
-                required
-              />
-              <Input
-                placeholder="Website URL (https://...)"
-                value={website}
-                onChange={e => setWebsite(e.target.value)}
-                required
-              />
-              <div className="mt-6">
-                <AdvancedTermsOptions options={options} onChange={setOptions} />
-              </div>
-              <Button type="submit" className="w-full md:w-auto mt-6">
-                Generate Terms & Conditions
-              </Button>
-            </div>
-            <div className="flex flex-col h-full">
-              <label className="mb-2 font-medium text-muted-foreground flex items-center gap-3">
-                Preview
-                <span className="ml-auto">
-                  <Switch
-                    checked={viewMode === "html"}
-                    onCheckedChange={on => handleViewSwitch(on ? "html" : "text")}
-                  /> Rendered (HTML)
-                </span>
-              </label>
-              {/* Text or HTML policy rendering */}
-              {showPreview ? (
-                viewMode === "html" ? (
-                  <div
-                    className="flex-1 min-h-[300px] font-sans text-base mb-2 p-4 rounded border bg-background shadow-inner overflow-y-auto prose max-w-none"
-                    style={{ background: "#fcfcfc" }}
-                    dangerouslySetInnerHTML={{ __html: customTerms }}
-                  />
-                ) : (
-                  <Textarea
-                    className="flex-1 min-h-[300px] font-mono text-sm mb-2"
-                    value={customTerms}
-                    onChange={e => setCustomTerms(e.target.value)}
-                  />
-                )
-              ) : (
-                <div className="p-8 text-muted-foreground text-center text-sm opacity-70">Your T&amp;C preview will appear here after generating.</div>
-              )}
-              {showPreview && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="mt-2"
-                  onClick={() => {
-                    navigator.clipboard.writeText(customTerms);
-                  }}
-                >
-                  Copy to Clipboard
+        </div>
+        <div className="mt-4 md:mt-0 flex-shrink-0">
+          <span className="inline-flex h-10 w-10 rounded-full bg-orange-100 items-center justify-center">
+            <span role="img" aria-label="scroll" className="text-orange-500 text-2xl">📜</span>
+          </span>
+        </div>
+      </div>
+
+      {/* --- Main content, moved below header --- */}
+      <div className="min-h-screen bg-background py-12 px-4 flex justify-center items-start">
+        <Card className="w-full max-w-4xl mx-auto shadow-lg">
+          {/* Remove old CardHeader, keep CardContent below */}
+          {/* ... keep existing code (CardContent, form, etc) the same ... */}
+          <CardContent>
+            <form onSubmit={handleGenerate} className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <Input
+                  placeholder="Company/Website Name"
+                  value={company}
+                  onChange={e => setCompany(e.target.value)}
+                  required
+                />
+                <Input
+                  placeholder="Website URL (https://...)"
+                  value={website}
+                  onChange={e => setWebsite(e.target.value)}
+                  required
+                />
+                <div className="mt-6">
+                  <AdvancedTermsOptions options={options} onChange={setOptions} />
+                </div>
+                <Button type="submit" className="w-full md:w-auto mt-6">
+                  Generate Terms & Conditions
                 </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              </div>
+              <div className="flex flex-col h-full">
+                <label className="mb-2 font-medium text-muted-foreground flex items-center gap-3">
+                  Preview
+                  <span className="ml-auto">
+                    <Switch
+                      checked={viewMode === "html"}
+                      onCheckedChange={on => handleViewSwitch(on ? "html" : "text")}
+                    /> Rendered (HTML)
+                  </span>
+                </label>
+                {/* Text or HTML policy rendering */}
+                {showPreview ? (
+                  viewMode === "html" ? (
+                    <div
+                      className="flex-1 min-h-[300px] font-sans text-base mb-2 p-4 rounded border bg-background shadow-inner overflow-y-auto prose max-w-none"
+                      style={{ background: "#fcfcfc" }}
+                      dangerouslySetInnerHTML={{ __html: customTerms }}
+                    />
+                  ) : (
+                    <Textarea
+                      className="flex-1 min-h-[300px] font-mono text-sm mb-2"
+                      value={customTerms}
+                      onChange={e => setCustomTerms(e.target.value)}
+                    />
+                  )
+                ) : (
+                  <div className="p-8 text-muted-foreground text-center text-sm opacity-70">Your T&amp;C preview will appear here after generating.</div>
+                )}
+                {showPreview && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="mt-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(customTerms);
+                    }}
+                  >
+                    Copy to Clipboard
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
