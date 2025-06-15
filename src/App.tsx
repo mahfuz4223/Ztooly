@@ -4,6 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import QRGenerator from "./pages/QRGenerator";
@@ -23,31 +26,60 @@ import LoanRepaymentCalculator from "./pages/LoanRepaymentCalculator";
 
 const queryClient = new QueryClient();
 
+const AppHeader = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  
+  if (isHomePage) return null;
+  
+  return (
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Tools
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+const AppContent = () => (
+  <div className="min-h-screen">
+    <AppHeader />
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/qr-generator" element={<QRGenerator />} />
+      <Route path="/background-remover" element={<BackgroundRemover />} />
+      <Route path="/image-resizer" element={<ImageResizer />} />
+      <Route path="/pdf-tools" element={<PDFTools />} />
+      <Route path="/pdf-to-image" element={<PDFToImage />} />
+      <Route path="/json-tools" element={<JSONTools />} />
+      <Route path="/password-generator" element={<PasswordGenerator />} />
+      <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
+      <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
+      <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
+      <Route path="/color-palette-generator" element={<ColorPaletteGenerator />} />
+      <Route path="/url-scanner" element={<URLScanner />} />
+      <Route path="/percentage-calculator" element={<PercentageCalculator />} />
+      <Route path="/loan-repayment-calculator" element={<LoanRepaymentCalculator />} />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/qr-generator" element={<QRGenerator />} />
-          <Route path="/background-remover" element={<BackgroundRemover />} />
-          <Route path="/image-resizer" element={<ImageResizer />} />
-          <Route path="/pdf-tools" element={<PDFTools />} />
-          <Route path="/pdf-to-image" element={<PDFToImage />} />
-          <Route path="/json-tools" element={<JSONTools />} />
-          <Route path="/password-generator" element={<PasswordGenerator />} />
-          <Route path="/privacy-policy-generator" element={<PrivacyPolicyGenerator />} />
-          <Route path="/terms-conditions-generator" element={<TermsConditionsGenerator />} />
-          <Route path="/markdown-previewer" element={<MarkdownPreviewer />} />
-          <Route path="/color-palette-generator" element={<ColorPaletteGenerator />} />
-          <Route path="/url-scanner" element={<URLScanner />} />
-          <Route path="/percentage-calculator" element={<PercentageCalculator />} />
-          <Route path="/loan-repayment-calculator" element={<LoanRepaymentCalculator />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppContent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

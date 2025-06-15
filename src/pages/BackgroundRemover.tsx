@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  Scissors, ArrowLeft, Download, Upload, Image as ImageIcon, RefreshCw, Zap, Sparkles,
-  Wand2, Crop, RotateCcw, Palette, Layers, FileImage, Grid, Settings, Trash2, Eye,
+  Scissors, Download, Upload, Image as ImageIcon, RefreshCw, Zap, Sparkles,
+  Wand2, RotateCcw, Palette, Layers, FileImage, Grid, Settings, Trash2, Eye,
   Check, X, Play, ArrowRight, Maximize2, Star
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProcessingOptions {
@@ -305,36 +303,6 @@ const BackgroundRemover = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Tools
-              </Button>
-            </Link>
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Scissors className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-500 to-purple-600 bg-clip-text text-transparent">
-                AI Background Remover Pro
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                <span>Premium Quality</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="py-12 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
         <div className="container mx-auto px-4 text-center">
