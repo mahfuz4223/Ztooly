@@ -58,16 +58,18 @@ class ModelManager {
 
     const result = await this.captionModel(imageData);
     
-    // Handle different result types
+    // Simplified type handling to avoid complex union types
     let generatedCaption = '';
     
-    if (Array.isArray(result) && result.length > 0) {
-      const firstResult = result[0];
-      if (firstResult && typeof firstResult === 'object' && firstResult !== null) {
-        generatedCaption = (firstResult as Record<string, any>).generated_text || '';
+    if (result && typeof result === 'object') {
+      if (Array.isArray(result) && result.length > 0) {
+        const firstResult = result[0];
+        if (firstResult && typeof firstResult === 'object' && 'generated_text' in firstResult) {
+          generatedCaption = String(firstResult.generated_text) || '';
+        }
+      } else if ('generated_text' in result) {
+        generatedCaption = String(result.generated_text) || '';
       }
-    } else if (result && typeof result === 'object' && result !== null) {
-      generatedCaption = (result as Record<string, any>).generated_text || '';
     }
 
     return generatedCaption;

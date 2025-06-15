@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -187,11 +188,6 @@ const AIImageCaptionGenerator = () => {
                     Clear
                   </Button>
                 </div>
-                {isGenerating && loadingMessage && (
-                  <div className="text-sm text-muted-foreground text-center">
-                    {loadingMessage}
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
