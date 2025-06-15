@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { Palette } from "lucide-react";
 import PaletteSwatch from "@/components/PaletteSwatch";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 // Utility Functions
 function randomHexColor() {
@@ -61,6 +69,11 @@ const paletteModes = [
   { label: "Monochrome", value: "mono" },
   { label: "Pastel", value: "pastel" },
 ];
+const formatOptions = [
+  { value: "hex", label: "HEX" },
+  { value: "rgb", label: "RGB" },
+  { value: "hsl", label: "HSL" },
+];
 
 export default function ColorPaletteGenerator() {
   const navigate = useNavigate();
@@ -71,6 +84,7 @@ export default function ColorPaletteGenerator() {
   const [monoPalette, setMonoPalette] = useState(generateMonochromePalette(count));
   const [pastelPalette, setPastelPalette] = useState(generatePastelPalette(count));
   const [isFollowed, setIsFollowed] = useState(false);
+  const [format, setFormat] = useState<"hex" | "rgb" | "hsl">("hex");
 
   // Regenerate palettes on demand or mode/count change
   const regeneratePalette = () => {
@@ -163,6 +177,19 @@ export default function ColorPaletteGenerator() {
               (2–12)
             </span>
           </div>
+          <div>
+            <label className="font-medium text-muted-foreground block mb-1">Format</label>
+            <Select value={format} onValueChange={v => setFormat(v as "hex" | "rgb" | "hsl")}>
+              <SelectTrigger className="w-24">
+                <SelectValue placeholder="Format" />
+              </SelectTrigger>
+              <SelectContent>
+                {formatOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             type="button"
             variant="outline"
@@ -190,6 +217,7 @@ export default function ColorPaletteGenerator() {
                         gradient={grad}
                         index={idx}
                         mode="gradient"
+                        format={format}
                       />
                     )
                   )
@@ -199,6 +227,7 @@ export default function ColorPaletteGenerator() {
                       color={color}
                       index={idx}
                       mode={mode as any}
+                      format={format}
                     />
                   ))}
             </div>
