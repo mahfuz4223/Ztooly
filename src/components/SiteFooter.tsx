@@ -1,5 +1,6 @@
 
 import { Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const SiteFooter = () => (
   <footer className="border-t bg-background/50 backdrop-blur-sm relative z-10">
@@ -19,28 +20,28 @@ const SiteFooter = () => (
         <div>
           <h3 className="font-semibold mb-4">Popular Tools</h3>
           <ul className="space-y-2 text-muted-foreground text-sm">
-            <li><a href="/qr-generator" className="hover:text-primary transition-colors">QR Generator</a></li>
-            <li><a href="/background-remover" className="hover:text-primary transition-colors">Background Remover</a></li>
-            <li><a href="/password-generator" className="hover:text-primary transition-colors">Password Generator</a></li>
-            <li><a href="/pdf-tools" className="hover:text-primary transition-colors">PDF Tools</a></li>
+            <li><Link to="/qr-generator" className="hover:text-primary transition-colors">QR Generator</Link></li>
+            <li><Link to="/background-remover" className="hover:text-primary transition-colors">Background Remover</Link></li>
+            <li><Link to="/password-generator" className="hover:text-primary transition-colors">Password Generator</Link></li>
+            <li><Link to="/pdf-tools" className="hover:text-primary transition-colors">PDF Tools</Link></li>
           </ul>
         </div>
         <div>
           <h3 className="font-semibold mb-4">Categories</h3>
           <ul className="space-y-2 text-muted-foreground text-sm">
-            <li><a href="#" className="hover:text-primary transition-colors">AI Content Tools</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Fake Data Generators</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Social Media Tools</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Media Tools</a></li>
+            <li><span className="hover:text-primary transition-colors cursor-not-allowed">AI Content Tools</span></li>
+            <li><span className="hover:text-primary transition-colors cursor-not-allowed">Fake Data Generators</span></li>
+            <li><span className="hover:text-primary transition-colors cursor-not-allowed">Social Media Tools</span></li>
+            <li><span className="hover:text-primary transition-colors cursor-not-allowed">Media Tools</span></li>
           </ul>
         </div>
         <div>
           <h3 className="font-semibold mb-4">Support</h3>
           <ul className="space-y-2 text-muted-foreground text-sm">
-            <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
+            <li><Link to="/help-center" className="hover:text-primary transition-colors">Help Center</Link></li>
+            <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+            <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link></li>
+            <li><Link to="/terms" className="hover:text-primary transition-colors">Terms</Link></li>
           </ul>
         </div>
       </div>

@@ -49,6 +49,10 @@ import InstagramProfileViewer from "./pages/InstagramProfileViewer";
 import YouTubeTagExtractor from "./pages/YouTubeTagExtractor";
 import SiteFooter from "@/components/SiteFooter";
 import SiteNav from "@/components/SiteNav";
+import HelpCenter from "./pages/HelpCenter";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +156,10 @@ const AppContent = () => {
           <Route path="/fake-tweet-generator" element={<FakeTweetGenerator />} />
           <Route path="/fake-facebook-post-generator" element={<FakeFacebookPostGenerator />} />
           <Route path="/tweet-to-image-converter" element={<TweetToImageConverter />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
