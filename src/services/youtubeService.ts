@@ -68,46 +68,127 @@ export class YouTubeService {
     try {
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`;
       const response = await fetch(proxyUrl);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch page data');
       }
 
       const data = await response.json();
       const htmlContent = data.contents;
-      
-      // Try to get description for better fallback tags
-      const descMatch = htmlContent.match(/<meta name="description" content="([^"]*)">/);
-      const titleMatch = htmlContent.match(/<title>([^<]*)<\/title>/);
-      const fallbackPayload = {
-        description: descMatch ? descMatch[1] : undefined,
-        title: titleMatch ? titleMatch[1].replace(' - YouTube', '') : undefined,
-      };
-      const tags = this.extractTagsFromHTML(htmlContent, fallbackPayload);
-      const metadata = this.extractMetadataFromHTML(htmlContent);
-      
+
+      // Enhanced fallback extraction with more robust description/metadata parsing:
+      let description = '';
+      // Try og:description
+      const ogDesc = htmlContent.match(/<meta property="og:description" content="([^"]*)"/i);
+      if (ogDesc) {
+        description = ogDesc[1];
+      } else {
+        // Try meta name="description"
+        const descMatch = htmlContent.match(/<meta name="description" content="([^"]*)"/i);
+        if (descMatch) description = descMatch[1];
+      }
+
+      // published date: try itemprop="datePublished" or ld+json
+      let publishedAt = '';
+      const datePropMatch = htmlContent.match(/itemprop="datePublished" content="([^"]*)"/i);
+      if (datePropMatch) {
+        publishedAt = new Date(datePropMatch[1]).toLocaleDateString();
+      }
+      // try JSON-LD
+      if (!publishedAt) {
+        const jsonLdMatch = htmlContent.match(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/si);
+        if (jsonLdMatch) {
+          try {
+            const jsonData = JSON.parse(jsonLdMatch[1]);
+            if (jsonData.uploadDate) {
+              publishedAt = new Date(jsonData.uploadDate).toLocaleDateString();
+            }
+          } catch {}
+        }
+      }
+
+      let viewCount = '';
+      // Extract viewCount from initialData or meta
+      const viewMatchJson = htmlContent.match(/"viewCount":[\s{]*"(\d+)"/);
+      if (viewMatchJson) {
+        viewCount = parseInt(viewMatchJson[1]).toLocaleString();
+      } else {
+        const viewTextMatch = htmlContent.match(/<meta itemprop="interactionCount" content="(\d+)"/i);
+        if (viewTextMatch) {
+          viewCount = parseInt(viewTextMatch[1]).toLocaleString();
+        }
+      }
+
+      let duration = '';
+      // Extract durationISO8601 from JSON-LD or seconds from initialData
+      const durIso = htmlContent.match(/"duration":"(PT[\dhms]+)"/i);
+      if (durIso) {
+        // Convert ISO 8601 to readable mm:ss
+        duration = this.parseISO8601Duration(durIso[1]);
+      } else {
+        const secMatch = htmlContent.match(/"lengthSeconds":"(\d+)"/);
+        if (secMatch) {
+          const seconds = parseInt(secMatch[1]);
+          duration = `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
+        }
+      }
+
+      // tags
+      const tags = this.extractTagsFromHTML(htmlContent, { title: undefined, description });
+
+      // fallback title
+      let title = '';
+      const titleMatch = htmlContent.match(/<title>([^<]*)<\/title>/i);
+      if (titleMatch) {
+        title = titleMatch[1].replace(' - YouTube', '').trim();
+      }
+
       return {
         tags,
-        ...metadata
+        description: description || 'No description available',
+        publishedAt: publishedAt || 'Unknown',
+        viewCount: viewCount || 'Unknown',
+        likeCount: 'Unknown', // Scraping like count reliably is not possible without login
+        duration: duration || 'Unknown',
+        title,
       };
     } catch (error) {
       // Fallback: add hashtag/keyword extraction so tags are never empty!
       console.error('Error scraping YouTube data:', error);
-      // Try to get at least title/description as fallback for keywords
       const oembed = await this.tryGetOEmbed(videoId);
       let tags: string[] = [];
+      let description = '';
+      let title = '';
       if (oembed) {
-        tags = this.extractTagsFromHTML('', { title: oembed.title, description: '' });
+        tags = this.extractTagsFromHTML('', { title: oembed.title, description: oembed.author_name });
+        description = oembed.description || 'Unavailable description';
+        title = oembed.title || '';
       }
       return {
         tags,
-        description: 'Unable to fetch description',
+        description: description || 'Unable to fetch description',
         publishedAt: 'Unknown',
         viewCount: 'Unknown',
         likeCount: 'Unknown',
-        duration: 'Unknown'
+        duration: 'Unknown',
+        title,
       };
     }
+  }
+
+  private static parseISO8601Duration(iso: string): string {
+    // Example: PT1H12M17S or PT10M17S or PT32S
+    const match = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso);
+    if (!match) return 'Unknown';
+    const hours = parseInt(match[1] ?? '0');
+    const minutes = parseInt(match[2] ?? '0');
+    const seconds = parseInt(match[3] ?? '0');
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
+        .toString()
+        .padStart(2, '0')}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   private static async tryGetOEmbed(videoId:string) {

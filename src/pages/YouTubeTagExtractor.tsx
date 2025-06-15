@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -138,23 +137,23 @@ ${videoData.description}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 p-4">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-red-100 rounded-full">
-              <Youtube className="h-8 w-8 text-red-600" />
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 p-1 sm:p-3 md:p-4">
+      <div className="container mx-auto max-w-2xl md:max-w-5xl px-1 sm:px-3 md:px-0">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-red-100 rounded-full">
+              <Youtube className="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">YouTube Tag Extractor</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">YouTube Tag Extractor</h1>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto">
             Extract real tags, metadata, and information from any YouTube video. Perfect for content creators, marketers, and researchers.
           </p>
         </div>
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Search className="h-5 w-5" />
               Extract Video Data
             </CardTitle>
@@ -168,21 +167,19 @@ ${videoData.description}`;
               <Input
                 id="youtube-url"
                 type="url"
-                placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/dQw4w9WgXcQ"
+                placeholder="https://www.youtube.com/watch?v=..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="text-base"
-                onKeyPress={(e) => e.key === 'Enter' && fetchVideoData()}
+                onKeyDown={(e) => e.key === 'Enter' && fetchVideoData()}
               />
             </div>
-            
             {error && (
               <div className="text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
                 <strong>Error:</strong> {error}
               </div>
             )}
-            
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button 
                 onClick={fetchVideoData} 
                 disabled={loading || !url.trim()}
@@ -200,9 +197,8 @@ ${videoData.description}`;
                   </>
                 )}
               </Button>
-              
               {videoData && (
-                <Button variant="outline" onClick={resetForm}>
+                <Button variant="outline" onClick={resetForm} className="flex-1 sm:flex-initial">
                   Reset
                 </Button>
               )}
@@ -211,9 +207,8 @@ ${videoData.description}`;
         </Card>
 
         {videoData && (
-          <div className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Video Thumbnail */}
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               <Card className="lg:col-span-1">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -228,6 +223,7 @@ ${videoData.description}`;
                         src={videoData.thumbnailUrl} 
                         alt="Video thumbnail" 
                         className="w-full rounded-lg shadow-md"
+                        style={{ maxHeight: 220, objectFit: 'cover' }}
                       />
                       <Button 
                         variant="outline" 
@@ -242,11 +238,9 @@ ${videoData.description}`;
                   )}
                 </CardContent>
               </Card>
-
-              {/* Video Information */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <span>Video Information</span>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={copyTitle}>
@@ -262,32 +256,36 @@ ${videoData.description}`;
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Title</Label>
-                    <p className="text-lg font-semibold break-words">{videoData.title}</p>
+                    <Label className="text-xs sm:text-sm font-medium text-gray-700">Title</Label>
+                    <p className="text-base sm:text-lg font-semibold break-words">{videoData.title}</p>
                   </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
                     <div>
                       <Label className="text-gray-700">Channel</Label>
-                      <p className="font-medium">{videoData.channelTitle}</p>
+                      <p className="font-medium truncate" title={videoData.channelTitle}>{videoData.channelTitle}</p>
                     </div>
                     <div>
                       <Label className="text-gray-700">Views</Label>
-                      <p className="font-medium">{videoData.viewCount}</p>
+                      <p className="font-medium">
+                        {videoData.viewCount !== "Unknown" ? videoData.viewCount : <span className="text-gray-400 italic">Unavailable</span>}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-gray-700">Published</Label>
-                      <p className="font-medium">{videoData.publishedAt}</p>
+                      <p className="font-medium">
+                        {videoData.publishedAt !== "Unknown" ? videoData.publishedAt : <span className="text-gray-400 italic">Unavailable</span>}
+                      </p>
                     </div>
                     <div>
                       <Label className="text-gray-700">Duration</Label>
-                      <p className="font-medium">{videoData.duration}</p>
+                      <p className="font-medium">
+                        {videoData.duration !== "Unknown" ? videoData.duration : <span className="text-gray-400 italic">Unavailable</span>}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -304,35 +302,33 @@ ${videoData.description}`;
               <CardContent>
                 {videoData.tags.length > 0 ? (
                   <>
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                       {videoData.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-sm">
+                        <Badge key={index} variant="secondary" className="text-xs sm:text-sm">
                           {tag}
                         </Badge>
                       ))}
                     </div>
-                    
-                    <div className="space-y-2">
+                    <div className="space-y-1 sm:space-y-2">
                       <Label htmlFor="tags-textarea">Tags as Text (comma-separated)</Label>
                       <Textarea
                         id="tags-textarea"
                         value={videoData.tags.join(', ')}
                         readOnly
-                        rows={3}
-                        className="resize-none"
+                        rows={2}
+                        className="resize-none text-xs sm:text-base"
                       />
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Tag className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <div className="text-center py-4 sm:py-8 text-gray-500">
+                    <Tag className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 opacity-50" />
                     <p>No tags found for this video</p>
-                    <p className="text-sm">This might be due to privacy settings or the video being unlisted</p>
+                    <p className="text-xs sm:text-sm">This might be due to privacy settings or the video being unlisted</p>
                   </div>
                 )}
               </CardContent>
             </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -345,10 +341,10 @@ ${videoData.description}`;
               </CardHeader>
               <CardContent>
                 <Textarea
-                  value={videoData.description}
+                  value={videoData.description && videoData.description !== "Unknown" ? videoData.description : "No description available"}
                   readOnly
-                  rows={8}
-                  className="resize-none"
+                  rows={6}
+                  className="resize-none text-xs sm:text-base"
                   placeholder="No description available"
                 />
               </CardContent>
