@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -40,6 +41,7 @@ import RandomUserProfileGenerator from "./pages/RandomUserProfileGenerator";
 import AIImageCaptionGenerator from "./pages/AIImageCaptionGenerator";
 import SocialMediaBioGenerator from "./pages/SocialMediaBioGenerator";
 import VideoScriptHookGenerator from "./pages/VideoScriptHookGenerator";
+import FakeTweetGenerator from "./pages/FakeTweetGenerator";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +104,7 @@ const AppContent = () => (
       <Route path="/fake-credit-card-generator" element={<FakeCreditCardGenerator />} />
       <Route path="/fake-address-generator" element={<FakeAddressGenerator />} />
       <Route path="/random-user-profile-generator" element={<RandomUserProfileGenerator />} />
+      <Route path="/fake-tweet-generator" element={<FakeTweetGenerator />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
