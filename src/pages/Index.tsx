@@ -44,7 +44,7 @@ import {
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-const Index = () => {
+export default function Index() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -755,6 +755,4 @@ const Index = () => {
       </footer>
     </div>
   );
-};
-
-export default Index;
+}
