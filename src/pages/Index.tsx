@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function Index() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -921,108 +922,11 @@ export default function Index() {
 
       {/* Enhanced About Section */}
       <section id="about" className="py-20 bg-muted/20 relative z-10">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8">Built for Everyone, Everywhere</h2>
-            <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
-              We believe powerful tools shouldn't come with barriers. That's why we've created a platform 
-              where anyone can access professional-grade utilities instantly, securely, and completely free. 
-              <br /><br />
-              <span className="text-primary font-medium">No accounts • No subscriptions • No complications</span>
-              <br />
-              Just the tools you need, when you need them.
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Privacy First",
-                  description: "All processing happens in your browser. We never see, store, or access your files.",
-                  icon: Lock
-                },
-                {
-                  title: "Always Free",
-                  description: "Our mission is to democratize access to powerful tools for everyone, everywhere.",
-                  icon: Star
-                },
-                {
-                  title: "Constantly Evolving",
-                  description: "We're always adding new tools and improving existing ones based on user feedback.",
-                  icon: Sparkles
-                }
-              ].map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.title} className="animate-fade-in" style={{ animationDelay: `${index * 200}ms` }}>
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-primary/20">
-                      <Icon className="h-7 w-7 text-primary" />
-                    </div>
-                    <h3 className="font-semibold mb-3 text-lg">{item.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {item.description}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        {/* ... keep existing code (about section) the same ... */}
       </section>
 
-      {/* Enhanced Footer */}
-      <footer className="border-t bg-background/50 backdrop-blur-sm relative z-10">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-lg flex items-center justify-center shadow-lg">
-                  <Sparkles className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-xl font-bold">ToolKit</span>
-              </div>
-              <p className="text-muted-foreground leading-relaxed text-sm">
-                Professional tools for everyone. Free, secure, and always available.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Popular Tools</h3>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="/qr-generator" className="hover:text-primary transition-colors">QR Generator</a></li>
-                <li><a href="/background-remover" className="hover:text-primary transition-colors">Background Remover</a></li>
-                <li><a href="/password-generator" className="hover:text-primary transition-colors">Password Generator</a></li>
-                <li><a href="/pdf-tools" className="hover:text-primary transition-colors">PDF Tools</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Categories</h3>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">AI Content Tools</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Fake Data Generators</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Social Media Tools</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Media Tools</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t mt-8 pt-6 text-center">
-            <p className="text-muted-foreground text-sm">
-              © 2024 ToolKit. Free to use, forever. Built with ❤️ for the internet.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Render the correct single footer only */}
+      <SiteFooter />
     </div>
   );
 }
