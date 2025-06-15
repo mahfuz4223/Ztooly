@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +31,7 @@ import CaseConverter from "./pages/CaseConverter";
 import HashtagGenerator from "./pages/HashtagGenerator";
 import ReadingTimeEstimator from "./pages/ReadingTimeEstimator";
 import AIHeadlineGenerator from "./pages/AIHeadlineGenerator";
+import YouTubeTitleGenerator from "./pages/YouTubeTitleGenerator";
 import CSVToJSONConverter from "./pages/CSVToJSONConverter";
 import FakeIBANGenerator from "./pages/FakeIBANGenerator";
 import BarcodeGenerator from "./pages/BarcodeGenerator";
