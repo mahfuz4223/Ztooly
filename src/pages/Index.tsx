@@ -39,7 +39,19 @@ import {
   Link as LinkIcon,
   Activity,
   FileX,
-  Shuffle
+  Shuffle,
+  CreditCard,
+  User,
+  MapPin,
+  Banknote,
+  Share2,
+  Twitter,
+  Facebook,
+  Camera,
+  Youtube,
+  Instagram,
+  Tag,
+  Barcode
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -59,16 +71,21 @@ export default function Index() {
 
   const categories = [
     { id: "all", name: "All Tools", icon: Sparkles },
-    { id: "qr-codes", name: "QR & Codes", icon: QrCode },
+    { id: "qr-codes", name: "QR & Barcodes", icon: QrCode },
     { id: "image", name: "Image Tools", icon: ImageIcon },
     { id: "document", name: "Documents", icon: FileText },
     { id: "security", name: "Security & Dev", icon: Shield },
     { id: "calculators", name: "Calculators", icon: Calculator },
     { id: "generators", name: "Generators", icon: PenTool },
-    { id: "converters", name: "Converters", icon: Repeat }
+    { id: "converters", name: "Converters", icon: Repeat },
+    { id: "fake-data", name: "Fake Data", icon: User },
+    { id: "ai-content", name: "AI Content", icon: Brain },
+    { id: "social-media", name: "Social Media", icon: Share2 },
+    { id: "media-tools", name: "Media Tools", icon: Camera }
   ];
 
   const tools = [
+    // Existing QR & Barcode Tools
     {
       id: "qr-generator",
       title: "Instant QR Codes",
@@ -78,6 +95,17 @@ export default function Index() {
       link: "/qr-generator",
       gradient: "from-blue-500 to-blue-600"
     },
+    {
+      id: "barcode-generator",
+      title: "Barcode Generator",
+      description: "Generate various barcode formats including UPC, EAN, Code 128, and more for products and inventory.",
+      icon: Barcode,
+      category: "qr-codes",
+      link: "#",
+      gradient: "from-slate-500 to-slate-600"
+    },
+
+    // Existing Image Tools
     {
       id: "background-remover",
       title: "Background Remover",
@@ -97,6 +125,26 @@ export default function Index() {
       gradient: "from-green-500 to-green-600"
     },
     {
+      id: "image-exif-remover",
+      title: "Image EXIF Data Remover",
+      description: "Remove metadata and location data from your images to protect your privacy.",
+      icon: FileX,
+      category: "image",
+      link: "/image-exif-remover",
+      gradient: "from-pink-500 to-pink-600"
+    },
+    {
+      id: "image-watermarker",
+      title: "Image Watermarker",
+      description: "Add watermarks to your images to protect your intellectual property and brand.",
+      icon: Droplets,
+      category: "image",
+      link: "/image-watermarker",
+      gradient: "from-blue-400 to-blue-500"
+    },
+
+    // Existing Document Tools
+    {
       id: "pdf-tools",
       title: "PDF Tools",
       description: "Convert, merge, compress, and edit PDFs. All the PDF utilities you need in one place.",
@@ -105,6 +153,26 @@ export default function Index() {
       link: "/pdf-tools",
       gradient: "from-red-500 to-red-600"
     },
+    {
+      id: "csv-to-json",
+      title: "CSV to JSON Converter",
+      description: "Convert CSV files to JSON format instantly. Perfect for data processing and API integration.",
+      icon: FileCode,
+      category: "converters",
+      link: "/csv-to-json-converter",
+      gradient: "from-emerald-500 to-emerald-600"
+    },
+    {
+      id: "markdown-previewer",
+      title: "Markdown to HTML Previewer",
+      description: "Preview and convert Markdown to HTML in real-time. Great for documentation and blogs.",
+      icon: Eye,
+      category: "converters",
+      link: "/markdown-previewer",
+      gradient: "from-violet-500 to-violet-600"
+    },
+
+    // Existing Security & Dev Tools
     {
       id: "password-generator",
       title: "Secure Password Generator",
@@ -124,93 +192,23 @@ export default function Index() {
       gradient: "from-indigo-500 to-indigo-600"
     },
     {
-      id: "ai-headline-generator",
-      title: "AI Headline Generator",
-      description: "Generate compelling headlines for your content using AI. Perfect for blogs, ads, and social media.",
-      icon: Brain,
-      category: "generators",
-      link: "#",
-      gradient: "from-cyan-500 to-cyan-600"
-    },
-    {
-      id: "image-exif-remover",
-      title: "Image EXIF Data Remover",
-      description: "Remove metadata and location data from your images to protect your privacy.",
-      icon: FileX,
-      category: "image",
-      link: "#",
-      gradient: "from-pink-500 to-pink-600"
-    },
-    {
-      id: "csv-to-json",
-      title: "CSV to JSON Converter",
-      description: "Convert CSV files to JSON format instantly. Perfect for data processing and API integration.",
-      icon: FileCode,
-      category: "converters",
-      link: "#",
-      gradient: "from-emerald-500 to-emerald-600"
-    },
-    {
-      id: "markdown-previewer",
-      title: "Markdown to HTML Previewer",
-      description: "Preview and convert Markdown to HTML in real-time. Great for documentation and blogs.",
-      icon: Eye,
-      category: "converters",
-      link: "#",
-      gradient: "from-violet-500 to-violet-600"
-    },
-    {
-      id: "color-palette-generator",
-      title: "Color Palette Generator",
-      description: "Generate beautiful color palettes for your designs. Extract colors from images or create custom schemes.",
-      icon: Palette,
-      category: "generators",
-      link: "#",
-      gradient: "from-rose-500 to-rose-600"
-    },
-    {
       id: "url-scanner",
       title: "URL Scanner (Link Checker)",
       description: "Check if URLs are safe, working, and accessible. Verify links before sharing or visiting.",
       icon: LinkIcon,
       category: "security",
-      link: "#",
+      link: "/url-scanner",
       gradient: "from-amber-500 to-amber-600"
     },
-    {
-      id: "reading-time-estimator",
-      title: "Reading Time Estimator",
-      description: "Calculate reading time for your content. Perfect for blogs, articles, and documentation.",
-      icon: Clock,
-      category: "calculators",
-      link: "#",
-      gradient: "from-teal-500 to-teal-600"
-    },
-    {
-      id: "privacy-policy-generator",
-      title: "Privacy Policy Generator",
-      description: "Generate GDPR-compliant privacy policies for your website or app in minutes.",
-      icon: Shield,
-      category: "generators",
-      link: "#",
-      gradient: "from-slate-500 to-slate-600"
-    },
-    {
-      id: "terms-conditions-generator",
-      title: "Terms & Conditions Generator",
-      description: "Create professional terms and conditions for your business or website.",
-      icon: FileText,
-      category: "generators",
-      link: "#",
-      gradient: "from-zinc-500 to-zinc-600"
-    },
+
+    // Existing Calculators
     {
       id: "percentage-calculator",
       title: "Percentage Calculator",
       description: "Calculate percentages, percentage change, and percentage of numbers quickly and easily.",
       icon: TrendingUp,
       category: "calculators",
-      link: "#",
+      link: "/percentage-calculator",
       gradient: "from-lime-500 to-lime-600"
     },
     {
@@ -219,7 +217,7 @@ export default function Index() {
       description: "Calculate loan payments, interest rates, and repayment schedules for any type of loan.",
       icon: Calculator,
       category: "calculators",
-      link: "#",
+      link: "/loan-repayment-calculator",
       gradient: "from-sky-500 to-sky-600"
     },
     {
@@ -228,17 +226,37 @@ export default function Index() {
       description: "Calculate your Body Mass Index and get health insights based on your height and weight.",
       icon: Heart,
       category: "calculators",
-      link: "#",
+      link: "/bmi-calculator",
       gradient: "from-red-400 to-red-500"
     },
+
+    // Existing Generators
     {
-      id: "image-watermarker",
-      title: "Image Watermarker",
-      description: "Add watermarks to your images to protect your intellectual property and brand.",
-      icon: Droplets,
-      category: "image",
-      link: "#",
-      gradient: "from-blue-400 to-blue-500"
+      id: "color-palette-generator",
+      title: "Color Palette Generator",
+      description: "Generate beautiful color palettes for your designs. Extract colors from images or create custom schemes.",
+      icon: Palette,
+      category: "generators",
+      link: "/color-palette-generator",
+      gradient: "from-rose-500 to-rose-600"
+    },
+    {
+      id: "privacy-policy-generator",
+      title: "Privacy Policy Generator",
+      description: "Generate GDPR-compliant privacy policies for your website or app in minutes.",
+      icon: Shield,
+      category: "generators",
+      link: "/privacy-policy-generator",
+      gradient: "from-slate-500 to-slate-600"
+    },
+    {
+      id: "terms-conditions-generator",
+      title: "Terms & Conditions Generator",
+      description: "Create professional terms and conditions for your business or website.",
+      icon: FileText,
+      category: "generators",
+      link: "/terms-conditions-generator",
+      gradient: "from-zinc-500 to-zinc-600"
     },
     {
       id: "lorem-ipsum-generator",
@@ -246,17 +264,8 @@ export default function Index() {
       description: "Generate placeholder text for your designs and mockups. Customize length and format.",
       icon: Type,
       category: "generators",
-      link: "#",
+      link: "/lorem-ipsum-generator",
       gradient: "from-purple-400 to-purple-500"
-    },
-    {
-      id: "case-converter",
-      title: "Case Converter",
-      description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, and more.",
-      icon: Type,
-      category: "converters",
-      link: "#",
-      gradient: "from-orange-400 to-orange-500"
     },
     {
       id: "hashtag-generator",
@@ -264,8 +273,200 @@ export default function Index() {
       description: "Generate relevant hashtags for social media posts to increase reach and engagement.",
       icon: Hash,
       category: "generators",
-      link: "#",
+      link: "/hashtag-generator",
       gradient: "from-green-400 to-green-500"
+    },
+
+    // Existing Text Tools (moved to converters)
+    {
+      id: "case-converter",
+      title: "Case Converter",
+      description: "Convert text between different cases: uppercase, lowercase, title case, camelCase, and more.",
+      icon: Type,
+      category: "converters",
+      link: "/case-converter",
+      gradient: "from-orange-400 to-orange-500"
+    },
+    {
+      id: "reading-time-estimator",
+      title: "Reading Time Estimator",
+      description: "Calculate reading time for your content. Perfect for blogs, articles, and documentation.",
+      icon: Clock,
+      category: "calculators",
+      link: "/reading-time-estimator",
+      gradient: "from-teal-500 to-teal-600"
+    },
+
+    // NEW FAKE DATA GENERATORS
+    {
+      id: "fake-iban-generator",
+      title: "Fake IBAN Generator",
+      description: "Generate realistic IBAN numbers for testing banking applications and payment systems.",
+      icon: Banknote,
+      category: "fake-data",
+      link: "#",
+      gradient: "from-emerald-600 to-teal-600"
+    },
+    {
+      id: "fake-credit-card-generator",
+      title: "Fake Credit Card Generator",
+      description: "Generate test credit card numbers for development and testing purposes only.",
+      icon: CreditCard,
+      category: "fake-data",
+      link: "#",
+      gradient: "from-blue-600 to-indigo-600"
+    },
+    {
+      id: "fake-address-generator",
+      title: "Fake Address Generator",
+      description: "Generate realistic addresses for testing and development purposes worldwide.",
+      icon: MapPin,
+      category: "fake-data",
+      link: "#",
+      gradient: "from-red-600 to-pink-600"
+    },
+    {
+      id: "random-user-profile-generator",
+      title: "Random User Profile Generator",
+      description: "Generate complete fake user profiles with names, addresses, emails, and more for testing.",
+      icon: User,
+      category: "fake-data",
+      link: "#",
+      gradient: "from-purple-600 to-violet-600"
+    },
+
+    // NEW AI-POWERED CONTENT TOOLS
+    {
+      id: "ai-headline-generator",
+      title: "AI Headline Generator",
+      description: "Generate compelling headlines for your content using AI. Perfect for blogs, ads, and social media.",
+      icon: Brain,
+      category: "ai-content",
+      link: "/ai-headline-generator",
+      gradient: "from-cyan-500 to-cyan-600"
+    },
+    {
+      id: "image-caption-generator",
+      title: "AI Image Caption Generator",
+      description: "Generate descriptive captions for your images using advanced AI technology.",
+      icon: ImageIcon,
+      category: "ai-content",
+      link: "#",
+      gradient: "from-indigo-600 to-purple-600"
+    },
+    {
+      id: "youtube-title-generator",
+      title: "YouTube Title Idea Generator",
+      description: "Generate catchy and engaging YouTube video titles using AI to boost your views.",
+      icon: Youtube,
+      category: "ai-content",
+      link: "#",
+      gradient: "from-red-600 to-red-500"
+    },
+    {
+      id: "social-bio-generator",
+      title: "Social Media Bio Generator",
+      description: "Create engaging social media bios for all platforms using AI-powered suggestions.",
+      icon: Share2,
+      category: "ai-content",
+      link: "#",
+      gradient: "from-pink-600 to-rose-600"
+    },
+    {
+      id: "video-script-hook-generator",
+      title: "Video Script Hook Generator",
+      description: "Generate compelling hooks for your short videos to increase engagement and retention.",
+      icon: Camera,
+      category: "ai-content",
+      link: "#",
+      gradient: "from-orange-600 to-amber-600"
+    },
+    {
+      id: "meme-idea-generator",
+      title: "AI Meme Idea Generator",
+      description: "Generate viral meme ideas and concepts using AI to boost your social media presence.",
+      icon: Sparkles,
+      category: "ai-content",
+      link: "#",
+      gradient: "from-yellow-600 to-orange-600"
+    },
+
+    // NEW SOCIAL MEDIA TOOLS
+    {
+      id: "fake-tweet-generator",
+      title: "Fake Tweet Generator",
+      description: "Create realistic-looking fake tweets for presentations, mockups, and educational content.",
+      icon: Twitter,
+      category: "social-media",
+      link: "#",
+      gradient: "from-blue-500 to-sky-500"
+    },
+    {
+      id: "fake-facebook-post-generator",
+      title: "Fake Facebook Post Generator",
+      description: "Generate fake Facebook posts for design mockups and educational demonstrations.",
+      icon: Facebook,
+      category: "social-media",
+      link: "#",
+      gradient: "from-blue-600 to-blue-700"
+    },
+
+    // NEW CONTENT CONVERTERS
+    {
+      id: "tweet-to-image-converter",
+      title: "Tweet to Image Converter",
+      description: "Convert tweets into beautiful, shareable images for Instagram, LinkedIn, and other platforms.",
+      icon: ImageIcon,
+      category: "converters",
+      link: "#",
+      gradient: "from-cyan-600 to-blue-600"
+    },
+    {
+      id: "text-to-story-image",
+      title: "Text to Instagram Story",
+      description: "Transform text content into visually appealing Instagram story images with custom designs.",
+      icon: Instagram,
+      category: "converters",
+      link: "#",
+      gradient: "from-pink-500 to-purple-500"
+    },
+    {
+      id: "code-to-image-converter",
+      title: "Code Snippet to Image",
+      description: "Convert code snippets into beautiful, syntax-highlighted images for sharing and presentations.",
+      icon: Code,
+      category: "converters",
+      link: "#",
+      gradient: "from-gray-600 to-slate-600"
+    },
+
+    // NEW MEDIA & ASSET GRABBERS
+    {
+      id: "youtube-thumbnail-grabber",
+      title: "YouTube Thumbnail Grabber",
+      description: "Extract and download high-quality thumbnails from any YouTube video instantly.",
+      icon: Youtube,
+      category: "media-tools",
+      link: "#",
+      gradient: "from-red-500 to-red-600"
+    },
+    {
+      id: "instagram-profile-viewer",
+      title: "Instagram Profile Picture Viewer",
+      description: "View and download Instagram profile pictures in high definition quality.",
+      icon: Instagram,
+      category: "media-tools",
+      link: "#",
+      gradient: "from-gradient-to-r from-purple-500 via-pink-500 to-orange-500"
+    },
+    {
+      id: "youtube-tag-extractor",
+      title: "YouTube Video Tag Extractor",
+      description: "Extract tags and metadata from YouTube videos to analyze content strategies.",
+      icon: Tag,
+      category: "media-tools",
+      link: "#",
+      gradient: "from-teal-600 to-green-600"
     }
   ];
 
@@ -275,7 +476,7 @@ export default function Index() {
 
   const stats = [
     { label: "Active Users", value: "100K+", icon: Users },
-    { label: "Tools Available", value: "25+", icon: Sparkles },
+    { label: "Tools Available", value: "50+", icon: Sparkles },
     { label: "Countries", value: "180+", icon: Globe },
     { label: "User Rating", value: "4.9", icon: Star }
   ];
@@ -429,7 +630,7 @@ export default function Index() {
               AI-Powered Tools Platform
               <div className="ml-3 px-2 py-1 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full text-xs flex items-center">
                 <Sparkles className="h-3 w-3 mr-1" />
-                25+ TOOLS
+                50+ TOOLS
               </div>
             </div>
             
@@ -728,10 +929,10 @@ export default function Index() {
             <div>
               <h3 className="font-semibold mb-4">Categories</h3>
               <ul className="space-y-2 text-muted-foreground text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Image Tools</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Calculators</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Generators</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Converters</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">AI Content Tools</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Fake Data Generators</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Social Media Tools</a></li>
+                <li><a href="#" className="hover:text-primary transition-colors">Media Tools</a></li>
               </ul>
             </div>
 
