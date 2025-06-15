@@ -176,7 +176,6 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-      <SiteFooter />
     </div>
   );
 };

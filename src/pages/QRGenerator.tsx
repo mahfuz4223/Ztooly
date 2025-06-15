@@ -31,7 +31,7 @@ const QRGenerator = () => {
   const [cornersDotColor, setCornersDotColor] = useState("#000000");
   
   const qrCodeRef = useRef<QRCodeStyling | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prebuilt logos with URLs
