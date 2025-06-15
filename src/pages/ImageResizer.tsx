@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,7 @@ import {
   Layers
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import SiteNav from "@/components/SiteNav";
 
 interface ImageFile extends File {
   id: string;
@@ -360,43 +360,7 @@ const ImageResizer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:bg-slate-900/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 transition-colors">
-                <ArrowLeft className="h-5 w-5" />
-                <span className="font-medium">Back</span>
-              </Link>
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <ImageIcon className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Smart Image Resizer
-                  </h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Professional batch image processing</p>
-                </div>
-              </div>
-            </div>
-            {imageFiles.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  {imageFiles.filter(img => img.status === 'completed').length}/{imageFiles.length} processed
-                </span>
-                <Button onClick={reset} variant="outline" size="sm">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
+      <SiteNav />
       <div className="container mx-auto px-4 py-8">
         {imageFiles.length === 0 ? (
           <div className="max-w-5xl mx-auto">
