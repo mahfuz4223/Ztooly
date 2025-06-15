@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Copy, Download, FileText, Braces, Upload } from 'lucide-react';
+import { Copy, Download, FileText, Braces, Upload, Zap, CheckCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 const CSVToJSONConverter = () => {
@@ -131,48 +130,60 @@ Bob Johnson,35,Chicago,bob@example.com`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">CSV to JSON Converter</h1>
-          <p className="text-lg text-gray-600">Convert your CSV data to JSON format with ease</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl mb-6 shadow-lg">
+            <Zap className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-4">
+            CSV to JSON Converter
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Transform your CSV data into clean, structured JSON format instantly
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
           {/* CSV Input Section */}
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+          <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-xl">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <FileText className="h-6 w-6" />
                 CSV Input
               </CardTitle>
-              <CardDescription className="text-blue-100">
-                Paste your CSV data or upload a CSV file
+              <CardDescription className="text-blue-100 text-base">
+                Upload a file or paste your CSV data below
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex gap-2 flex-wrap">
+            <CardContent className="p-8">
+              <div className="space-y-6">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={() => document.getElementById('csv-file')?.click()}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                   >
                     <Upload className="h-4 w-4" />
-                    Upload CSV
+                    Upload CSV File
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={loadSampleData}
+                    className="flex items-center gap-2 border-green-200 hover:border-green-300 hover:bg-green-50"
                   >
+                    <FileText className="h-4 w-4" />
                     Load Sample
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={clearAll}
+                    className="flex items-center gap-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   >
                     Clear All
                   </Button>
@@ -186,72 +197,91 @@ Bob Johnson,35,Chicago,bob@example.com`;
                   className="hidden"
                 />
 
-                <div>
-                  <Label htmlFor="csv-input">CSV Data</Label>
+                {/* CSV Input Textarea */}
+                <div className="space-y-3">
+                  <Label htmlFor="csv-input" className="text-base font-medium text-gray-700">
+                    CSV Data
+                  </Label>
                   <Textarea
                     id="csv-input"
                     value={csvInput}
                     onChange={(e) => setCsvInput(e.target.value)}
                     placeholder="name,age,city&#10;John Doe,30,New York&#10;Jane Smith,25,Los Angeles"
-                    className="min-h-[400px] font-mono text-sm"
+                    className="min-h-[350px] font-mono text-sm border-gray-200 focus:border-blue-400 focus:ring-blue-400 resize-none"
                   />
                 </div>
 
+                {/* Convert Button */}
                 <Button 
                   onClick={convertToJSON} 
                   disabled={isConverting || !csvInput.trim()}
-                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 shadow-lg disabled:opacity-50"
                 >
-                  {isConverting ? "Converting..." : "Convert to JSON"}
+                  {isConverting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+                      Converting...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-5 w-5 mr-2" />
+                      Convert to JSON
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* JSON Output Section */}
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <Braces className="h-5 w-5" />
+          <Card className="shadow-xl border-0 bg-white/70 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-t-xl">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <Braces className="h-6 w-6" />
                 JSON Output
               </CardTitle>
-              <CardDescription className="text-green-100">
+              <CardDescription className="text-emerald-100 text-base">
                 Your converted JSON data will appear here
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex gap-2">
+            <CardContent className="p-8">
+              <div className="space-y-6">
+                {/* Action Buttons */}
+                <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={copyToClipboard}
                     disabled={!jsonOutput}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"
                   >
                     <Copy className="h-4 w-4" />
-                    Copy
+                    Copy JSON
                   </Button>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={downloadJSON}
                     disabled={!jsonOutput}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 disabled:opacity-50"
                   >
                     <Download className="h-4 w-4" />
-                    Download
+                    Download File
                   </Button>
                 </div>
 
-                <div>
-                  <Label htmlFor="json-output">JSON Data</Label>
+                {/* JSON Output Textarea */}
+                <div className="space-y-3">
+                  <Label htmlFor="json-output" className="text-base font-medium text-gray-700">
+                    JSON Data
+                  </Label>
                   <Textarea
                     id="json-output"
                     value={jsonOutput}
                     readOnly
-                    placeholder="Your JSON output will appear here..."
-                    className="min-h-[400px] font-mono text-sm bg-gray-50"
+                    placeholder="Your converted JSON will appear here..."
+                    className="min-h-[350px] font-mono text-sm bg-gray-50/50 border-gray-200 resize-none"
                   />
                 </div>
               </div>
@@ -260,32 +290,45 @@ Bob Johnson,35,Chicago,bob@example.com`;
         </div>
 
         {/* Features Section */}
-        <Card className="mt-8 shadow-lg">
-          <CardHeader>
-            <CardTitle>Features</CardTitle>
+        <Card className="mt-12 shadow-xl border-0 bg-white/70 backdrop-blur-sm max-w-4xl mx-auto">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+              Powerful Features
+            </CardTitle>
+            <CardDescription className="text-lg text-gray-600">
+              Everything you need for seamless CSV to JSON conversion
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-start gap-3">
-                <Upload className="h-5 w-5 text-blue-500 mt-0.5" />
-                <div>
-                  <h3 className="font-medium">File Upload</h3>
-                  <p className="text-gray-600">Upload CSV files directly from your computer</p>
+          <CardContent className="px-8 pb-8">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl mb-3">
+                  <Upload className="h-6 w-6 text-white" />
                 </div>
+                <h3 className="font-semibold text-lg text-gray-900">Easy File Upload</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Upload CSV files directly from your computer with drag-and-drop support
+                </p>
               </div>
-              <div className="flex items-start gap-3">
-                <Copy className="h-5 w-5 text-green-500 mt-0.5" />
-                <div>
-                  <h3 className="font-medium">Quick Copy</h3>
-                  <p className="text-gray-600">Copy converted JSON to clipboard with one click</p>
+              
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl mb-3">
+                  <CheckCircle className="h-6 w-6 text-white" />
                 </div>
+                <h3 className="font-semibold text-lg text-gray-900">Instant Conversion</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Real-time conversion with error handling and validation for clean results
+                </p>
               </div>
-              <div className="flex items-start gap-3">
-                <Download className="h-5 w-5 text-purple-500 mt-0.5" />
-                <div>
-                  <h3 className="font-medium">Download</h3>
-                  <p className="text-gray-600">Download the converted JSON as a file</p>
+              
+              <div className="text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl mb-3">
+                  <Download className="h-6 w-6 text-white" />
                 </div>
+                <h3 className="font-semibold text-lg text-gray-900">Export Options</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Copy to clipboard or download as JSON file for immediate use
+                </p>
               </div>
             </div>
           </CardContent>
