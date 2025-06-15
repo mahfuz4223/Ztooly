@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,61 +32,6 @@ const TweetToImageConverter = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewMode, setPreviewMode] = useState('desktop');
 
-  // Enhanced sample tweet data with more variety
-  const sampleTweets = {
-    elon: {
-      id: '1234567890',
-      username: 'elonmusk',
-      displayName: 'Elon Musk',
-      handle: '@elonmusk',
-      profileImage: 'https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg',
-      tweetText: 'Just launched another rocket to Mars! 🚀 The future of humanity is multiplanetary. This is just the beginning of an incredible journey. #SpaceX #Mars #Innovation',
-      timestamp: '2:34 PM · Dec 15, 2024',
-      engagement: {
-        replies: '2.1K',
-        retweets: '15.2K',
-        likes: '89.4K',
-        bookmarks: '12.3K'
-      },
-      isVerified: true,
-      media: null
-    },
-    nasa: {
-      id: '1234567891',
-      username: 'nasa',
-      displayName: 'NASA',
-      handle: '@nasa',
-      profileImage: 'https://pbs.twimg.com/profile_images/1321163587679784960/0ZxKlEKB_400x400.jpg',
-      tweetText: 'Incredible new images from the James Webb Space Telescope show the beauty and complexity of our universe. Each photo reveals secrets that have been hidden for billions of years. 🌌✨\n\n#JWST #Space #Astronomy #Universe',
-      timestamp: '1:15 PM · Dec 15, 2024',
-      engagement: {
-        replies: '3.2K',
-        retweets: '18.7K',
-        likes: '125.6K',
-        bookmarks: '28.1K'
-      },
-      isVerified: true,
-      media: 'https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&h=400&fit=crop'
-    },
-    openai: {
-      id: '1234567892',
-      username: 'openai',
-      displayName: 'OpenAI',
-      handle: '@openai',
-      profileImage: 'https://pbs.twimg.com/profile_images/1634058036934500352/b4F1eVpJ_400x400.jpg',
-      tweetText: 'Introducing our latest AI model with enhanced reasoning capabilities. This breakthrough represents a significant step forward in artificial intelligence research and development. 🤖\n\n• Improved logical reasoning\n• Better code understanding\n• Enhanced creativity\n\n#AI #MachineLearning #Innovation',
-      timestamp: '11:45 AM · Dec 15, 2024',
-      engagement: {
-        replies: '5.8K',
-        retweets: '25.4K',
-        likes: '156.2K',
-        bookmarks: '42.7K'
-      },
-      isVerified: true,
-      media: null
-    }
-  };
-
   const validateTweetUrl = (url) => {
     const tweetUrlPattern = /^https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/\d+/;
     return tweetUrlPattern.test(url);
@@ -96,6 +40,68 @@ const TweetToImageConverter = () => {
   const extractTweetId = (url) => {
     const match = url.match(/status\/(\d+)/);
     return match ? match[1] : null;
+  };
+
+  const extractUsername = (url) => {
+    const match = url.match(/(?:twitter\.com|x\.com)\/(\w+)\/status/);
+    return match ? match[1] : null;
+  };
+
+  const generateMockTweetData = (url) => {
+    const username = extractUsername(url);
+    const tweetId = extractTweetId(url);
+    
+    if (!username || !tweetId) {
+      return null;
+    }
+
+    // Generate display name from username
+    const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+    
+    // Generate random tweet content based on username
+    const tweetTexts = [
+      `Just shared some amazing insights about the latest developments in our field. Really excited about what's coming next! 🚀 #Innovation #Tech`,
+      `Working on something incredible today. Can't wait to share the results with everyone! The future looks bright ✨ #Progress #Development`,
+      `Had an amazing conversation about the future of technology and innovation. These are the moments that inspire us to keep pushing forward! 💡 #Inspiration #Future`,
+      `Grateful for all the support and feedback from the community. Your input helps us build better solutions for everyone! 🙏 #Community #Grateful`,
+      `Excited to announce our latest project milestone! This achievement wouldn't be possible without the incredible team behind it 🎉 #TeamWork #Success`
+    ];
+    
+    const randomText = tweetTexts[Math.floor(Math.random() * tweetTexts.length)];
+    
+    // Generate random engagement metrics
+    const generateEngagement = () => {
+      const replies = Math.floor(Math.random() * 1000) + 50;
+      const retweets = Math.floor(Math.random() * 5000) + 100;
+      const likes = Math.floor(Math.random() * 10000) + 500;
+      const bookmarks = Math.floor(Math.random() * 2000) + 100;
+      
+      return {
+        replies: replies > 1000 ? `${(replies/1000).toFixed(1)}K` : replies.toString(),
+        retweets: retweets > 1000 ? `${(retweets/1000).toFixed(1)}K` : retweets.toString(),
+        likes: likes > 1000 ? `${(likes/1000).toFixed(1)}K` : likes.toString(),
+        bookmarks: bookmarks > 1000 ? `${(bookmarks/1000).toFixed(1)}K` : bookmarks.toString()
+      };
+    };
+
+    // Generate timestamp
+    const now = new Date();
+    const hours = now.getHours() > 12 ? now.getHours() - 12 : now.getHours();
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+    const timestamp = `${hours}:${now.getMinutes().toString().padStart(2, '0')} ${ampm} · ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+    return {
+      id: tweetId,
+      username: username,
+      displayName: displayName,
+      handle: `@${username}`,
+      profileImage: `https://ui-avatars.com/api/?name=${displayName}&background=random&size=400`,
+      tweetText: randomText,
+      timestamp: timestamp,
+      engagement: generateEngagement(),
+      isVerified: Math.random() > 0.5, // Random verification status
+      media: Math.random() > 0.7 ? 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop' : null
+    };
   };
 
   useEffect(() => {
@@ -115,25 +121,18 @@ const TweetToImageConverter = () => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Enhanced mock data selection based on URL
-      let mockData = sampleTweets.elon;
+      // Generate mock data based on the actual URL
+      const mockData = generateMockTweetData(tweetUrl);
       
-      if (tweetUrl.includes('nasa')) {
-        mockData = sampleTweets.nasa;
-      } else if (tweetUrl.includes('openai')) {
-        mockData = sampleTweets.openai;
+      if (mockData) {
+        setTweetData(mockData);
+        toast({
+          title: "✅ Tweet Loaded Successfully!",
+          description: `Loaded tweet from @${mockData.username}. You can now customize and download it.`,
+        });
       } else {
-        // Random selection for other URLs
-        const keys = Object.keys(sampleTweets);
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        mockData = sampleTweets[randomKey];
+        throw new Error('Failed to parse tweet URL');
       }
-      
-      setTweetData(mockData);
-      toast({
-        title: "✅ Tweet Loaded Successfully!",
-        description: "Tweet data has been loaded. You can now customize and download it.",
-      });
       
     } catch (error) {
       console.error('Error fetching tweet:', error);
@@ -164,7 +163,6 @@ const TweetToImageConverter = () => {
           width: element.scrollWidth,
           height: element.scrollHeight,
           onclone: (clonedDoc) => {
-            // Ensure fonts are loaded in the cloned document
             const clonedElement = clonedDoc.getElementById('tweet-preview');
             if (clonedElement) {
               clonedElement.style.fontFamily = settings.fontFamily === 'default' ? 
@@ -219,9 +217,9 @@ const TweetToImageConverter = () => {
   };
 
   const sampleUrls = [
-    { url: 'https://x.com/elonmusk/status/1234567890', label: 'Elon Musk - SpaceX Update' },
-    { url: 'https://twitter.com/nasa/status/1234567891', label: 'NASA - JWST Discovery' },
-    { url: 'https://x.com/openai/status/1234567892', label: 'OpenAI - AI Breakthrough' }
+    { url: 'https://x.com/IRIran_Military/status/1933982965228523868', label: 'Iran Military - Latest Update' },
+    { url: 'https://x.com/MahfuzA82387011/status/1922842626513854785', label: 'Mahfuz - Personal Tweet' },
+    { url: 'https://x.com/elonmusk/status/1234567890', label: 'Elon Musk - SpaceX Update' }
   ];
 
   const themeStyles = {
@@ -544,7 +542,7 @@ const TweetToImageConverter = () => {
                 )}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {tweetData ? 'Your tweet is ready for download' : 'Load a tweet to see the live preview'}
+                {tweetData ? `Showing tweet from @${tweetData.username}` : 'Load a tweet to see the live preview'}
               </p>
             </CardHeader>
             <CardContent>
@@ -563,7 +561,6 @@ const TweetToImageConverter = () => {
                 </div>
               ) : (
                 <>
-                  {/* Enhanced Tweet Preview */}
                   <div
                     id="tweet-preview"
                     className={`
@@ -578,7 +575,6 @@ const TweetToImageConverter = () => {
                         settings.fontFamily
                     }}
                   >
-                    {/* Tweet Header */}
                     <div className="flex items-start space-x-3 mb-4">
                       <Avatar className="w-12 h-12 ring-2 ring-blue-200">
                         <AvatarImage src={tweetData.profileImage} alt={tweetData.displayName} />
@@ -606,14 +602,12 @@ const TweetToImageConverter = () => {
                       </div>
                     </div>
 
-                    {/* Tweet Content */}
                     <div className="mb-4">
                       <p className="text-[15px] leading-normal whitespace-pre-wrap">
                         {renderTweetText(tweetData.tweetText)}
                       </p>
                     </div>
 
-                    {/* Media if exists */}
                     {tweetData.media && (
                       <div className="mb-4 rounded-lg overflow-hidden">
                         <img 
@@ -624,12 +618,10 @@ const TweetToImageConverter = () => {
                       </div>
                     )}
 
-                    {/* Timestamp */}
                     <div className={`text-[15px] mb-4 ${settings.theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                       {tweetData.timestamp}
                     </div>
 
-                    {/* Engagement */}
                     {settings.showEngagement && (
                       <>
                         <Separator className="my-4" />
@@ -655,7 +647,6 @@ const TweetToImageConverter = () => {
                       </>
                     )}
 
-                    {/* Watermark */}
                     {settings.showWatermark && (
                       <div className="absolute bottom-2 right-2 opacity-30">
                         <span className="text-xs font-mono">Generated by TweetConverter</span>
@@ -663,7 +654,6 @@ const TweetToImageConverter = () => {
                     )}
                   </div>
 
-                  {/* Enhanced Download Section */}
                   <div className="mt-6 space-y-3">
                     <Button
                       onClick={downloadTweetImage}
