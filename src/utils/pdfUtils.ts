@@ -18,22 +18,20 @@ export const compressPDF = async (file: File, quality: 'low' | 'medium' | 'high'
     const arrayBuffer = await file.arrayBuffer();
     const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
-    // Tweaked compression settings for stronger effect at "low"
+    // Adjusted compression settings for effect within pdf-lib's limits
     const compressionSettings = {
-      // Lower numbers = more compression, less quality
-      // pdf-lib does not allow image downsampling, but we set internal PDF stream compression as strong as possible
-      low:    { useObjectStreams: true, compress: true, objectCompressionLevel: 9 },  // maximum
-      medium: { useObjectStreams: true, compress: true, objectCompressionLevel: 6 },
-      high:   { useObjectStreams: false, compress: false, objectCompressionLevel: 0 }
+      // pdf-lib supports compress (stream compression) and object stream optimization
+      low:    { useObjectStreams: true, compress: true },  // "maximum" available
+      medium: { useObjectStreams: true, compress: true },
+      high:   { useObjectStreams: false, compress: false }
     };
     const settings = compressionSettings[quality];
 
-    // In pdf-lib, compress/objectCompressionLevel only affects PDF object streams, not images, so result depends on original file content
+    // Remove objectCompressionLevel property -- not supported in SaveOptions!
     const pdfBytes = await pdfDoc.save({
       useObjectStreams: settings.useObjectStreams,
       addDefaultPage: false,
-      // compress is default true, objectCompressionLevel is new in recent versions
-      objectCompressionLevel: settings.objectCompressionLevel
+      compress: settings.compress
     });
 
     if (!pdfBytes || pdfBytes.length < 100) {
