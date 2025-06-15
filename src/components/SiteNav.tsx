@@ -1,13 +1,19 @@
 
-import { ArrowLeft, Menu, X } from "lucide-react";
+import { ArrowLeft, Menu, X, Zap } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
-// Updated and more relevant menu links for tool pages
-const menuLinks = [
+const pageLinks = [
   { href: "/", label: "All Tools" },
   { href: "/help-center", label: "Help Center" },
   { href: "/contact", label: "Contact" },
+];
+
+const homePageLinks = [
+    { id: "tools", label: "Tools" },
+    { id: "features", label: "Features" },
+    { id: "about", label: "About" },
 ];
 
 export default function SiteNav() {
@@ -23,6 +29,14 @@ export default function SiteNav() {
     } else {
       navigate("/");
     }
+  };
+
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -64,16 +78,39 @@ export default function SiteNav() {
           </div>
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {menuLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group"
-              >
-                {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            ))}
+            {isHomePage ? (
+              <>
+                {homePageLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={`#${link.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(link.id);
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group"
+                  >
+                    {link.label}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                  </a>
+                ))}
+                <Button onClick={() => scrollToSection('tools')} className="shadow-lg hover:shadow-xl hover:shadow-primary/25 transition-all duration-300 bg-gradient-to-r from-primary to-primary/80">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Get Started
+                </Button>
+              </>
+            ) : (
+              pageLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-muted-foreground hover:text-primary transition-all duration-300 font-medium relative group"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              ))
+            )}
           </div>
           {/* Mobile Menu Button */}
           <button
@@ -87,16 +124,38 @@ export default function SiteNav() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-4 animate-fade-in">
-            {menuLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-muted-foreground hover:text-primary transition-colors font-medium"
-              >
-                {link.label}
-              </Link>
-            ))}
+             {isHomePage ? (
+              <>
+                {homePageLinks.map((link) => (
+                  <a
+                    key={link.id}
+                    href={`#${link.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(link.id);
+                    }}
+                    className="block text-muted-foreground hover:text-primary transition-colors font-medium"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <Button onClick={() => scrollToSection('tools')} className="w-full bg-gradient-to-r from-primary to-primary/80">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Get Started
+                </Button>
+              </>
+            ) : (
+              pageLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block text-muted-foreground hover:text-primary transition-colors font-medium"
+                >
+                  {link.label}
+                </Link>
+              ))
+            )}
           </div>
         )}
       </div>
