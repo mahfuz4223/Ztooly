@@ -1,11 +1,24 @@
-# 🛠️ Ztooly - Effortless Utility Kit
+# � Ztooly - The Ultimate Free Online Tool Collection
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.com)
+[![License: MIT](https://img.shields.io/badge/📄_License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/⚡_Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/⚛️_React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/🔷_TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PRs Welcome](https://img.shields.io/badge/🤝_PRs-Welcome-ff69b4.svg?style=for-the-badge)](http://makeapullrequest.com)
 
-A comprehensive collection of utility tools and components designed to streamline development workflows and enhance productivity. Ztooly provides a modern, intuitive interface for various developer utilities.
+**Ztooly** is a comprehensive collection of **50+ free online tools** designed to boost productivity and simplify everyday tasks. From AI-powered generators to image processing, data conversion to developer utilities - Ztooly provides everything you need in one intuitive platform.
+
+> 🎯 **Mission**: Empowering users with powerful, free tools while maintaining privacy and performance.
+
+## ⭐ Why Choose Ztooly?
+
+- 🆓 **100% Free** - No hidden costs, no premium tiers
+- 🔒 **Privacy First** - Files processed locally when possible
+- ⚡ **Lightning Fast** - Optimized for speed and performance
+- 📱 **Mobile Friendly** - Works perfectly on all devices
+- 🎨 **Modern UI** - Clean, intuitive interface
+- 🔧 **Developer Friendly** - Open source and extensible
 
 ## 🚀 Features
 
