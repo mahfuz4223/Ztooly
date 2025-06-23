@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Copy, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQRToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const BarcodeGenerator = () => {
   const [text, setText] = useState('');
@@ -18,6 +19,9 @@ const BarcodeGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
+
+  // Initialize analytics
+  const analytics = useQRToolAnalytics('barcode-generator', 'Barcode Generator');
 
   const barcodeFormats = [
     { value: 'code128', label: 'Code 128' },
@@ -31,6 +35,9 @@ const BarcodeGenerator = () => {
   ];
 
   const generateBarcode = async () => {
+    // Track generation action
+    analytics.trackGenerate();
+    
     if (!text.trim()) {
       toast({
         title: "Error",
@@ -379,10 +386,12 @@ const BarcodeGenerator = () => {
                   <li>• Event tickets and passes</li>
                   <li>• Asset tracking and identification</li>
                 </ul>
-              </div>
-            </div>
+              </div>            </div>
           </CardContent>
         </Card>
+
+        {/* Usage Statistics */}
+        <UsageStats toolId="barcode-generator" />
       </div>
     </div>
   );

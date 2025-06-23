@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Copy, RefreshCw, Download, Settings, Type, Code, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const LoremIpsumGenerator = () => {
   const [paragraphs, setParagraphs] = useState(3);
@@ -21,6 +23,9 @@ const LoremIpsumGenerator = () => {
   const [sentenceLength, setSentenceLength] = useState([15]);
   const [generatedText, setGeneratedText] = useState('');
   const [customWords, setCustomWords] = useState('');
+
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('lorem-ipsum-generator', 'Lorem Ipsum Generator');
 
   const textTypes = {
     lorem: {
@@ -129,6 +134,9 @@ const LoremIpsumGenerator = () => {
   };
 
   const generateText = () => {
+    // Track generation action
+    analytics.trackGenerate();
+    
     const result = [];
     
     for (let i = 0; i < paragraphs; i++) {
@@ -438,8 +446,10 @@ const LoremIpsumGenerator = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </div>      </div>
+
+      {/* Usage Statistics */}
+      <UsageStats toolId="lorem-ipsum-generator" />
     </div>
   );
 };

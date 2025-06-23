@@ -7,6 +7,8 @@ import { Upload, Image as ImageIcon, Loader2, Copy, AlertCircle, Info, Zap } fro
 import { useToast } from '@/hooks/use-toast';
 import { modelManager } from '@/utils/modelManager';
 import { useModelPreloader } from '@/hooks/useModelPreloader';
+import { useAIToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const AIImageCaptionGenerator = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -16,6 +18,8 @@ const AIImageCaptionGenerator = () => {
   const [error, setError] = useState<string>('');
   const { toast } = useToast();
   const { isPreloading, isPreloaded, preloadError } = useModelPreloader();
+  // Initialize analytics
+  const analytics = useAIToolAnalytics('ai-image-caption-generator', 'AI Image Caption Generator');
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -31,11 +35,12 @@ const AIImageCaptionGenerator = () => {
     if (file.size > 10 * 1024 * 1024) {
       setError('Image size should be less than 10MB.');
       return;
-    }
-
-    setError('');
+    }    setError('');
     setSelectedImage(file);
     setCaption('');
+
+    // Track image upload
+    analytics.trackUpload();
 
     // Create preview
     const reader = new FileReader();
@@ -44,9 +49,11 @@ const AIImageCaptionGenerator = () => {
     };
     reader.readAsDataURL(file);
   };
-
   const generateCaption = async () => {
     if (!selectedImage || !imagePreview) return;
+
+    // Track caption generation
+    analytics.trackGenerate();
 
     setIsGenerating(true);
     setError('');
@@ -71,10 +78,13 @@ const AIImageCaptionGenerator = () => {
       setIsGenerating(false);
     }
   };
-
   const copyToClipboard = () => {
     if (caption) {
       navigator.clipboard.writeText(caption);
+      
+      // Track copy action
+      analytics.trackCopy();
+      
       toast({
         title: "Copied!",
         description: "Caption copied to clipboard.",
@@ -131,13 +141,13 @@ const AIImageCaptionGenerator = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="relative">
-              <input
+            <div className="relative">              <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageSelect}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 id="image-upload"
+                aria-label="Upload image file for caption generation"
               />
               <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
                 <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
@@ -271,8 +281,10 @@ const AIImageCaptionGenerator = () => {
             <p className="text-sm text-muted-foreground">
               Get captions in seconds
             </p>
-          </div>
-        </div>
+          </div>        </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="ai-image-caption-generator" />
       </div>
     </div>
   );

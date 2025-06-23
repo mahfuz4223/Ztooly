@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator, Target, AlertCircle } from "lucide-react";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const BMICalculator = () => {
   const [height, setHeight] = useState('');
@@ -17,6 +18,9 @@ const BMICalculator = () => {
   const [bmi, setBmi] = useState<number | null>(null);
   const [category, setCategory] = useState<string>('');
   const [idealWeight, setIdealWeight] = useState<{min: number, max: number} | null>(null);
+
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('bmi-calculator', 'BMI Calculator');
 
   const convertHeight = (value: number, unit: string): number => {
     switch (unit) {
@@ -38,6 +42,9 @@ const BMICalculator = () => {
   };
 
   const calculateBMI = () => {
+    // Track calculation action
+    analytics.trackGenerate();
+    
     const heightInMeters = convertHeight(parseFloat(height), heightUnit);
     const weightInKg = convertWeight(parseFloat(weight), weightUnit);
     
@@ -336,9 +343,11 @@ const BMICalculator = () => {
                   or those with certain medical conditions. Consult a healthcare professional for 
                   personalized advice.
                 </div>
-              </div>
-            </div>
+              </div>            </div>
           </div>
+
+          {/* Usage Statistics */}
+          <UsageStats toolId="bmi-calculator" />
         </div>
       </div>
     </div>

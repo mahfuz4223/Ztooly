@@ -7,17 +7,25 @@ import PDFPreview from "@/components/PDFPreview";
 import { pdfToWord } from "@/utils/pdfUtils";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const PDFToWord = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "pdf-to-word",
+    toolName: "PDF to Word Converter"
+  });
+
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<Blob | null>(null);
   const { toast } = useToast();
-
   const handleFileSelect = (files: File[]) => {
     setFile(files[0] ?? null);
     setResult(null);
     if (files.length > 0) {
+      // Track file upload
+      trackAction('upload');
       toast({ title: "File ready", description: files[0].name });
     }
   };
@@ -28,10 +36,11 @@ const PDFToWord = () => {
       return;
     }
     setIsProcessing(true);
-    setResult(null);
-    try {
+    setResult(null);    try {
       const blob = await pdfToWord(file);
       setResult(blob);
+      // Track successful conversion
+      trackAction('process');
       toast({ title: "Success", description: "Converted to Word!" });
     } catch (err) {
       toast({ title: "Error converting", description: String(err), variant: "destructive" });
@@ -39,7 +48,6 @@ const PDFToWord = () => {
       setIsProcessing(false);
     }
   };
-
   const handleDownload = () => {
     if (!result) return;
     const url = URL.createObjectURL(result);
@@ -48,6 +56,9 @@ const PDFToWord = () => {
     link.download = "converted.docx";
     link.click();
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    trackAction('download');
     toast({ title: "Download started", description: "Word file saved." });
   };
 
@@ -80,8 +91,10 @@ const PDFToWord = () => {
                 </Button>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </CardContent>        </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="pdf-to-word" />
       </div>
     </div>
   );

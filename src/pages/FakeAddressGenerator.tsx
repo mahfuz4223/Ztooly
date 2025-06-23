@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, RefreshCw, Download, MapPin, Globe, Settings, FileText, Code, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 interface AddressData {
   street: string;
@@ -24,6 +26,9 @@ const FakeAddressGenerator = () => {
   const [outputFormat, setOutputFormat] = useState('json');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('fake-address-generator', 'Fake Address Generator');
 
   const countries = [
     { code: 'US', name: 'United States', flag: '🇺🇸' },
@@ -108,8 +113,10 @@ const FakeAddressGenerator = () => {
       countryCode: country.code
     };
   };
-
   const generateAddresses = () => {
+    // Track address generation
+    analytics.trackGenerate();
+    
     setIsGenerating(true);
     
     setTimeout(() => {
@@ -172,10 +179,13 @@ Country Code: ${addr.countryCode}
         return JSON.stringify(addresses, null, 2);
     }
   };
-
   const copyOutputData = () => {
     const outputData = generateOutputData(outputFormat);
     navigator.clipboard.writeText(outputData);
+    
+    // Track copy action
+    analytics.trackCopy();
+    
     toast({
       title: "📋 Copied",
       description: `${outputFormat.toUpperCase()} data copied to clipboard!`,
@@ -188,9 +198,11 @@ Country Code: ${addr.countryCode}
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `fake-addresses.${outputFormat}`;
-    link.click();
+    link.download = `fake-addresses.${outputFormat}`;    link.click();
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    analytics.trackDownload();
     
     toast({
       title: "📥 Download Complete",
@@ -459,9 +471,11 @@ Country Code: ${addr.countryCode}
                   <li>• Real-time format switching</li>
                 </ul>
               </div>
-            </div>
-          </CardContent>
+            </div>          </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="fake-address-generator" />
       </div>
     </div>
   );

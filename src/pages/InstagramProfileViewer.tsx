@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ExternalLink, Copy, Instagram, Sparkles, Info, AlertCircle, Eye, Search, Download, User, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 interface InstagramUser {
   pk: string;
@@ -30,6 +32,11 @@ interface ProfileData {
 }
 
 const InstagramProfileViewer = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "instagram-profile-viewer",
+    toolName: "Instagram Profile Viewer"
+  });
+
   const [username, setUsername] = useState('');
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -134,11 +141,12 @@ const InstagramProfileViewer = () => {
       });
       setIsLoading(false);
       return;
-    }
-
-    try {
+    }    try {
       const data = await fetchInstagramProfile(cleanUsername);
       setProfileData(data);
+      
+      // Track successful profile view
+      trackAction('view');
       
       toast({
         title: "Profile Found!",
@@ -162,11 +170,12 @@ const InstagramProfileViewer = () => {
       window.open(profileData.profileUrl, '_blank', 'noopener,noreferrer');
     }
   };
-
   const copyProfileUrl = async () => {
     if (profileData) {
       try {
         await navigator.clipboard.writeText(profileData.profileUrl);
+        // Track copy action
+        trackAction('copy');
         toast({
           title: "Copied!",
           description: "Instagram profile URL copied to clipboard"
@@ -189,10 +198,12 @@ const InstagramProfileViewer = () => {
         link.href = profileData.highResProfilePic;
         link.download = `${profileData.user.username}_profile_pic.jpg`;
         link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
+        link.rel = 'noopener noreferrer';        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        // Track download action
+        trackAction('download');
         
         toast({
           title: "Download Started!",
@@ -435,11 +446,13 @@ const InstagramProfileViewer = () => {
                     <User className="h-6 w-6 text-green-600" />
                   </div>
                   <p className="text-xs text-gray-600">Real Data</p>
-                </div>
-              </div>
+                </div>              </div>
             </CardContent>
           </Card>
         )}
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="instagram-profile-viewer" />
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { useTextToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const DEFAULT_MARKDOWN = `# Markdown to HTML Previewer
 
@@ -21,6 +23,17 @@ export default function MarkdownPreviewer() {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const [showRendered, setShowRendered] = useState(true);
   const html = marked.parse(markdown);
+  // Initialize analytics
+  const analytics = useTextToolAnalytics('markdown-previewer', 'Markdown Previewer');
+
+  const handleMarkdownChange = (value: string) => {
+    setMarkdown(value);
+    
+    // Track markdown processing when user types (debounced by react)
+    if (value.trim() !== DEFAULT_MARKDOWN.trim()) {
+      analytics.trackGenerate();
+    }
+  };
 
   return (
     <div>
@@ -49,7 +62,7 @@ export default function MarkdownPreviewer() {
                 <Textarea
                   className="flex-1 min-h-[200px] font-mono text-sm mb-2"
                   value={markdown}
-                  onChange={e => setMarkdown(e.target.value)}
+                  onChange={e => handleMarkdownChange(e.target.value)}
                   placeholder="Write Markdown here!"
                 />
               </div>
@@ -79,18 +92,23 @@ export default function MarkdownPreviewer() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="mt-2"
-                  onClick={() => {
+                  className="mt-2"                  onClick={() => {
                     navigator.clipboard.writeText(showRendered ? html : markdown);
+                    
+                    // Track copy action
+                    analytics.trackCopy();
+                    
                     toast({ title: "Copied!", description: showRendered ? "HTML code copied." : "Markdown copied." });
                   }}
                 >
                   Copy {showRendered ? "HTML" : "Markdown"}
                 </Button>
               </div>
-            </div>
-          </CardContent>
+            </div>          </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="markdown-previewer" />
       </div>
     </div>
   );

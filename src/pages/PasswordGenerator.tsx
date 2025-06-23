@@ -9,8 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, RefreshCw, Shield, AlertTriangle, CheckCircle, Eye, EyeOff, Lock, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { UsageStats } from '@/components/UsageStats';
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
 
 const PasswordGenerator = () => {
+  // Enhanced Analytics tracking
+  const analytics = useGeneratorToolAnalytics('password-generator', 'Password Generator');
+
   const [password, setPassword] = useState('');
   const [length, setLength] = useState([16]);
   const [includeUppercase, setIncludeUppercase] = useState(true);
@@ -58,10 +63,12 @@ const PasswordGenerator = () => {
     for (let i = 0; i < length[0]; i++) {
       result += charset.charAt(Math.floor(Math.random() * charset.length));
     }
-    
-    setPassword(result);
+      setPassword(result);
     setBreachStatus('unknown');
-  }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous, toast]);
+    
+    // Track password generation
+    analytics.trackGenerate();
+  }, [length, includeUppercase, includeLowercase, includeNumbers, includeSymbols, excludeSimilar, excludeAmbiguous, toast, trackAction]);
 
   const calculatePasswordStrength = (pwd: string) => {
     if (!pwd) return { score: 0, label: 'No Password', color: 'bg-gray-400' };
@@ -165,13 +172,15 @@ const PasswordGenerator = () => {
       setIsChecking(false);
     }
   };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
       title: "Copied!",
       description: "Password copied to clipboard",
     });
+    
+    // Track copy action
+    analytics.trackCopy();
   };
 
   // Auto-generate password on component mount
@@ -218,10 +227,14 @@ const PasswordGenerator = () => {
           >
             <ArrowLeft className="h-4 w-4" />
             Back
-          </Button>
-          <div>
+          </Button>          <div>
             <h1 className="text-3xl font-bold text-gray-900">Password Generator</h1>
             <p className="text-gray-600 mt-1">Generate secure passwords and analyze their strength</p>
+            
+            {/* Usage Statistics */}
+            <div className="mt-3">
+              <UsageStats toolId="password-generator" />
+            </div>
           </div>
         </div>
 

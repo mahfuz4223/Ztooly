@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, RefreshCw, Video, Download, Lightbulb, Target, Sparkles, Play } from "lucide-react";
 import { toast } from "sonner";
+import { useAIToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const VideoScriptHookGenerator = () => {
   const [topic, setTopic] = useState("");
@@ -17,6 +19,9 @@ const VideoScriptHookGenerator = () => {
   const [hooks, setHooks] = useState<string[]>([]);
   const [selectedHooks, setSelectedHooks] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Initialize analytics
+  const analytics = useAIToolAnalytics('video-script-hook-generator', 'Video Script Hook Generator');
 
   const videoTypes = [
     { value: "educational", label: "Educational/Tutorial", emoji: "📚" },
@@ -39,8 +44,10 @@ const VideoScriptHookGenerator = () => {
     { value: "urgent", label: "Urgent & Direct", icon: "⏰" },
     { value: "inspiring", label: "Inspiring & Uplifting", icon: "🌟" }
   ];
-
   const generateHooks = async () => {
+    // Track hook generation
+    analytics.trackGenerate();
+    
     if (!topic.trim()) {
       toast.error("Please provide a video topic");
       return;
@@ -157,10 +164,13 @@ Return only the hook text, one per line, without numbering or bullets.`;
         : [...prev, hook]
     );
   };
-
   const copyHook = async (hook: string) => {
     try {
       await navigator.clipboard.writeText(hook);
+      
+      // Track copy action
+      analytics.trackCopy();
+      
       toast.success("Hook copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy hook");
@@ -547,9 +557,11 @@ Generated using Google Gemini AI`;
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </Card>          </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="video-script-hook-generator" />
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download, Image, ExternalLink, Copy, Youtube, Sparkles, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const YouTubeThumbnailGrabber = () => {
   const [videoUrl, setVideoUrl] = useState('');
@@ -13,6 +14,9 @@ const YouTubeThumbnailGrabber = () => {
   const [thumbnails, setThumbnails] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('youtube-thumbnail-grabber', 'YouTube Thumbnail Grabber');
 
   const extractVideoId = (url: string) => {
     const patterns = [
@@ -30,6 +34,9 @@ const YouTubeThumbnailGrabber = () => {
   };
 
   const handleExtract = () => {
+    // Track thumbnail generation action
+    analytics.trackGenerate();
+    
     if (!videoUrl.trim()) {
       toast({
         title: "Error",
@@ -101,6 +108,9 @@ const YouTubeThumbnailGrabber = () => {
   };
 
   const downloadThumbnail = async (url: string, quality: string) => {
+    // Track download action
+    analytics.trackDownload();
+    
     try {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -128,6 +138,9 @@ const YouTubeThumbnailGrabber = () => {
   };
 
   const copyToClipboard = async (url: string) => {
+    // Track copy action
+    analytics.trackCopy();
+    
     try {
       await navigator.clipboard.writeText(url);
       toast({
@@ -169,6 +182,11 @@ const YouTubeThumbnailGrabber = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Extract high-quality thumbnails from any YouTube video instantly. Perfect for content creators, designers, and marketers.
           </p>
+          
+          {/* Usage Statistics */}
+          <div className="mt-6 flex justify-center">
+            <UsageStats toolId="youtube-thumbnail-grabber" />
+          </div>
         </div>
 
         {/* Input Section */}

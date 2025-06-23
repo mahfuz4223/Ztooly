@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, Download, Tag, Youtube, Search, Loader2, ExternalLink, Image } from 'lucide-react';
 import { YouTubeService } from '@/services/youtubeService';
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 interface VideoData {
   title: string;
@@ -29,7 +31,13 @@ const YouTubeTagExtractor = () => {
   const [error, setError] = useState('');
   const { toast } = useToast();
 
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('youtube-tag-extractor', 'YouTube Tag Extractor');
+
   const fetchVideoData = async () => {
+    // Track extraction action
+    analytics.trackGenerate();
+    
     if (!url.trim()) {
       setError('Please enter a YouTube URL');
       return;
@@ -61,8 +69,10 @@ const YouTubeTagExtractor = () => {
       setLoading(false);
     }
   };
-
   const copyTags = () => {
+    // Track copy action
+    analytics.trackCopy();
+    
     if (videoData?.tags) {
       const tagsText = videoData.tags.join(', ');
       navigator.clipboard.writeText(tagsText);
@@ -74,6 +84,9 @@ const YouTubeTagExtractor = () => {
   };
 
   const copyTitle = () => {
+    // Track copy action
+    analytics.trackCopy();
+    
     if (videoData?.title) {
       navigator.clipboard.writeText(videoData.title);
       toast({
@@ -84,6 +97,8 @@ const YouTubeTagExtractor = () => {
   };
 
   const copyDescription = () => {
+    // Track copy action
+    analytics.trackCopy();
     if (videoData?.description) {
       navigator.clipboard.writeText(videoData.description);
       toast({
@@ -149,6 +164,11 @@ ${videoData.description}`;
           <p className="text-base sm:text-lg text-gray-600 max-w-xl mx-auto">
             Extract real tags, metadata, and information from any YouTube video. Perfect for content creators, marketers, and researchers.
           </p>
+          
+          {/* Usage Statistics */}
+          <div className="mt-6 flex justify-center">
+            <UsageStats toolId="youtube-tag-extractor" />
+          </div>
         </div>
 
         <Card className="mb-8">

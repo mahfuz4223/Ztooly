@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { Minimize, Loader2, Download, Info } from "lucide-react";
@@ -8,6 +7,8 @@ import PDFPreview from "@/components/PDFPreview";
 import { compressPDF } from "@/utils/pdfUtils";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { usePDFToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const compressionLabels = {
   high: "Best quality (least compression)",
@@ -23,6 +24,9 @@ const PDFCompress = () => {
   const { toast } = useToast();
   const [originalSize, setOriginalSize] = useState<number>(0);
 
+  // Initialize analytics
+  const analytics = usePDFToolAnalytics('pdf-compress', 'PDF Compress');
+
   const handleFileSelect = (files: File[]) => {
     setFile(files[0] ?? null);
     setCompressed(null);
@@ -33,6 +37,9 @@ const PDFCompress = () => {
   };
 
   const handleCompress = async () => {
+    // Track compression action
+    analytics.trackCompress();
+    
     if (!file) {
       toast({ title: "No PDF selected", variant: "destructive" });
       return;
@@ -194,9 +201,11 @@ const PDFCompress = () => {
         </Card>
         {/* Mobile spacing */}
         <div className="h-4" />
-        <Link to="/pdf-tools" className="mt-3 text-xs text-primary underline underline-offset-4 hover:no-underline">
-          ← Back to PDF Tools
+        <Link to="/pdf-tools" className="mt-3 text-xs text-primary underline underline-offset-4 hover:no-underline">          ← Back to PDF Tools
         </Link>
+
+        {/* Usage Statistics */}
+        <UsageStats toolId="pdf-compress" />
       </div>
     </div>
   );

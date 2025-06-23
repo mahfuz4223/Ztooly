@@ -10,9 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Heart, MessageCircle, Repeat2, Share, Download, Link, Zap, AlertCircle, CheckCircle2, Copy, Eye, Palette, Settings, MoreHorizontal } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { UsageStats } from '@/components/UsageStats';
 
 const TweetToImageConverter = () => {
   const { toast } = useToast();
+  const { trackAction } = useAnalytics({
+    toolId: "tweet-to-image-converter",
+    toolName: "Tweet to Image Converter"
+  });
   
   const [tweetUrl, setTweetUrl] = useState('');
   const [isValidUrl, setIsValidUrl] = useState(false);
@@ -184,9 +190,10 @@ const TweetToImageConverter = () => {
       
       // Generate realistic data based on the actual URL
       const realisticData = generateRealisticTweetData(tweetUrl);
-      
-      if (realisticData) {
+        if (realisticData) {
         setTweetData(realisticData);
+        // Track successful tweet processing
+        trackAction('process');
         toast({
           title: "✅ Tweet Loaded Successfully!",
           description: `Loaded tweet from @${realisticData.username} with realistic data simulation.`,
@@ -232,11 +239,13 @@ const TweetToImageConverter = () => {
             }
           }
         });
-        
-        const link = document.createElement('a');
+          const link = document.createElement('a');
         link.download = `tweet-${tweetData.username}-${Date.now()}.${settings.format}`;
         link.href = canvas.toDataURL(`image/${settings.format}`, settings.format === 'jpeg' ? 0.95 : 1.0);
         link.click();
+        
+        // Track successful image download
+        trackAction('download');
         
         toast({
           title: "🎉 Screenshot Generated!",
@@ -747,10 +756,12 @@ const TweetToImageConverter = () => {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
+            </CardContent>          </Card>
         </div>
       </div>
+      
+      {/* Usage Statistics */}
+      <UsageStats toolId="tweet-to-image-converter" />
     </div>
   );
 };

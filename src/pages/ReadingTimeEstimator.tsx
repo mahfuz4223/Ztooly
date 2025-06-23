@@ -7,8 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Upload, Clock, BookOpen, Eye, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const ReadingTimeEstimator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "reading-time-estimator",
+    toolName: "Reading Time Estimator"
+  });
+
   const [text, setText] = useState("");
   const [customWPM, setCustomWPM] = useState(200);
   const [stats, setStats] = useState({
@@ -55,9 +62,7 @@ const ReadingTimeEstimator = () => {
       const hours = Math.floor(readingTimeMinutes / 60);
       const minutes = Math.round(readingTimeMinutes % 60);
       readingTime = `${hours}h ${minutes}m`;
-    }
-
-    setStats({
+    }    setStats({
       words,
       characters,
       charactersNoSpaces,
@@ -66,7 +71,11 @@ const ReadingTimeEstimator = () => {
       readingTime,
       readingTimeSeconds
     });
-  }, [text, customWPM]);
+      // Track text analysis when text is present
+    if (text.trim() && words > 0) {
+      trackAction('analyze');
+    }
+  }, [text, customWPM, trackAction]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -75,12 +84,11 @@ const ReadingTimeEstimator = () => {
     if (file.type !== 'text/plain') {
       toast.error("Please upload a text file (.txt)");
       return;
-    }
-
-    const reader = new FileReader();
+    }    const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      setText(content);
+      setText(content);      // Track file upload
+      trackAction('upload');
       toast.success("File uploaded successfully!");
     };
     reader.readAsText(file);
@@ -93,10 +101,10 @@ Characters: ${stats.characters}
 Characters (no spaces): ${stats.charactersNoSpaces}
 Sentences: ${stats.sentences}
 Paragraphs: ${stats.paragraphs}
-Reading Speed: ${customWPM} WPM`;
-
-    try {
+Reading Speed: ${customWPM} WPM`;    try {
       await navigator.clipboard.writeText(statsText);
+      // Track copy action
+      trackAction('copy');
       toast.success("Statistics copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy statistics");
@@ -123,11 +131,13 @@ ${text}`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'reading-time-report.txt';
-    document.body.appendChild(a);
+    a.download = 'reading-time-report.txt';    document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    trackAction('download');
     toast.success("Report downloaded!");
   };
 
@@ -356,10 +366,12 @@ ${text}`;
                     <span className="font-medium">300+ WPM</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CardContent>            </Card>
           </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="reading-time-estimator" />
       </div>
     </div>
   );

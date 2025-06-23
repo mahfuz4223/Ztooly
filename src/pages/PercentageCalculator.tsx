@@ -2,26 +2,37 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 export default function PercentageCalculator() {
   const [value, setValue] = useState<number | null>(null);
   const [percentage, setPercentage] = useState<number | null>(null);
   const [result, setResult] = useState<number | null>(null);
 
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('percentage-calculator', 'Percentage Calculator');
   const calculatePercentage = () => {
     if (value !== null && percentage !== null) {
+      // Track calculation
+      analytics.trackGenerate();
+      
       setResult((percentage / 100) * value);
     }
   };
-
   const calculateValue = () => {
     if (result !== null && percentage !== null) {
+      // Track calculation
+      analytics.trackGenerate();
+      
       setValue((result / percentage) * 100);
     }
   };
-
   const calculatePercentageChange = () => {
     if (value !== null && result !== null) {
+      // Track calculation
+      analytics.trackGenerate();
+      
       setPercentage(((result - value) / value) * 100);
     }
   };
@@ -95,9 +106,11 @@ export default function PercentageCalculator() {
               >
                 Calculate % Change
               </button>
-            </div>
-          </CardContent>
+            </div>          </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="percentage-calculator" />
       </div>
     </div>
   );

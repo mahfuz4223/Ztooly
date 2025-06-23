@@ -8,6 +8,8 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import AdvancedTermsOptions from "@/components/terms/AdvancedTermsOptions";
 import { Switch } from "@/components/ui/switch";
 import { FileText } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 type AdvancedTermsOptions = {
   returns: boolean;
@@ -132,6 +134,11 @@ const getFormattedTerms = (
 };
 
 export default function TermsConditionsGenerator() {
+  const { trackAction } = useAnalytics({
+    toolId: "terms-conditions-generator",
+    toolName: "Terms & Conditions Generator"
+  });
+
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [options, setOptions] = useState<AdvancedTermsOptions>({ ...DEFAULT_ADVANCED });
@@ -139,12 +146,14 @@ export default function TermsConditionsGenerator() {
   const [showPreview, setShowPreview] = useState(false);
   const [viewMode, setViewMode] = useState<"text" | "html">("text");
   const navigate = useNavigate();
-
   function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     const terms = getFormattedTerms({ company, website }, options, viewMode);
     setCustomTerms(terms);
     setShowPreview(true);
+    
+    // Track terms generation
+    trackAction('generate');
   }
 
   function handleViewSwitch(mode: "text" | "html") {
@@ -224,18 +233,21 @@ export default function TermsConditionsGenerator() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="mt-2"
-                  onClick={() => {
+                  className="mt-2"                  onClick={() => {
                     navigator.clipboard.writeText(customTerms);
+                    // Track copy action
+                    trackAction('copy');
                   }}
                 >
                   Copy to Clipboard
                 </Button>
-              )}
-            </div>
+              )}            </div>
           </form>
         </CardContent>
       </Card>
+      
+      {/* Usage Statistics */}
+      <UsageStats toolId="terms-conditions-generator" />
     </div>
   );
 }

@@ -8,8 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, RefreshCw, User, Heart, Zap, Download, Lightbulb, Target, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const SocialMediaBioGenerator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "social-media-bio-generator",
+    toolName: "Social Media Bio Generator"
+  });
+
   const [name, setName] = useState("");
   const [profession, setProfession] = useState("");
   const [interests, setInterests] = useState("");
@@ -138,10 +145,10 @@ const SocialMediaBioGenerator = () => {
           .split('\n')
           .map(line => line.trim())
           .filter(line => line.length > 0 && !line.match(/^\d+\./))
-          .slice(0, 10);
-
-        if (bioList.length > 0) {
+          .slice(0, 10);        if (bioList.length > 0) {
           setBios(bioList);
+          // Track successful bio generation
+          trackAction('generate', `Generated ${bioList.length} bios for ${currentPlatform.label}`);
           toast.success(`Generated ${bioList.length} ${currentPlatform.label} bio ideas!`);
         } else {
           throw new Error("No valid bios generated");
@@ -164,10 +171,11 @@ const SocialMediaBioGenerator = () => {
         : [...prev, bio]
     );
   };
-
   const copyBio = async (bio: string) => {
     try {
       await navigator.clipboard.writeText(bio);
+      // Track copy action
+      trackAction('copy', 'Bio copied to clipboard');
       toast.success("Bio copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy bio");
@@ -178,11 +186,11 @@ const SocialMediaBioGenerator = () => {
     if (selectedBios.length === 0) {
       toast.error("Please select some bios first");
       return;
-    }
-
-    const biosText = selectedBios.join('\n\n');
+    }    const biosText = selectedBios.join('\n\n');
     try {
       await navigator.clipboard.writeText(biosText);
+      // Track copy action for multiple bios
+      trackAction('copy', `Copied ${selectedBios.length} selected bios`);
       toast.success(`Copied ${selectedBios.length} bios!`);
     } catch (err) {
       toast.error("Failed to copy bios");
@@ -206,9 +214,7 @@ Tone: ${tones.find(t => t.value === tone)?.label}
 Bios:
 ${selectedBios.map((bio, i) => `${i + 1}. ${bio}`).join('\n\n')}
 
-Generated using Google Gemini AI`;
-
-    const blob = new Blob([content], { type: 'text/plain' });
+Generated using Google Gemini AI`;    const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -217,6 +223,9 @@ Generated using Google Gemini AI`;
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    trackAction('download', `Downloaded ${selectedBios.length} ${currentPlatform.label} bios`);
     toast.success("Bios downloaded!");
   };
 
@@ -577,10 +586,12 @@ Generated using Google Gemini AI`;
                     <strong>TikTok:</strong> Fun, trendy, youthful energy
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CardContent>            </Card>
           </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="social-media-bio-generator" />
       </div>
     </div>
   );

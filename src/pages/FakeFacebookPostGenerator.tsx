@@ -12,9 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Heart, MessageCircle, Share, ThumbsUp, Download, Globe, Users, Lock, Camera, Smile } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { UsageStats } from '@/components/UsageStats';
 
 const FakeFacebookPostGenerator = () => {
   const { toast } = useToast();
+  const analytics = useAnalytics('fake-facebook-post-generator');
   const [profileName, setProfileName] = useState('John Doe');
   const [profileImage, setProfileImage] = useState('');
   const [postContent, setPostContent] = useState('Just had an amazing day! 🌟');
@@ -69,11 +72,12 @@ const FakeFacebookPostGenerator = () => {
       default: return <Globe className="w-3 h-3" />;
     }
   };
-
   const downloadPost = async () => {
     const element = document.getElementById('facebook-post');
     if (element) {
       try {
+        analytics.trackDownload();
+        
         const canvas = await html2canvas(element, {
           backgroundColor: '#ffffff',
           scale: 3,
@@ -432,9 +436,11 @@ const FakeFacebookPostGenerator = () => {
                     </button>
                   </div>
                 </div>
-              </div>
-            </CardContent>
+              </div>            </CardContent>
           </Card>
+
+          {/* Usage Statistics */}
+          <UsageStats toolId="fake-facebook-post-generator" />
         </div>
       </div>
     </div>

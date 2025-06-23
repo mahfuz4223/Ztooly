@@ -1,14 +1,95 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://ztooly.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Allow all major search engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Social media crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+# Allow specific tool pages
+Allow: /qr-generator
+Allow: /background-remover
+Allow: /password-generator
+Allow: /pdf-tools
+Allow: /image-resizer
+Allow: /barcode-generator
+Allow: /hashtag-generator
+Allow: /case-converter
+Allow: /bmi-calculator
+Allow: /lorem-ipsum-generator
+Allow: /color-palette-generator
+Allow: /csv-to-json-converter
+Allow: /markdown-previewer
+Allow: /json-tools
+Allow: /url-scanner
+Allow: /percentage-calculator
+Allow: /loan-repayment-calculator
+Allow: /privacy-policy-generator
+Allow: /terms-conditions-generator
+Allow: /fake-address-generator
+Allow: /fake-credit-card-generator
+Allow: /fake-iban-generator
+Allow: /random-user-profile-generator
+Allow: /ai-headline-generator
+Allow: /ai-image-caption-generator
+Allow: /youtube-title-generator
+Allow: /social-media-bio-generator
+Allow: /video-script-hook-generator
+Allow: /fake-tweet-generator
+Allow: /fake-facebook-post-generator
+Allow: /tweet-to-image-converter
+Allow: /code-snippet-to-image
+Allow: /youtube-thumbnail-grabber
+Allow: /instagram-profile-viewer
+Allow: /youtube-tag-extractor
+Allow: /image-exif-remover
+Allow: /image-watermarker
+Allow: /reading-time-estimator
+
+# Allow static assets
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.ico
+Allow: /*.webp
+
+# Disallow admin areas (if any)
+# Disallow: /admin/
+# Disallow: /api/admin/
+
+# Host information
+# Host: ztooly.com

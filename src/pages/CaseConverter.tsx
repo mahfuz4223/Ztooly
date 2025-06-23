@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Copy, RefreshCw, Type, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useTextToolAnalytics } from "@/utils/analyticsHelper";
+import { UsageStats } from "@/components/UsageStats";
 
 const CaseConverter = () => {
   const [inputText, setInputText] = useState("");
@@ -21,8 +22,13 @@ const CaseConverter = () => {
     alternatingCase: "",
     inverseCase: ""
   });
+  // Initialize analytics
+  const analytics = useTextToolAnalytics('case-converter', 'Case Converter');
 
   const convertText = (text: string) => {
+    // Track conversion action
+    analytics.trackConvert();
+
     const uppercase = text.toUpperCase();
     const lowercase = text.toLowerCase();
     
@@ -101,10 +107,10 @@ const CaseConverter = () => {
       });
     }
   };
-
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      analytics.trackCopy(); // Track copy action
       toast.success(`${type} copied to clipboard!`);
     } catch (err) {
       toast.error("Failed to copy to clipboard");
@@ -287,10 +293,12 @@ const CaseConverter = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  ))}                </div>
               </CardContent>
             </Card>
+
+            {/* Usage Statistics */}
+            <UsageStats toolId="case-converter" />
           </div>
         </div>
       </div>

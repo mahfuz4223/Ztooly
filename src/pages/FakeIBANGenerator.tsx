@@ -7,12 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Copy, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { UsageStats } from '@/components/UsageStats';
 
 const FakeIBANGenerator = () => {
+  const { toast } = useToast();
+  const analytics = useAnalytics('fake-iban-generator');
   const [generatedIBAN, setGeneratedIBAN] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('DE');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
 
   // IBAN country codes and lengths
   const ibanFormats = {
@@ -111,9 +114,9 @@ const FakeIBANGenerator = () => {
     const checkDigits = 98 - remainder;
     return checkDigits.toString().padStart(2, '0');
   };
-
   const generateFakeIBAN = async () => {
     setIsGenerating(true);
+    analytics.trackGenerate();
     
     // Simulate loading for better UX
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -136,8 +139,8 @@ const FakeIBANGenerator = () => {
     setGeneratedIBAN(formattedIBAN);
     setIsGenerating(false);
   };
-
   const copyToClipboard = (text: string) => {
+    analytics.trackCopy();
     navigator.clipboard.writeText(text.replace(/\s/g, '')).then(() => {
       toast({
         title: "Copied!",
@@ -333,8 +336,10 @@ const FakeIBANGenerator = () => {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </CardContent>        </Card>
+
+        {/* Usage Statistics */}
+        <UsageStats toolId="fake-iban-generator" />
       </div>
     </div>
   );

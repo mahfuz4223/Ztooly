@@ -5,11 +5,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Copy, Download, FileText, Braces, Upload, Zap, CheckCircle } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { useTextToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const CSVToJSONConverter = () => {
-  const [csvInput, setCsvInput] = useState('');
-  const [jsonOutput, setJsonOutput] = useState('');
+  const [csvInput, setCsvInput] = useState('');  const [jsonOutput, setJsonOutput] = useState('');
   const [isConverting, setIsConverting] = useState(false);
+
+  // Initialize analytics
+  const analytics = useTextToolAnalytics('csv-to-json-converter', 'CSV to JSON Converter');
 
   const parseCSV = (csv: string) => {
     const lines = csv.trim().split('\n');
@@ -33,8 +37,10 @@ const CSVToJSONConverter = () => {
 
     return data;
   };
-
   const convertToJSON = () => {
+    // Track conversion action
+    analytics.trackGenerate();
+    
     if (!csvInput.trim()) {
       toast({
         title: "Error",
@@ -65,9 +71,11 @@ const CSVToJSONConverter = () => {
       setIsConverting(false);
     }
   };
-
   const copyToClipboard = () => {
     if (!jsonOutput) return;
+    
+    // Track copy action
+    analytics.trackCopy();
     
     navigator.clipboard.writeText(jsonOutput);
     toast({
@@ -84,10 +92,12 @@ const CSVToJSONConverter = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'converted-data.json';
-    document.body.appendChild(a);
-    a.click();
+    document.body.appendChild(a);    a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    analytics.trackDownload();
     
     toast({
       title: "Downloaded!",
@@ -108,10 +118,12 @@ const CSVToJSONConverter = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    const reader = new FileReader();    reader.onload = (e) => {
       const content = e.target?.result as string;
       setCsvInput(content);
+      
+      // Track file upload
+      analytics.trackUpload();
     };
     reader.readAsText(file);
   };
@@ -330,9 +342,11 @@ Bob Johnson,35,Chicago,bob@example.com`;
                   Copy to clipboard or download as JSON file for immediate use
                 </p>
               </div>
-            </div>
-          </CardContent>
+            </div>          </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="csv-to-json-converter" />
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Calculator, DollarSign, Percent, Calendar } from "lucide-react";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const LoanRepaymentCalculator = () => {
   const [loanAmount, setLoanAmount] = useState("");
@@ -16,7 +18,12 @@ const LoanRepaymentCalculator = () => {
     totalInterest: number;
   } | null>(null);
 
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('loan-repayment-calculator', 'Loan Repayment Calculator');
   const calculateLoan = () => {
+    // Track calculation
+    analytics.trackGenerate();
+    
     const principal = parseFloat(loanAmount);
     const rate = parseFloat(interestRate) / 100 / 12; // Monthly interest rate
     const months = parseInt(loanTerm) * 12; // Convert years to months
@@ -234,9 +241,11 @@ const LoanRepaymentCalculator = () => {
                 <li>• <strong>Choose a shorter term</strong> to pay less interest overall</li>
                 <li>• <strong>Shop around</strong> with multiple lenders to compare rates</li>
               </ul>
-            </div>
-          </CardContent>
+            </div>          </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="loan-repayment-calculator" />
       </div>
     </div>
   );

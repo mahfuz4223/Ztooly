@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/FileUpload";
 import PDFPreview from "@/components/PDFPreview";
 import { pdfToImages } from "@/utils/pdfUtils";
+import { usePDFToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const PDFToImage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -26,18 +28,23 @@ const PDFToImage = () => {
   const [error, setError] = useState<string>('');
   const { toast } = useToast();
 
-  const handleFileSelect = (files: File[]) => {
-    if (files.length > 0) {
+  // Initialize analytics
+  const analytics = usePDFToolAnalytics('pdf-to-image', 'PDF to Image');
+
+  const handleFileSelect = (files: File[]) => {    if (files.length > 0) {
       setUploadedFile(files[0]);
       setConvertedImages([]);
       setError('');
+      
+      // Track file upload
+      analytics.trackUpload();
+      
       toast({
         title: "PDF uploaded successfully",
         description: "Ready to convert to images",
       });
     }
   };
-
   const handleConvert = async () => {
     if (!uploadedFile) {
       toast({
@@ -48,14 +55,20 @@ const PDFToImage = () => {
       return;
     }
 
+    // Track conversion process
+    analytics.trackProcess();
+
     setIsProcessing(true);
     setConvertedImages([]);
     setError('');
     
     try {
-      console.log(`Converting PDF to ${imageFormat} at ${imageDPI} DPI`);
-      const images = await pdfToImages(uploadedFile, imageFormat, imageDPI);
+      console.log(`Converting PDF to ${imageFormat} at ${imageDPI} DPI`);      const images = await pdfToImages(uploadedFile, imageFormat, imageDPI);
       setConvertedImages(images);
+      
+      // Track successful generation
+      analytics.trackGenerate();
+      
       toast({
         title: "Conversion complete!",
         description: `Successfully converted ${images.length} pages to images`,
@@ -73,9 +86,11 @@ const PDFToImage = () => {
       setIsProcessing(false);
     }
   };
-
   const handleDownloadAll = () => {
     if (convertedImages.length === 0) return;
+
+    // Track download action
+    analytics.trackDownload();
 
     convertedImages.forEach((imageUrl, index) => {
       const link = document.createElement('a');
@@ -331,9 +346,11 @@ const PDFToImage = () => {
                   <span className="text-xs sm:text-sm text-gray-700">Client-side, secure, fast</span>
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </Card>          </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="pdf-to-image" />
       </div>
     </div>
   );

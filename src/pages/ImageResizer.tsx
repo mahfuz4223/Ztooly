@@ -37,7 +37,8 @@ import {
   Layers
 } from "lucide-react";
 import { Link } from "react-router-dom";
-// REMOVED: import SiteNav from "@/components/SiteNav";
+import { useImageToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 interface ImageFile extends File {
   id: string;
@@ -73,6 +74,9 @@ const ImageResizer = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Initialize analytics
+  const analytics = useImageToolAnalytics('image-resizer', 'Image Resizer');
 
   const presets = [
     { id: 'instagram-square', name: 'Instagram Square', width: 1080, height: 1080, icon: Instagram, category: 'Social' },
@@ -252,6 +256,9 @@ const ImageResizer = () => {
   };
 
   const processImages = async () => {
+    // Track processing action
+    analytics.trackProcess();
+    
     setIsProcessing(true);
     setProcessingProgress(0);
     
@@ -784,10 +791,12 @@ const ImageResizer = () => {
                     />
                   </CardContent>
                 </Card>
-              </div>
-            </div>
+              </div>            </div>
           </div>
         )}
+
+        {/* Usage Statistics */}
+        <UsageStats toolId="image-resizer" />
       </div>
     </div>
   );

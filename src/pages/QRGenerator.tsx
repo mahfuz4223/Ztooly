@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +7,13 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QrCode, Download, Upload, Palette, Frame, Settings, Facebook, Github, X, Linkedin, Instagram, Youtube, Globe, Mail, Phone, Wifi } from "lucide-react";
 import QRCodeStyling from "qr-code-styling";
+import { UsageStats } from "@/components/UsageStats";
+import { useQRToolAnalytics } from "@/utils/analyticsHelper";
 
 const QRGenerator = () => {
+  // Enhanced Analytics tracking
+  const analytics = useQRToolAnalytics('qr-generator', 'QR Code Generator');
+
   const [inputText, setInputText] = useState("https://example.com");
   const [qrColor, setQrColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
@@ -58,43 +62,43 @@ const QRGenerator = () => {
       name: "LinkedIn",
       color: "#0A66C2", 
       icon: Linkedin,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzBBNjZDMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDhhNiA2IDAgMCAxIDYgNnY3aC00di03YTIgMiAwIDAgMC0yLTIgMiAyIDAgMCAwLTIgMnY3aC00di03YTYgNiAwIDAgMSA2LTZ6Ii8+CjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEyIiB4PSIyIiB5PSI5Ii8+CjxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSIyIi8+Cjwvc3ZnPg=="
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzBBNjZDMiIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE2IDhhNiA2IDAgMCAxIDYgNnY3aC00di03YTIgMiAwIDAgMC0yLTIgMiAyIDAgMCAwLTIgMnY3aC00di03YTYgNiAwIDAgMSA2LTZ6Ii8+CjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEyIiB4PSIyIiB5PSI5Ii8+CjxjaXJjbGUgY3g9IjQiIGN5PSI0IiByPSIyIi8+Cjwvc3ZnPg=="
     },
     instagram: {
       name: "Instagram",
       color: "#E4405F",
       icon: Instagram,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0U0NDA1RiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB4PSIyIiB5PSIyIiByeD0iNSIgcnk9IjUiLz4KPHBhdGggZD0ibTE2IDExLjM3QTQgNCAwIDEgMSAxMi42MyA4IDQgNCAwIDAgMSAxNiAxMS4zN3oiLz4KPGxpbmUgeDE9IjE3LjUiIHgyPSIxNy41MSIgeTE9IjYuNSIgeTI9IjYuNSIvPgo8L3N2Zz4="
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0U0NDA1RiIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB4PSIyIiB5PSIyIiByeD0iNSIgcnk9IjUiLz4KPHBhdGggZD0ibTE2IDExLjM3QTQgNCAwIDEgMSAxMi42MyA4IDQgNCAwIDAgMSAxNiAxMS4zN3oiLz4KPGxpbmUgeDE9IjE3LjUiIHgyPSIxNy41MSIgeTE9IjYuNSIgeTI9IjYuNSIvPgo8L3N2Zz4="
     },
     youtube: {
       name: "YouTube",
       color: "#FF0000",
       icon: Youtube,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGMDAwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuNSAxN2EyNC4xMiAyNC4xMiAwIDAgMSAwLTEwIDIgMiAwIDAgMSAxLjQtMS40IDQ5LjU2IDQ5LjU2IDAgMCAxIDE2LjIgMEEyIDIgMCAwIDEgMjEuNSA3YTI0LjEyIDI0LjEyIDAgMCAxIDAgMTAgMiAyIDAgMCAxLTEuNCAxLjQgNDkuNTUgNDkuNTUgMCAwIDEtMTYuMiAwQTIgMiAwIDAgMSAyLjUgMTciLz4KPHBvbHlnb24gcG9pbnRzPSIxMCw4IDE2LDEyIDEwLDE2Ii8+Cjwvc3ZnPg=="
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGMDAwMCIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuNSAxN2EyNC4xMiAyNC4xMiAwIDAgMSAwLTEwIDIgMiAwIDAgMSAxLjQtMS40IDQ5LjU2IDQ5LjU2IDAgMCAxIDE2LjIgMEEyIDIgMCAwIDEgMjEuNSA3YTI0LjEyIDI0LjEyIDAgMCAxIDAgMTAgMiAyIDAgMCAxLTEuNCAxLjQgNDkuNTUgNDkuNTUgMCAwIDEtMTYuMiAwQTIgMiAwIDAgMSAyLjUgMTciLz4KPHBvbHlnb24gcG9pbnRzPSIxMCw4IDE2LDEyIDEwLDE2Ii8+Cjwvc3ZnPg=="
     },
     website: {
       name: "Website",
       color: "#6366F1",
       icon: Globe,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzYzNjZGMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz4KPHBhdGggZD0ibTIgMTIgMjAgMCIvPgo8cGF0aCBkPSJNMTIgMmExNS4zIDE1LjMgMCAwIDEgNCAxMCAxNS4zIDE1LjMgMCAwIDEtNCAxMCAxNS4zIDE1LjMgMCAwIDEtNC0xMCAxNS4zIDE1LjMgMCAwIDEgNC0xMHoiLz4KPC9zdmc+"
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzYzNjZGMSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz4KPHBhdGggZD0ibTIgMTIgMjAgMCIvPgo8cGF0aCBkPSJNMTIgMmExNS4zIDE1LjMgMCAwIDEgNCAxMCAxNS4zIDE1LjMgMCAwIDEtNCAxMCAxNS4zIDE1LjMgMCAwIDEtNC0xMCAxNS4zIDE1LjMgMCAwIDEgNC0xMHoiLz4KPC9zdmc+"
     },
     email: {
       name: "Email",
       color: "#059669",
       icon: Mail,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA1OTY2OSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNGgxNmMxLjEgMCAyIC45IDIgMnYxMmMwIDEuMS0uOSAyLTIgMkg0Yy0xLjEgMC0yLS45LTItMnoiLz4KPHBvbHlsaW5lIHBvaW50cz0iMjIsNiAxMiwxMyAyLDYiLz4KPC9zdmc+"
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA1OTY2OSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgNGgxNmMxLjEgMCAyIC45IDIgMnYxMmMwIDEuMS0uOSAyLTIgMkg0Yy0xLjEgMC0yLS45LTItMnoiLz4KPHBvbHlsaW5lIHBvaW50cz0iMjIsNiAxMiwxMyAyLDYiLz4KPC9zdmc+"
     },
     phone: {
       name: "Phone",
       color: "#7C3AED",
       icon: Phone,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzdDM0FFRCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyIDE2LjkydjNhMiAyIDAgMCAxLTIuMTggMiAxOS43OSAxOS43OSAwIDAgMS04LjYzLTMuMDcgMTkuNSAxOS41IDAgMCAxLTYtNiAxOS43OSAxOS43OSAwIDAgMS0zLjA3LTguNjdBMiAyIDAgMCAxIDQuMTEgMmgzYTIgMiAwIDAgMSAyIDEuNzIgMTIuODQgMTIuODQgMCAwIDAgLjcgMi44MSAyIDIgMCAwIDEtLjQ1IDIuMTFMOC4wOSA5LjkxYTE2IDE2IDAgMCAwIDYgNmwxLjI3LTEuMjdhMiAyIDAgMCAxIDIuMTEtLjQ1IDEyLjg0IDEyLjg0IDAgMCAwIDIuODEuN0EyIDIgMCAwIDEgMjIgMTYuOTJ6Ii8+Cjwvc3ZnPg=="
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzdDM0FFRCIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIyIDE2LjkydjNhMiAyIDAgMCAxLTIuMTggMiAxOS43OSAxOS43OSAwIDAgMS04LjYzLTMuMDcgMTkuNSAxOS41IDAgMCAxLTYtNiAxOS43OSAxOS43OSAwIDAgMS0zLjA3LTguNjdBMiAyIDAgMCAxIDQuMTEgMmgzYTIgMiAwIDAgMSAyIDEuNzIgMTIuODQgMTIuODQgMCAwIDAgLjcgMi44MSAyIDIgMCAwIDEtLjQ1IDIuMTFMOC4wOSA5LjkxYTE2IDE2IDAgMCAwIDYgNmwxLjI3LTEuMjdhMiAyIDAgMCAxIDIuMTEtLjQ1IDEyLjg0IDEyLjg0IDAgMCAwIDIuODEuN0EyIDIgMCAwIDEgMjIgMTYuOTJ6Ii8+Cjwvc3ZnPg=="
     },
     wifi: {
       name: "Wi-Fi",
       color: "#0891B2",
       icon: Wifi,
-      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA4OTFCMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTEgOSAyMiAwIi8+CjxwYXRoIGQ9Ik05IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik0yMCA5YzAgMS4xNy0uNSAyLjItMS4zIDIuOWwtLjctLjdjLjQtLjQuNy0xIC43LTEuNiIvPgo8cGF0aCBkPSJNMTYgOWMwIDEuMTctLjUgMi4yLTEuMyAyLjlsLS43LS43Yy40LS40LjctMSAuNy0xLjYiLz4KPHBhdGggZD0iTTEyIDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik04IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik00IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+Cjwvc3ZnPg=="
+      url: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzA4OTFCMiIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTEgOSAyMiAwIi8+CjxwYXRoIGQ9Ik05IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik0yMCA9YzAgMS4xNy0uNSAyLjItMS4zIDIuOWwtLjctLjdjLjQtLjQuNy0xIC43LTEuNiIvPgo8cGF0aCBkPSJNMTYgOWMwIDEuMTctLjUgMi4yLTEuMyAyLjlsLS43LS43Yy40LS40LjctMSAuNy0xLjYiLz4KPHBhdGggZD0iTTEyIDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik04IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+CjxwYXRoIGQ9Ik00IDljMCAxLjE3LS41IDIuMi0xLjMgMi45bC0uNy0uN2MuNC0uNC43LTEgLjctMS42Ii8+Cjwvc3ZnPg=="
     }
   };
 
@@ -208,13 +212,14 @@ const QRGenerator = () => {
       reader.readAsDataURL(file);
     }
   };
-
   const downloadQR = () => {
     if (qrCodeRef.current) {
       qrCodeRef.current.download({
         name: "qr-code",
         extension: "png"
       });
+      // Track download action
+      analytics.trackDownload();
     }
   };
 
@@ -249,11 +254,15 @@ const QRGenerator = () => {
           <div className="text-center mb-8 sm:mb-12 px-1">
             <h1 className="text-2xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               Advanced QR Code Generator with Professional Styling
-            </h1>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+            </h1>            <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
               Create stunning QR codes with advanced customization options including gradients, 
               custom shapes, professional logos, and unlimited styling possibilities.
             </p>
+            
+            {/* Usage Statistics */}
+            <div className="mt-4 flex justify-center">
+              <UsageStats toolId="qr-generator" />
+            </div>
           </div>
 
           {/* Quick Templates */}

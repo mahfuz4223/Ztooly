@@ -11,7 +11,7 @@ const SiteFooter = () => (
             <div className="w-8 h-8 bg-gradient-to-br from-primary via-primary to-primary/60 rounded-lg flex items-center justify-center shadow-lg">
               <Sparkles className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold">ToolKit</span>
+            <span className="text-xl font-bold">Ztooly</span>
           </div>
           <p className="text-muted-foreground leading-relaxed text-sm">
             Professional tools for everyone. Free, secure, and always available.
@@ -48,7 +48,7 @@ const SiteFooter = () => (
 
       <div className="border-t mt-8 pt-6 text-center">
         <p className="text-muted-foreground text-sm">
-          © 2024 ToolKit. Free to use, forever. Built with ❤️ for the internet.
+          © 2024 Ztooly. Free to use, forever. Built with ❤️ for the internet.
         </p>
       </div>
     </div>

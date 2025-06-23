@@ -3,14 +3,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
+import { useGeneratorToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 export default function URLScanner() {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
+  // Initialize analytics
+  const analytics = useGeneratorToolAnalytics('url-scanner', 'URL Scanner');
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    
+    // Track URL scanning action
+    analytics.trackGenerate();
+    
     setLoading(true);
     setResult(null); // Clear previous result
 
@@ -92,8 +100,10 @@ export default function URLScanner() {
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </CardContent>          </Card>
+          
+          {/* Usage Statistics */}
+          <UsageStats toolId="url-scanner" />
         </div>
       </div>
     </div>

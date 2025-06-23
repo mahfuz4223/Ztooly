@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Upload, Download, RotateCcw, Type, Image as ImageIcon, Grid, Palette, Settings, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { useImageToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const ImageWatermarker = () => {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
@@ -35,9 +37,11 @@ const ImageWatermarker = () => {
   const [tileSpacingX, setTileSpacingX] = useState([150]);
   const [tileSpacingY, setTileSpacingY] = useState([120]);
   const [tileRotation, setTileRotation] = useState([-35]);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Initialize analytics
+  const analytics = useImageToolAnalytics('image-watermarker', 'Image Watermarker');
 
   // Cleanup effect to prevent memory leaks
   useEffect(() => {
@@ -76,9 +80,12 @@ const ImageWatermarker = () => {
           toast.error('Failed to read the image file');
           return;
         }
-        
-        setOriginalImage(result);
+          setOriginalImage(result);
         setWatermarkedImage(null);
+        
+        // Track image upload
+        analytics.trackUpload();
+        
         toast.success('Image uploaded successfully!');
       } catch (error) {
         console.error('Error reading file:', error);
@@ -96,7 +103,7 @@ const ImageWatermarker = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, []);
+  }, [analytics]);
 
   const getPositionCoordinates = (imgWidth: number, imgHeight: number, textWidth: number, textHeight: number) => {
     const offsetXNum = Math.max(0, Math.min(offsetX[0], imgWidth - textWidth));
@@ -218,6 +225,9 @@ const ImageWatermarker = () => {
     }
 
     setIsProcessing(true);
+    
+    // Track watermark processing start
+    analytics.trackProcess();
 
     const img = new Image();
     
@@ -272,8 +282,11 @@ const ImageWatermarker = () => {
           if (!watermarkedDataURL || watermarkedDataURL === 'data:,') {
             throw new Error('Failed to generate watermarked image');
           }
+            setWatermarkedImage(watermarkedDataURL);
           
-          setWatermarkedImage(watermarkedDataURL);
+          // Track successful watermark generation
+          analytics.trackGenerate();
+          
           toast.success('Watermark applied successfully!');
         } catch (canvasError) {
           console.error('Canvas toDataURL error:', canvasError);
@@ -305,16 +318,19 @@ const ImageWatermarker = () => {
     try {
       const link = document.createElement('a');
       link.href = watermarkedImage;
-      link.download = `watermarked-${Date.now()}.png`;
-      document.body.appendChild(link);
+      link.download = `watermarked-${Date.now()}.png`;      document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Track download action
+      analytics.trackDownload();
+      
       toast.success('Image downloaded successfully!');
     } catch (error) {
       console.error('Download error:', error);
       toast.error('Failed to download image');
     }
-  }, [watermarkedImage]);
+  }, [watermarkedImage, analytics]);
 
   const resetSettings = () => {
     try {
@@ -806,10 +822,11 @@ const ImageWatermarker = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Hidden canvas for image processing */}
+        </div>        {/* Hidden canvas for image processing */}
         <canvas ref={canvasRef} className="hidden" />
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="image-watermarker" />
       </div>
     </div>
   );

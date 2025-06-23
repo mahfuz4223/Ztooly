@@ -1,5 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
+import AnalyticsService from "@/services/analyticsService";
+import { isValidTool } from "@/utils/toolRegistry";
+import IPDiagnostics from "@/components/IPDiagnostics";
 import { 
   QrCode, 
   Scissors, 
@@ -55,9 +60,15 @@ import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function Index() {
+  // Analytics tracking for homepage
+  const { trackAction } = useAnalytics({
+    toolId: 'homepage',
+    toolName: 'Homepage',
+    trackOnMount: true
+  });
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+  const [popularToolsData, setPopularToolsData] = useState<{tool_id: string, usage_count: number}[]>([]);
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -66,8 +77,24 @@ export default function Index() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    const fetchPopularTools = async () => {
+      try {
+        const analyticsService = AnalyticsService.getInstance();
+        const popularTools = await analyticsService.getPopularTools(50);
+        // Filter to only include tools that exist in our project
+        const validPopularTools = popularTools.filter(tool => isValidTool(tool.tool_id));
+        setPopularToolsData(validPopularTools);
+      } catch (error) {
+        console.error('Failed to fetch popular tools:', error);
+      }
+    };
+
+    fetchPopularTools();
+  }, []);
   const categories = [
     { id: "all", name: "All Tools", icon: Sparkles },
+    { id: "popular", name: "Popular Tools", icon: TrendingUp },
     { id: "qr-codes", name: "QR & Barcodes", icon: QrCode },
     { id: "image", name: "Image Tools", icon: ImageIcon },
     { id: "document", name: "Documents", icon: FileText },
@@ -510,9 +537,16 @@ export default function Index() {
       gradient: "from-teal-600 to-green-600"
     }
   ];
-
   const filteredTools = selectedCategory === "all" 
     ? tools 
+    : selectedCategory === "popular"
+    ? tools
+        .filter(tool => popularToolsData.some(popular => tool.id === popular.tool_id))
+        .sort((a, b) => {
+          const aIndex = popularToolsData.findIndex(popular => popular.tool_id === a.id);
+          const bIndex = popularToolsData.findIndex(popular => popular.tool_id === b.id);
+          return aIndex - bIndex;
+        })
     : tools.filter(tool => tool.category === selectedCategory);
 
   const stats = [
@@ -746,8 +780,7 @@ export default function Index() {
 
       {/* Enhanced Tools Section */}
       <section id="tools" className="py-20 relative z-10">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+        <div className="container mx-auto px-4">          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Tools for Every Need</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Professional-grade utilities that work instantly in your browser
@@ -852,22 +885,27 @@ export default function Index() {
                 We're working on adding tools to this category. Check back soon!
               </p>
             </div>
-          )}
+          )}        </div>
+      </section>      {/* Enhanced About Section */}
+      <section id="about" className="py-20 bg-muted/20 relative z-10">
+        <div className="container mx-auto px-4 max-w-4xl text-center">          <h2 className="text-3xl md:text-4xl font-bold mb-6">About Ztooly</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+            Ztooly is your all-in-one platform for professional-grade digital utilities. We focus on speed, privacy, and ease of use, providing a wide range of tools that run entirely in your browser.
+          </p>          <p className="text-lg text-muted-foreground leading-relaxed">
+            Whether you need to generate QR codes, remove image backgrounds, create strong passwords, or leverage AI-powered content generators, Ztooly has you covered. No sign-ups, no data collection, just powerful tools at your fingertips.
+          </p>
         </div>
       </section>
 
-      {/* Enhanced About Section */}
-      <section id="about" className="py-20 bg-muted/20 relative z-10">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">About ToolKit</h2>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-            ToolKit is your all-in-one platform for professional-grade digital utilities. We focus on speed, privacy, and ease of use, providing a wide range of tools that run entirely in your browser.
-          </p>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Whether you need to generate QR codes, remove image backgrounds, create strong passwords, or leverage AI-powered content generators, ToolKit has you covered. No sign-ups, no data collection, just powerful tools at your fingertips.
-          </p>
-        </div>
-      </section>
+      {/* Analytics Debug Section (visible only with ?debug=true) */}
+      {new URLSearchParams(window.location.search).get('debug') === 'true' && (
+        <section className="py-12 bg-muted/10">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <h2 className="text-2xl font-bold mb-6 text-center">Analytics Diagnostics</h2>
+            <IPDiagnostics />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

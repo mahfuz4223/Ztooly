@@ -8,6 +8,8 @@ import PDFPreview from "@/components/PDFPreview";
 import { mergePDFs } from "@/utils/pdfUtils";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { usePDFToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const PDFMerge = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -15,24 +17,36 @@ const PDFMerge = () => {
   const [merged, setMerged] = useState<Blob | null>(null);
   const { toast } = useToast();
 
+  // Initialize analytics
+  const analytics = usePDFToolAnalytics('pdf-merge', 'PDF Merge');
   const handleFileSelect = (selected: File[]) => {
     setFiles(selected);
     setMerged(null);
     if (selected.length > 0) {
+      // Track file upload
+      analytics.trackUpload();
+      
       toast({ title: "Files ready", description: `${selected.length} files selected.` });
     }
   };
-
   const handleMerge = async () => {
     if (files.length < 2) {
       toast({ title: "Need at least two PDFs", variant: "destructive" });
       return;
     }
+    
+    // Track merge process
+    analytics.trackProcess();
+    
     setIsProcessing(true);
     setMerged(null);
     try {
       const blob = await mergePDFs(files);
       setMerged(blob);
+      
+      // Track successful generation
+      analytics.trackGenerate();
+      
       toast({ title: "Success", description: "PDFs merged!" });
     } catch (err) {
       toast({ title: "Error merging", description: String(err), variant: "destructive" });
@@ -40,9 +54,12 @@ const PDFMerge = () => {
       setIsProcessing(false);
     }
   };
-
   const handleDownload = () => {
     if (!merged) return;
+    
+    // Track download action
+    analytics.trackDownload();
+    
     const url = URL.createObjectURL(merged);
     const link = document.createElement('a');
     link.href = url;
@@ -124,8 +141,10 @@ const PDFMerge = () => {
         <div className="h-5" />
         {/* Optional - link to PDF tools for easier navigation */}
         <Link to="/pdf-tools" className="mt-2 text-xs text-primary underline underline-offset-4 hover:no-underline">
-          ← Back to PDF Tools
-        </Link>
+          ← Back to PDF Tools        </Link>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="pdf-merge" />
       </div>
     </div>
   );

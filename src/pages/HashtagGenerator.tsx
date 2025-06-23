@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,12 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Copy, RefreshCw, Hash, Sparkles, Download, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { useAIToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const HashtagGenerator = () => {
   const [inputText, setInputText] = useState("");
   const [customHashtag, setCustomHashtag] = useState("");
   const [generatedHashtags, setGeneratedHashtags] = useState<string[]>([]);
   const [selectedHashtags, setSelectedHashtags] = useState<string[]>([]);
+
+  // Initialize analytics
+  const analytics = useAIToolAnalytics('hashtag-generator', 'Hashtag Generator');
 
   const hashtagCategories = {
     trending: ["viral", "trending", "fyp", "explore", "popular", "hot", "new", "amazing"],
@@ -24,6 +28,9 @@ const HashtagGenerator = () => {
   };
 
   const generateHashtags = useCallback(() => {
+    // Track generation action
+    analytics.trackGenerate();
+    
     if (!inputText.trim()) {
       toast.error("Please enter some text to generate hashtags");
       return;
@@ -314,8 +321,10 @@ const HashtagGenerator = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </div>        </div>
+
+        {/* Usage Statistics */}
+        <UsageStats toolId="hashtag-generator" />
       </div>
     </div>
   );

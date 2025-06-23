@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Copy, RefreshCw, Download, CreditCard, AlertTriangle, FileText, FileSpreadsheet, Code, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { UsageStats } from '@/components/UsageStats';
 
 interface CreditCardData {
   number: string;
@@ -17,6 +19,11 @@ interface CreditCardData {
 }
 
 const FakeCreditCardGenerator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "fake-credit-card-generator",
+    toolName: "Fake Credit Card Generator"
+  });
+
   const [cards, setCards] = useState<CreditCardData[]>([]);
   const [cardBrand, setCardBrand] = useState('visa');
   const [quantity, setQuantity] = useState(1);

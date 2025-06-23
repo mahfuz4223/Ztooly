@@ -7,8 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, RefreshCw, Youtube, TrendingUp, Target, Heart, Zap, Download, Lightbulb, Users, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const YouTubeTitleGenerator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "youtube-title-generator",
+    toolName: "YouTube Title Generator"
+  });
+
   const [topic, setTopic] = useState("");
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("general");
@@ -136,10 +143,10 @@ const YouTubeTitleGenerator = () => {
           .split('\n')
           .map(line => line.trim())
           .filter(line => line.length > 0 && !line.match(/^\d+\./))
-          .slice(0, 12);
-
-        if (titleList.length > 0) {
+          .slice(0, 12);        if (titleList.length > 0) {
           setTitles(titleList);
+          // Track successful title generation
+          trackAction('generate');
           toast.success(`Generated ${titleList.length} YouTube title ideas!`);
         } else {
           throw new Error("No valid titles generated");
@@ -162,10 +169,11 @@ const YouTubeTitleGenerator = () => {
         : [...prev, title]
     );
   };
-
   const copyTitle = async (title: string) => {
     try {
       await navigator.clipboard.writeText(title);
+      // Track copy action
+      trackAction('copy');
       toast.success("Title copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy title");
@@ -176,11 +184,11 @@ const YouTubeTitleGenerator = () => {
     if (selectedTitles.length === 0) {
       toast.error("Please select some titles first");
       return;
-    }
-
-    const titlesText = selectedTitles.join('\n');
+    }    const titlesText = selectedTitles.join('\n');
     try {
       await navigator.clipboard.writeText(titlesText);
+      // Track copy action for multiple titles
+      trackAction('copy');
       toast.success(`Copied ${selectedTitles.length} titles!`);
     } catch (err) {
       toast.error("Failed to copy titles");
@@ -209,11 +217,13 @@ Generated using Google Gemini AI`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `youtube-titles-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`;
-    document.body.appendChild(a);
+    a.download = `youtube-titles-${topic.replace(/\s+/g, '-').toLowerCase()}.txt`;    document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    trackAction('download');
     toast.success("Titles downloaded!");
   };
 
@@ -586,8 +596,10 @@ Generated using Google Gemini AI`;
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </div>        </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="youtube-title-generator" />
       </div>
     </div>
   );

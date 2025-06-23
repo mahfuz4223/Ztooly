@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Download, Copy, Code, Zap } from "lucide-react";
 import { toast } from "sonner";
 import html2canvas from 'html2canvas';
+import { useImageToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const CodeSnippetToImage = () => {
   const [code, setCode] = useState(`function greetUser(name) {
@@ -18,9 +20,11 @@ const CodeSnippetToImage = () => {
 const user = "Developer";
 greetUser(user);`);
   const [language, setLanguage] = useState('javascript');
-  const [theme, setTheme] = useState('dark');
-  const [title, setTitle] = useState('My Code Snippet');
+  const [theme, setTheme] = useState('dark');  const [title, setTitle] = useState('My Code Snippet');
   const codeRef = useRef<HTMLDivElement>(null);
+
+  // Initialize analytics
+  const analytics = useImageToolAnalytics('code-snippet-to-image', 'Code Snippet to Image');
 
   const languages = [
     { value: 'javascript', label: 'JavaScript' },
@@ -178,9 +182,11 @@ greetUser(user);`);
     };
     return icons[lang] || '📄';
   };
-
   const downloadImage = async () => {
     if (!codeRef.current) return;
+
+    // Track image generation and download
+    analytics.trackGenerate();
 
     try {
       const canvas = await html2canvas(codeRef.current, {
@@ -191,6 +197,9 @@ greetUser(user);`);
         height: codeRef.current.scrollHeight,
         width: codeRef.current.scrollWidth
       });
+
+      // Track download action
+      analytics.trackDownload();
 
       const link = document.createElement('a');
       link.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_code_snippet.png`;
@@ -203,9 +212,11 @@ greetUser(user);`);
       toast.error("Failed to generate image. Please try again.");
     }
   };
-
   const copyToClipboard = async () => {
     if (!codeRef.current) return;
+
+    // Track copy action
+    analytics.trackCopy();
 
     try {
       const canvas = await html2canvas(codeRef.current, {
@@ -401,9 +412,11 @@ greetUser(user);`);
                   </span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </CardContent>          </Card>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="code-snippet-to-image" />
       </div>
     </div>
   );

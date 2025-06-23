@@ -9,8 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Twitter, Download, Copy, Heart, MessageCircle, Repeat2, Share, MoreHorizontal, Bookmark, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const FakeTweetGenerator = () => {
+  const analytics = useAnalytics('fake-tweet-generator');
   const [tweetData, setTweetData] = useState({
     username: "johndoe",
     displayName: "John Doe",
@@ -126,9 +129,9 @@ const FakeTweetGenerator = () => {
       <circle cx="12" cy="12" r="3"/>
     </svg>
   );
-
   const downloadTweet = async () => {
     setIsGenerating(true);
+    analytics.trackDownload();
     const tweetElement = document.getElementById('fake-tweet');
     
     if (tweetElement) {
@@ -187,9 +190,9 @@ const FakeTweetGenerator = () => {
       }
     }
   };
-
   const copyTweetText = async () => {
     try {
+      analytics.trackCopy();
       await navigator.clipboard.writeText(tweetData.tweetText);
       toast.success("Tweet text copied to clipboard!");
     } catch (err) {
@@ -628,8 +631,10 @@ const FakeTweetGenerator = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </div>
+        </div>      </div>
+
+      {/* Usage Statistics */}
+      <UsageStats toolId="fake-tweet-generator" />
     </div>
   );
 };

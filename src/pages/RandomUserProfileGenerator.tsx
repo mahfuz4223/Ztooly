@@ -10,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Copy, RefreshCw, Download, User, Settings, FileText, Code, FileSpreadsheet, Users, Globe, TriangleAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { UsageStats } from '@/components/UsageStats';
 
 interface UserProfile {
   firstName: string;
@@ -44,6 +46,11 @@ interface UserProfile {
 }
 
 const RandomUserProfileGenerator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "random-user-profile-generator", 
+    toolName: "Random User Profile Generator"
+  });
+
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [outputFormat, setOutputFormat] = useState('json');
@@ -177,9 +184,11 @@ const RandomUserProfileGenerator = () => {
       for (let i = 0; i < quantity; i++) {
         newProfiles.push(generateProfile());
       }
-      
-      setProfiles(newProfiles);
+        setProfiles(newProfiles);
       setIsGenerating(false);
+      
+      // Track profile generation
+      trackAction('generate');
       
       toast({
         title: "✅ Generation Complete",
@@ -278,10 +287,13 @@ Avatar: ${profile.avatar}
         return JSON.stringify(profiles, null, 2);
     }
   };
-
   const copyOutputData = () => {
     const outputData = generateOutputData(outputFormat);
     navigator.clipboard.writeText(outputData);
+    
+    // Track copy action
+    trackAction('copy');
+    
     toast({
       title: "📋 Copied",
       description: `${outputFormat.toUpperCase()} data copied to clipboard!`,
@@ -293,10 +305,12 @@ Avatar: ${profile.avatar}
     const blob = new Blob([data], { type: getContentType(outputFormat) });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `user-profiles.${outputFormat}`;
+    link.href = url;    link.download = `user-profiles.${outputFormat}`;
     link.click();
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    trackAction('download');
     
     toast({
       title: "📥 Download Complete",
@@ -692,11 +706,13 @@ Avatar: ${profile.avatar}
                   <li>• Software development</li>
                   <li>• Educational demonstrations</li>
                   <li>• Design presentations</li>
-                </ul>
-              </div>
+                </ul>              </div>
             </div>
           </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="random-user-profile-generator" />
       </div>
     </div>
   );

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, RefreshCw, Sparkles, Lightbulb, Target, Heart, Zap, Download, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAIToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const AIHeadlineGenerator = () => {
   const [topic, setTopic] = useState("");
@@ -17,6 +19,9 @@ const AIHeadlineGenerator = () => {
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [selectedHeadlines, setSelectedHeadlines] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Initialize analytics
+  const analytics = useAIToolAnalytics('ai-headline-generator', 'AI Headline Generator');
 
   const tones = [
     { value: "professional", label: "Professional", icon: "💼" },
@@ -37,8 +42,10 @@ const AIHeadlineGenerator = () => {
     { value: "finance", label: "Finance" },
     { value: "marketing", label: "Marketing" }
   ];
-
   const generateHeadlines = async () => {
+    // Track headline generation
+    analytics.trackGenerate();
+    
     if (!topic.trim()) {
       toast.error("Please enter a topic to generate headlines");
       return;
@@ -138,10 +145,13 @@ const AIHeadlineGenerator = () => {
         : [...prev, headline]
     );
   };
-
   const copyHeadline = async (headline: string) => {
     try {
       await navigator.clipboard.writeText(headline);
+      
+      // Track copy action
+      analytics.trackCopy();
+      
       toast.success("Headline copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy headline");
@@ -154,9 +164,12 @@ const AIHeadlineGenerator = () => {
       return;
     }
 
-    const headlinesText = selectedHeadlines.join('\n');
-    try {
+    const headlinesText = selectedHeadlines.join('\n');    try {
       await navigator.clipboard.writeText(headlinesText);
+      
+      // Track copy action
+      analytics.trackCopy();
+      
       toast.success(`Copied ${selectedHeadlines.length} headlines!`);
     } catch (err) {
       toast.error("Failed to copy headlines");
@@ -522,9 +535,11 @@ Generated using Google Gemini AI`;
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </Card>          </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="ai-headline-generator" />
       </div>
     </div>
   );

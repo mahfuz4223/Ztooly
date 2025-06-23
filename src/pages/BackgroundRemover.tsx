@@ -14,6 +14,8 @@ import {
   Check, X, Play, ArrowRight, Maximize2, Star
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UsageStats } from "@/components/UsageStats";
+import { useImageToolAnalytics } from "@/utils/analyticsHelper";
 
 interface ProcessingOptions {
   size: 'auto' | 'preview' | 'full' | 'regular' | 'medium' | 'hd' | '4k';
@@ -59,6 +61,9 @@ const dummyImages = [
 ];
 
 const BackgroundRemover = () => {
+  // Enhanced Analytics tracking
+  const analytics = useImageToolAnalytics('background-remover', 'Background Remover');
+
   const [originalImages, setOriginalImages] = useState<ImageItem[]>([]);
   const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -118,15 +123,17 @@ const BackgroundRemover = () => {
       file,
       url: URL.createObjectURL(file),
       name: file.name
-    }));
-
-    setOriginalImages(prev => [...prev, ...newImages]);
+    }));    setOriginalImages(prev => [...prev, ...newImages]);
     setShowDemoImages(false);
     
-    if (newImages.length > 0 && !currentImageId) {
-      setCurrentImageId(newImages[0].id);
+    // Track upload action
+    if (newImages.length > 0) {
+      analytics.trackUpload();
+      if (!currentImageId) {
+        setCurrentImageId(newImages[0].id);
+      }
     }
-  }, [currentImageId, toast]);
+  }, [currentImageId, toast, analytics]);
 
   const processImage = async (imageId: string) => {
     const image = originalImages.find(img => img.id === imageId);
@@ -192,12 +199,12 @@ const BackgroundRemover = () => {
           return prev.map(img => img.id === imageId ? { ...img, url: processedUrl, blob } : img);
         }
         return [...prev, { id: imageId, url: processedUrl, blob }];
-      });
-
-      toast({
+      });      toast({
         title: "🎉 Background removed successfully!",
         description: "Your image is ready for download",
       });
+        // Track successful background removal
+      analytics.trackProcess();
     } catch (error) {
       console.error('Error removing background:', error);
       toast({
@@ -210,8 +217,10 @@ const BackgroundRemover = () => {
       setTimeout(() => setProgress(0), 1000);
     }
   };
-
   const processAllImages = async () => {
+    // Track batch processing action
+    analytics.trackProcess();
+    
     for (const image of originalImages) {
       if (!processedImages.find(p => p.id === image.id)) {
         await processImage(image.id);
@@ -239,7 +248,6 @@ const BackgroundRemover = () => {
     e.preventDefault();
     setIsDragging(false);
   }, []);
-
   const downloadImage = (imageId: string) => {
     const processedImage = processedImages.find(img => img.id === imageId);
     if (!processedImage) return;
@@ -253,9 +261,13 @@ const BackgroundRemover = () => {
       title: "Download started",
       description: "Your image is being downloaded",
     });
+      // Track download action
+    analytics.trackDownload();
   };
-
   const downloadAll = () => {
+    // Track batch download action
+    analytics.trackDownload();
+    
     processedImages.forEach((img, index) => {
       setTimeout(() => downloadImage(img.id), index * 500);
     });
@@ -289,12 +301,15 @@ const BackgroundRemover = () => {
     setProgress(0);
     setShowDemoImages(true);
   };
-
   const openImageView = (id: string, type: 'original' | 'processed', url: string) => {
+    // Track image preview action
+    analytics.trackAction('image_preview');
     setSelectedImageView({ id, type, url });
   };
-
   const tryDemo = () => {
+    // Track demo interaction
+    analytics.trackAction('demo_view');
+    
     toast({
       title: "Demo Mode",
       description: "Upload your own images to see real background removal results!",
@@ -323,6 +338,12 @@ const BackgroundRemover = () => {
             Advanced AI technology removes backgrounds instantly with pixel-perfect precision. 
             Perfect for portraits, products, and professional photography.
           </p>
+          
+          {/* Usage Statistics */}
+          <div className="mb-6 flex justify-center">
+            <UsageStats toolId="background-remover" />
+          </div>
+          
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-12">
             <Button 
               size="lg" 

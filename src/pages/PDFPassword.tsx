@@ -6,24 +6,38 @@ import FileUpload from "@/components/FileUpload";
 import PDFPreview from "@/components/PDFPreview";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 const PDFPassword = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "pdf-password",
+    toolName: "PDF Password Protection"
+  });
+
   // Placeholder—actual PDF password protection not implemented.
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const handleFileSelect = (files: File[]) => setFile(files[0] ?? null);
+  const handleFileSelect = (files: File[]) => {
+    setFile(files[0] ?? null);
+    if (files.length > 0) {
+      // Track file upload
+      trackAction('upload');
+    }
+  };
 
   const handleProtect = () => {
     if (!file || !password) {
       toast({ title: "Provide PDF and password", variant: "destructive" });
       return;
     }
-    setIsProcessing(true);
-    setTimeout(() => {
+    setIsProcessing(true);    setTimeout(() => {
       setIsProcessing(false);
+      // Track process attempt (even if it's a placeholder)
+      trackAction('process');
       toast({ title: "Feature coming soon!", description: "PDF protection will be available in a future update." });
     }, 1000);
   };
@@ -62,10 +76,12 @@ const PDFPassword = () => {
               </Button>
               <Button variant="outline" disabled>
                 Coming soon
-              </Button>
-            </div>
+              </Button>            </div>
           </CardContent>
         </Card>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="pdf-password" />
       </div>
     </div>
   );

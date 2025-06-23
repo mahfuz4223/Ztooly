@@ -7,6 +7,8 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import AdvancedPolicyOptions from "@/components/privacy/AdvancedPolicyOptions";
 import { Switch } from "@/components/ui/switch";
 import { Shield } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { UsageStats } from "@/components/UsageStats";
 
 type AdvancedOptions = {
   analytics: boolean;
@@ -159,6 +161,11 @@ const getFormattedPolicy = (
 };
 
 const PrivacyPolicyGenerator = () => {
+  const { trackAction } = useAnalytics({
+    toolId: "privacy-policy-generator",
+    toolName: "Privacy Policy Generator"
+  });
+
   const [company, setCompany] = useState("");
   const [website, setWebsite] = useState("");
   const [email, setEmail] = useState("");
@@ -167,12 +174,14 @@ const PrivacyPolicyGenerator = () => {
   const [customPolicy, setCustomPolicy] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [viewMode, setViewMode] = useState<"text" | "html">("text");
-
   function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     const policy = getFormattedPolicy({ name, company, email, website }, options, viewMode);
     setCustomPolicy(policy);
     setShowPreview(true);
+    
+    // Track policy generation
+    trackAction('generate');
   }
 
   function handleViewSwitch(mode: "text" | "html") {
@@ -264,18 +273,21 @@ const PrivacyPolicyGenerator = () => {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="mt-2"
-                  onClick={() => {
+                  className="mt-2"                  onClick={() => {
                     navigator.clipboard.writeText(customPolicy);
+                    // Track copy action
+                    trackAction('copy');
                   }}
                 >
                   Copy to Clipboard
                 </Button>
-              )}
-            </div>
+              )}            </div>
           </form>
         </CardContent>
       </Card>
+      
+      {/* Usage Statistics */}
+      <UsageStats toolId="privacy-policy-generator" />
     </div>
   );
 };

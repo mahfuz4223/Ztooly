@@ -24,14 +24,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useTextToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 const JSONTools = () => {
   const [inputJson, setInputJson] = useState("");
   const [outputJson, setOutputJson] = useState("");
   const [isValid, setIsValid] = useState(true);
-  const [error, setError] = useState("");
-  const [indentSize, setIndentSize] = useState("2");
+  const [error, setError] = useState("");  const [indentSize, setIndentSize] = useState("2");
   const { toast } = useToast();
+
+  // Initialize analytics
+  const analytics = useTextToolAnalytics('json-tools', 'JSON Tools');
 
   const validateJson = (jsonString: string) => {
     try {
@@ -45,8 +49,10 @@ const JSONTools = () => {
       return false;
     }
   };
-
   const formatJson = () => {
+    // Track format action
+    analytics.trackGenerate();
+    
     if (!inputJson.trim()) {
       toast({
         title: "No input",
@@ -77,8 +83,10 @@ const JSONTools = () => {
       });
     }
   };
-
   const minifyJson = () => {
+    // Track minify action
+    analytics.trackGenerate();
+    
     if (!inputJson.trim()) {
       toast({
         title: "No input",
@@ -186,10 +194,13 @@ const JSONTools = () => {
       });
     }
   };
-
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      
+      // Track copy action
+      analytics.trackCopy();
+      
       toast({
         title: "Copied to clipboard",
         description: "Content has been copied to clipboard",
@@ -207,10 +218,12 @@ const JSONTools = () => {
     const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
+    link.href = url;    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+    
+    // Track download action
+    analytics.trackDownload();
     
     toast({
       title: "Download started",
@@ -222,11 +235,13 @@ const JSONTools = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    const reader = new FileReader();    reader.onload = (e) => {
       const content = e.target?.result as string;
       setInputJson(content);
       validateJson(content);
+      
+      // Track file upload
+      analytics.trackUpload();
     };
     reader.readAsText(file);
   };
@@ -512,9 +527,11 @@ const JSONTools = () => {
                   <span>Use the copy button to quickly copy formatted results</span>
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </Card>          </div>
         </div>
+        
+        {/* Usage Statistics */}
+        <UsageStats toolId="json-tools" />
       </div>
     </div>
   );

@@ -9,6 +9,8 @@ import { toast } from '@/hooks/use-toast';
 import { Upload, Download, Eye, EyeOff, Trash2, Camera, MapPin, Calendar, Settings, ChevronDown, Shield, Plus, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { extractEXIFData } from '@/utils/exifExtractor';
+import { useImageToolAnalytics } from '@/utils/analyticsHelper';
+import { UsageStats } from '@/components/UsageStats';
 
 interface EXIFData {
   [key: string]: any;
@@ -25,6 +27,9 @@ const ImageEXIFRemover = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedBlob, setProcessedBlob] = useState<Blob | null>(null);
   const [processingMode, setProcessingMode] = useState<'remove' | 'fake' | null>(null);
+
+  // Initialize analytics
+  const analytics = useImageToolAnalytics('image-exif-remover', 'Image EXIF Remover');
 
   // Default fake EXIF data template
   const defaultFakeEXIF = {

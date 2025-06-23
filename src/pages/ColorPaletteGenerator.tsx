@@ -4,12 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useGeneratorToolAnalytics } from "@/utils/analyticsHelper";
+import { UsageStats } from "@/components/UsageStats";
 
 function generateRandomColor() {
   return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
 }
 
 export default function ColorPaletteGenerator() {
+  // Enhanced Analytics tracking
+  const analytics = useGeneratorToolAnalytics('color-palette-generator', 'Color Palette Generator');
+  
   const [colors, setColors] = useState<string[]>([]);
   const [numColors, setNumColors] = useState<number>(5);
 
@@ -20,6 +25,7 @@ export default function ColorPaletteGenerator() {
   const generatePalette = () => {
     const newColors = Array.from({ length: numColors }, () => generateRandomColor());
     setColors(newColors);
+    analytics.trackGenerate();
   };
 
   const handleColorCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,10 +34,10 @@ export default function ColorPaletteGenerator() {
       setNumColors(newCount);
     }
   };
-
   const copyToClipboard = async (color: string) => {
     try {
       await navigator.clipboard.writeText(color);
+      analytics.trackCopy();
       toast({
         title: "Copied!",
         description: `${color} copied to clipboard.`,
@@ -100,9 +106,11 @@ export default function ColorPaletteGenerator() {
                     <Copy className="w-4 h-4" />
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>            ))}
           </div>
+
+          {/* Usage Statistics */}
+          <UsageStats toolId="color-palette-generator" />
         </div>
       </div>
     </div>
