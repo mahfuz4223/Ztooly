@@ -339,6 +339,95 @@ Follow these steps to add a new tool to Ztooly:
 2. Deploy the `dist` folder to Netlify
 3. Configure redirects for SPA routing
 
+### CloudLinux cPanel with NodeJS Selector
+
+⚠️ **CRITICAL**: CloudLinux NodeJS Selector creates its own virtual environment and uses a symlink called `node_modules` for dependencies. Your application **MUST NOT** contain any folder or file named `node_modules` in the root directory.
+
+#### Pre-Upload Preparation
+
+1. **Build the project locally**
+   ```bash
+   npm run build
+   ```
+
+2. **Clean your project** (Remove all node_modules)
+   ```bash
+   # Windows PowerShell
+   Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+   
+   # Linux/Mac
+   rm -rf node_modules
+   ```
+
+3. **Verify no node_modules exists**
+   - Ensure no `node_modules` folder exists in your project root
+   - Check that `.gitignore` excludes `node_modules` (already configured)
+
+#### cPanel Deployment Steps
+
+1. **Upload files to cPanel File Manager**
+   - Upload ALL project files EXCEPT `node_modules`
+   - Include: `package.json`, `server.js`, `dist/` folder, all source files
+   - **Never upload node_modules folder**
+
+2. **Create NodeJS App in cPanel**
+   - Navigate to "Node.js Selector" in cPanel
+   - Click "Create App"
+   - Set Node.js version: **18+** (recommended: Latest LTS)
+   - Set Application Root: `/public_html/your-app-folder`
+   - Set Application URL: `your-domain.com` or subdomain
+   - Set Startup File: `server.js`
+
+3. **Install Dependencies**
+   ```bash
+   # In cPanel Terminal or NodeJS Selector interface
+   npm install
+   ```
+   CloudLinux will automatically create a symlinked `node_modules` in a separate virtual environment.
+
+4. **Configure Environment Variables**
+   - In NodeJS Selector, add environment variables:
+     ```
+     NODE_ENV=production
+     VITE_APP_NAME=Ztooly
+     VITE_APP_URL=https://yourdomain.com
+     VITE_ANALYTICS_ENABLED=true
+     ```
+
+5. **Start the Application**
+   - Click "Restart" in NodeJS Selector
+   - Monitor logs for any errors
+   - Visit your domain to verify deployment
+
+#### Troubleshooting CloudLinux Issues
+
+**Problem**: "node_modules already exists" error  
+**Solution**: Delete any existing `node_modules` folder/file from your application root
+
+**Problem**: Dependencies not installing  
+**Solution**: 
+- Ensure `package.json` is in the correct directory
+- Check Node.js version compatibility
+- Verify file permissions
+
+**Problem**: App not starting  
+**Solution**:
+- Check `server.js` path in startup file setting
+- Verify environment variables are set
+- Check application logs in NodeJS Selector
+
+#### Important Notes for CloudLinux
+
+- ✅ Upload `package.json` - Required for dependency installation
+- ✅ Upload `dist/` folder - Contains built frontend files  
+- ✅ Upload `server.js` - Backend application entry point
+- ❌ **NEVER** upload `node_modules` - CloudLinux manages this automatically
+- ❌ Don't create manual `node_modules` symlinks
+- ❌ Don't modify the auto-generated `node_modules` symlink
+   - Or use: `npm start` or `node server.js`
+
+**Why this matters**: CloudLinux manages Node.js dependencies in a virtual environment and creates a symlink called `node_modules` pointing to the actual modules. If you upload your own `node_modules` folder, it will conflict with CloudLinux's dependency management system.
+
 ### Traditional Hosting
 
 1. Build the project: `npm run build`
