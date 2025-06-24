@@ -216,8 +216,6 @@ This project is open-source and available under the [MIT License](LICENSE).
 * ⭐ [Star on GitHub](https://github.com/mahfuz4223/Ztooly)
 * 📘 [Docs](https://docs.ztooly.com)
 * 🐛 [Issues](https://github.com/mahfuz4223/Ztooly/issues)
-* 💬 [Discord](https://discord.gg/ztooly)
-* 🐦 [Twitter](https://twitter.com/ZtoolyDev)
 
 ---
 
