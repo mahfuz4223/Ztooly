@@ -1,13 +1,6 @@
 -- ================================================
 -- Ztooly - Analytics Database Schema
 -- ================================================
--- 
--- This SQL script creates all the necessary tables for the analytics system
--- 
--- Database: sql12786145
--- Host: sql12.freesqldatabase.com
--- Port: 3306
---
 
 -- ================================================
 -- Table: tool_usage
