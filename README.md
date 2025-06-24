@@ -1,6 +1,6 @@
 # 🚀 Ztooly - The Ultimate Free Online Tool Collection
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.com)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.netlify.app/)
 [![License: MIT](https://img.shields.io/badge/📄_License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/⚡_Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/⚛️_React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
@@ -244,7 +244,7 @@ Create a `.env` file based on `.env.example`:
 ```env
 # Application Configuration
 VITE_APP_NAME=Ztooly
-VITE_APP_URL=https://ztooly.com
+VITE_APP_URL=https://ztooly.netlify.app/
 
 # Analytics (Optional)
 VITE_ANALYTICS_ENABLED=true
@@ -707,7 +707,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 - **⭐ Star this repo** - Get notified of updates
 - **👀 Watch releases** - Stay informed about new versions
-- **📬 Newsletter** - [Subscribe for updates](https://ztooly.com/newsletter)
+- **📬 Newsletter** - [Subscribe for updates](https://ztooly.netlify.app//newsletter)
 - **📱 Social Media** - Follow us for tips and updates
 
 ### 🤝 Community Guidelines
@@ -735,7 +735,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ### 🚀 Ready to boost your productivity?
 
-[![Try Ztooly](https://img.shields.io/badge/🌐_Try_Ztooly-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.com)
+[![Try Ztooly](https://img.shields.io/badge/🌐_Try_Ztooly-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.netlify.app/)
 [![Star on GitHub](https://img.shields.io/badge/⭐_Star_on_GitHub-Contribute-181717?style=for-the-badge&logo=github)](https://github.com/your-username/ztooly)
 
 **Made with ❤️ by the Ztooly Team**
@@ -743,7 +743,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 *Empowering productivity, one tool at a time.*
 
 <p>
-  <a href="https://ztooly.com">🌐 Website</a> •
+  <a href="https://ztooly.netlify.app/">🌐 Website</a> •
   <a href="https://docs.ztooly.com">📚 Docs</a> •
   <a href="https://github.com/your-username/ztooly/issues">🐛 Issues</a> •
   <a href="https://discord.gg/ztooly">💬 Discord</a> •
@@ -757,7 +757,7 @@ tools generator converter calculator qr-code password-generator lorem-ipsum colo
 =======
 # � Ztooly - The Ultimate Free Online Tool Collection
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.com)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-ztooly.com-4285f4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ztooly.netlify.app/)
 [![License: MIT](https://img.shields.io/badge/📄_License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/⚡_Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/⚛️_React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
@@ -958,7 +958,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
   <p>Made with ❤️ by the Ztooly Team</p>
   <p>
-    <a href="https://ztooly.com">Website</a> •
+    <a href="https://ztooly.netlify.app/">Website</a> •
     <a href="https://docs.ztooly.com">Documentation</a> •
     <a href="https://github.com/your-username/effortless-utility-kit/issues">Issues</a> •
     <a href="https://discord.gg/ztooly">Discord</a>
